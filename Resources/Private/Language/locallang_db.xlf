@@ -3,6 +3,78 @@
 	<file source-language="en" datatype="plaintext" original="messages" date="2015-08-06T21:07:24Z" product-name="tw_antibot">
 		<header/>
 		<body>
+			<!-- Constants -->
+			<trans-unit id="constants.file.templateRootPath" xml:space="preserve">
+				<source>Path to template root (FE)</source>
+			</trans-unit>
+			<trans-unit id="constants.file.partialRootPath" xml:space="preserve">
+				<source>Path to template partials (FE)</source>
+			</trans-unit>
+			<trans-unit id="constants.file.layoutRootPath" xml:space="preserve">
+				<source>Path to template layouts (FE)</source>
+			</trans-unit>
+			<trans-unit id="constants.pid.storagePid" xml:space="preserve">
+				<source>Default storage page (ID)</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.banning" xml:space="preserve">
+				<source>Internal banning</source>
+			</trans-unit>
+			<trans-unit id="constants.banning.ip" xml:space="preserve">
+				<source>Enable internal IP banning</source>
+			</trans-unit>
+			<trans-unit id="constants.banning.email" xml:space="preserve">
+				<source>Enable internal email banning</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.botsmasher" xml:space="preserve">
+				<source>External banning</source>
+			</trans-unit>
+			<trans-unit id="constants.botsmasher.enable" xml:space="preserve">
+				<source>Enable BotSmasher checks (botsmasher.com)</source>
+			</trans-unit>
+			<trans-unit id="constants.botsmasher.apikey" xml:space="preserve">
+				<source>BotSmasher API key</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.honeypot" xml:space="preserve">
+				<source>Honeypot</source>
+			</trans-unit>
+			<trans-unit id="constants.honeypot.enable" xml:space="preserve">
+				<source>Enable honeypot checks</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.session" xml:space="preserve">
+				<source>Session token</source>
+			</trans-unit>
+			<trans-unit id="constants.session.enable" xml:space="preserve">
+				<source>Enable session token checks</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.time" xml:space="preserve">
+				<source>Submission time</source>
+			</trans-unit>
+			<trans-unit id="constants.time.enable" xml:space="preserve">
+				<source>Enable submission time checks</source>
+			</trans-unit>
+			<trans-unit id="constants.time.minimum" xml:space="preserve">
+				<source>Min. submission time (seconds)</source>
+			</trans-unit>
+			<trans-unit id="constants.time.maximum" xml:space="preserve">
+				<source>Max. submission time (seconds)</source>
+			</trans-unit>
+			
+			<trans-unit id="constants.order" xml:space="preserve">
+				<source>Submission method order</source>
+			</trans-unit>
+			<trans-unit id="constants.order.enable" xml:space="preserve">
+				<source>Enable submission method order checks</source>
+			</trans-unit>
+			<trans-unit id="constants.order.method" xml:space="preserve">
+				<source>Submission method order</source>
+			</trans-unit>
+			
+			<!-- Models -->
 			<trans-unit id="tx_twantibot_domain_model_ip">
 				<source>Ip</source>
 			</trans-unit>
