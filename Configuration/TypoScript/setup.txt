@@ -1,0 +1,49 @@
+# Antibot extension setup
+plugin.tx_twantibot {
+	view {
+		templateRootPaths {
+			10	= EXT:tw_antibot/Resources/Private/Templates/
+			20	= {$plugin.tx_twantibot.view.templateRootPath}
+		}
+		partialRootPaths {
+			10	= EXT:tw_antibot/Resources/Private/Partials/
+			20	= {$plugin.tx_twantibot.view.partialRootPath}
+		}
+		layoutRootPaths {
+			10	= EXT:tw_antibot/Resources/Private/Layouts/
+			20	= {$plugin.tx_twantibot.view.layoutRootPath}
+		}
+	}
+	persistence {
+		storagePid	= {$plugin.tx_twantibot.persistence.storagePid}
+	}
+	features {
+		# uncomment the following line to enable the new Property Mapper.
+		# rewrittenPropertyMapper	= 1
+	}
+	settings {
+		botsmasher {
+			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}
+			apikey	= {$plugin.tx_twantibot.settings.botsmasher.apikey}
+		}
+		banning {
+			ip		= {$plugin.tx_twantibot.settings.botsmasher.ip}
+			email	= {$plugin.tx_twantibot.settings.botsmasher.email}
+		}
+		honeypot {
+			enable	= {$plugin.tx_twantibot.settings.honeypot.enable}
+		}
+		session {
+			enable	= {$plugin.tx_twantibot.settings.session.enable}
+		}
+		time {
+			enable	= {$plugin.tx_twantibot.settings.time.enable}
+			minimum	= {$plugin.tx_twantibot.settings.time.minimum}
+			maximum	= {$plugin.tx_twantibot.settings.time.maximum}
+		}
+		order {
+			enable	= {$plugin.tx_twantibot.settings.order.enable}
+			method	= {$plugin.tx_twantibot.settings.order.method}
+		}
+	}
+}
