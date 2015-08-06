@@ -16,9 +16,6 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_ip'] = array(
 		'cruser_id' => 'cruser_id',
 		'dividers2tabs' => TRUE,
 
-		'versioningWS' => 2,
-		'versioning_followPages' => TRUE,
-
 		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
@@ -41,9 +38,6 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_email'] = array(
 		'crdate' => 'crdate',
 		'cruser_id' => 'cruser_id',
 		'dividers2tabs' => TRUE,
-
-		'versioningWS' => 2,
-		'versioning_followPages' => TRUE,
 
 		'delete' => 'deleted',
 		'enablecolumns' => array(
