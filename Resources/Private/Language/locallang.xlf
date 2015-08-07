@@ -15,6 +15,9 @@
 			<trans-unit id="tx_twantibot_domain_model_email.email">
 				<source>Email</source>
 			</trans-unit>
+			<trans-unit id="armor.honeypot">
+				<source>Don't fill in this field if you're not a spammer!</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

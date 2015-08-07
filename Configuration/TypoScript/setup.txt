@@ -38,6 +38,7 @@ plugin.tx_twantibot {
 		}
 		honeypot {
 			enable	= {$plugin.tx_twantibot.settings.honeypot.enable}
+			token	= {$plugin.tx_twantibot.settings.honeypot.token}
 		}
 		session {
 			enable	= {$plugin.tx_twantibot.settings.session.enable}

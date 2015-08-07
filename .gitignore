@@ -4,3 +4,4 @@ profile
 /.buildpath
 /.project
 /.gitignore
+*.md.html

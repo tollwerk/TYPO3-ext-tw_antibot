@@ -53,6 +53,9 @@ plugin.tx_twantibot {
 		honeypot {
 			# cat=plugin.tx_twantibot/honeypot/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.honeypot.enable
 			enable = 0
+			
+			# cat=plugin.tx_twantibot/honeypot/b; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.honeypot.token
+			token = email
 		}
 		
 		session {
@@ -64,10 +67,10 @@ plugin.tx_twantibot {
 			# cat=plugin.tx_twantibot/time/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
 			enable = 0
 			
-			# cat=plugin.tx_twantibot/time/b; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.minimum
+			# cat=plugin.tx_twantibot/time/b; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.minimum
 			minimum = 10
 			
-			# cat=plugin.tx_twantibot/time/c; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
+			# cat=plugin.tx_twantibot/time/c; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
 			maximum = 2400
 		}
 		
