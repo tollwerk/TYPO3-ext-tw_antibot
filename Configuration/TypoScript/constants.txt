@@ -23,6 +23,11 @@ plugin.tx_twantibot {
 		
 	}
 	settings {
+		antibot {
+			# cat=plugin.tx_twantibot//a; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.antibot.token
+			token = antibot
+		}
+		
 		botsmasher {
 			# cat=plugin.tx_twantibot/botsmasher/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.botsmasher.enable
 			enable = 0
@@ -32,11 +37,17 @@ plugin.tx_twantibot {
 		}
 		
 		banning {
-			# cat=plugin.tx_twantibot/banning/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.banning.ip
-			ip = 0
-			
-			# cat=plugin.tx_twantibot/banning/b; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.banning.email
-			email = 0
+			ip {
+				# cat=plugin.tx_twantibot/banning/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.banning.ip.enable
+				enable = 0
+			}
+
+			email {			
+				# cat=plugin.tx_twantibot/banning/b; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.banning.email.enable
+				enable = 0
+				# cat=plugin.tx_twantibot/banning/c; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.banning.email.fields
+				fields =
+			}
 		}
 		
 		honeypot {

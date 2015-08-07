@@ -22,13 +22,19 @@ plugin.tx_twantibot {
 		# rewrittenPropertyMapper	= 1
 	}
 	settings {
+		token		= {$plugin.tx_twantibot.settings.antibot.token}
 		botsmasher {
 			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}
 			apikey	= {$plugin.tx_twantibot.settings.botsmasher.apikey}
 		}
 		banning {
-			ip		= {$plugin.tx_twantibot.settings.botsmasher.ip}
-			email	= {$plugin.tx_twantibot.settings.botsmasher.email}
+			ip {
+				enable	= {$plugin.tx_twantibot.settings.banning.ip.enable}
+			}
+			email {
+				enable	= {$plugin.tx_twantibot.settings.banning.email.enable}
+				fields	= {$plugin.tx_twantibot.settings.banning.email.fields}
+			}
 		}
 		honeypot {
 			enable	= {$plugin.tx_twantibot.settings.honeypot.enable}

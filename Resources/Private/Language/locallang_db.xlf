@@ -17,14 +17,21 @@
 				<source>Default storage page (ID)</source>
 			</trans-unit>
 			
+			<trans-unit id="constants.antibot.token" xml:space="preserve">
+				<source>Antibot form token</source>
+			</trans-unit>
+			
 			<trans-unit id="constants.banning" xml:space="preserve">
 				<source>Internal banning</source>
 			</trans-unit>
-			<trans-unit id="constants.banning.ip" xml:space="preserve">
+			<trans-unit id="constants.banning.ip.enable" xml:space="preserve">
 				<source>Enable internal IP banning</source>
 			</trans-unit>
-			<trans-unit id="constants.banning.email" xml:space="preserve">
+			<trans-unit id="constants.banning.email.enable" xml:space="preserve">
 				<source>Enable internal email banning</source>
+			</trans-unit>
+			<trans-unit id="constants.banning.email.fields" xml:space="preserve">
+				<source>Email GET / POST variables (comma separated)</source>
 			</trans-unit>
 			
 			<trans-unit id="constants.botsmasher" xml:space="preserve">

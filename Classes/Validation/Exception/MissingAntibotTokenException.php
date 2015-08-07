@@ -1,6 +1,6 @@
 <?php
-namespace Tollwerk\TwAntibot\Domain\Model;
 
+namespace Tollwerk\TwAntibot\Validation\Exception;
 
 /***************************************************************
  *
@@ -28,35 +28,7 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  ***************************************************************/
 
 /**
- * Blocked IP address
+ * Invalid settings exception
+ *
  */
-class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
-
-	/**
-	 * IP4 address
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $ip = '';
-
-	/**
-	 * Returns the ip
-	 *
-	 * @return string $ip
-	 */
-	public function getIp() {
-		return $this->ip;
-	}
-
-	/**
-	 * Sets the ip
-	 *
-	 * @param string $ip
-	 * @return void
-	 */
-	public function setIp($ip) {
-		$this->ip = $ip;
-	}
-
-}
+class MissingAntibotTokenException extends \Tollwerk\TwAntibot\Validation\Exception {}

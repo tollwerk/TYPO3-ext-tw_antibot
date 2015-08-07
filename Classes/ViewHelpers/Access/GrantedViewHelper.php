@@ -1,6 +1,6 @@
 <?php
-namespace Tollwerk\TwAntibot\Domain\Model;
 
+namespace Tollwerk\TwAntibot\ViewHelpers\Access;
 
 /***************************************************************
  *
@@ -28,35 +28,18 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  ***************************************************************/
 
 /**
- * Blocked IP address
+ * Antibot form access viewhelper
+ * 
+ * @package Tollwerk\TwAntibot\ViewHelpers
  */
-class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
-
+class GrantedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {
 	/**
-	 * IP4 address
-	 *
-	 * @var string
-	 * @validate NotEmpty
+	 * Test if the current user is granted access to the current form
+	 * 
+	 * @param \string $object		Form object name
+	 * @return \boolean				Access
 	 */
-	protected $ip = '';
-
-	/**
-	 * Returns the ip
-	 *
-	 * @return string $ip
-	 */
-	public function getIp() {
-		return $this->ip;
+	public function render($object = null) {
+		return !!$this->_validate($object);
 	}
-
-	/**
-	 * Sets the ip
-	 *
-	 * @param string $ip
-	 * @return void
-	 */
-	public function setIp($ip) {
-		$this->ip = $ip;
-	}
-
 }
