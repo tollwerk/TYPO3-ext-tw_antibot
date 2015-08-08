@@ -63,8 +63,8 @@ plugin.tx_twantibot {
 			# cat=plugin.tx_twantibot/honeypot/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.honeypot.enable
 			enable = 0
 			
-			# cat=plugin.tx_twantibot/honeypot/b; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.honeypot.token
-			token = email
+			# cat=plugin.tx_twantibot/honeypot/b; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.honeypot.fields
+			fields = email, name
 		}
 		
 		session {

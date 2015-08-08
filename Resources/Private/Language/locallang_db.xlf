@@ -59,8 +59,8 @@
             <trans-unit id="constants.honeypot.enable" xml:space="preserve">
                 <source>Enable honeypot checks</source>
             </trans-unit>
-            <trans-unit id="constants.honeypot.token" xml:space="preserve">
-                <source>Honeypot form token</source>
+            <trans-unit id="constants.honeypot.fields" xml:space="preserve">
+                <source>Honeypot form fields (comma separated)</source>
             </trans-unit>
             
             <trans-unit id="constants.session" xml:space="preserve">

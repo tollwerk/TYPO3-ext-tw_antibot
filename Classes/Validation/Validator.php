@@ -87,6 +87,12 @@ class Validator {
 	 */
 	protected $_whitelist = null;
 	/**
+	 * Honeypot fields
+	 * 
+	 * @var \array
+	 */
+	protected $_honeypotFields = null;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -276,6 +282,10 @@ class Validator {
 	 */
 	protected function _validateHoneypots() {
 		
+		// If honeypot checks are enabled
+		if ($this->_honeypotEnabled()) {
+			
+		}
 	}
 	
 	/**
@@ -301,8 +311,8 @@ class Validator {
 			$standaloneView->setPartialRootPaths($viewSettings['partialRootPaths.']);
 			$standaloneView->setLayoutRootPaths($viewSettings['layoutRootPaths.']);
 			$standaloneView->setTemplate('Armor'.DIRECTORY_SEPARATOR.'Honeypot.html');
-			$standaloneView->assign('honeypotToken', $this->_token.'['.htmlspecialchars(trim($this->_settings['honeypot']['token'])).']');
-	        $armor                    .= $standaloneView->render();
+			$standaloneView->assign('honeypots', $this->_honeypotFields());
+	        $armor						.= $standaloneView->render();
 	    }
 	    
 	    return $armor;
@@ -349,6 +359,21 @@ class Validator {
         \ChromePhp::log('HMAC:', $hmac);
         
         return $hmac;
+	}
+	
+	/**
+	 * Build and return the honeypot field names
+	 * 
+	 * @return \array					Honeypot field names
+	 */
+	protected function _honeypotFields() {
+		if ($this->_honeypotFields === null) {
+			$this->_honeypotFields			= array();
+			foreach (array_diff(\TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['honeypot']['fields'], true), array('hmac')) as $honeypotField) {
+				$this->_honeypotFields[]	= $this->_token.'['.htmlspecialchars($honeypotField).']';
+			}
+		}
+		return $this->_honeypotFields;
 	}
 	
 	/**
@@ -424,8 +449,9 @@ class Validator {
 	    && is_array($this->_settings['honeypot'])
 	    && !empty($this->_settings['honeypot']['enable'])
 	    && intval($this->_settings['honeypot']['enable'])
-	    && !empty($this->_settings['honeypot']['token'])
-	    && strlen(trim($this->_settings['honeypot']['token']))
+	    && !empty($this->_settings['honeypot']['fields'])
+	    && strlen(trim($this->_settings['honeypot']['fields']))
+	    && count(array_diff(\TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['honeypot']['fields'], true), array('hmac')))
 	    && (TYPO3_MODE == 'FE');
 	}
 	

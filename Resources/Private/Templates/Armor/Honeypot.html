@@ -1,4 +1,6 @@
-<label style="display:none">
-    <span><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:armor.honeypot"/></span>
-    <input type="text" name="{honeypotToken}" value="" autocomplete="off"/>
-</label>
+<f:for each="{honeypots}" as="honeypot">
+    <label style="display:none">
+        <span><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:armor.honeypot"/></span>
+        <input type="text" name="{honeypot}" value="" autocomplete="off"/>
+    </label>
+</f:for>
