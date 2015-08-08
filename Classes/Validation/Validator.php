@@ -27,11 +27,19 @@ namespace Tollwerk\TwAntibot\Validation;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use \Tollwerk\TwAntibot\Validation\Exception;
+
 /**
  * Antibot validator
  *
  */
 class Validator {
+	/**
+	 * Object manager
+	 * 
+	 * @var unknown
+	 */
+	protected $_objectManager = null;
 	/**
 	 * Settings
 	 * 
@@ -99,6 +107,12 @@ class Validator {
 	 */
 	protected $_data = null;
 	/**
+	 * TypoScript setup
+	 * 
+	 * @var \array
+	 */
+	protected $_setup = null;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -133,10 +147,10 @@ class Validator {
 	 *
 	 * @param \array $settings									Settings
 	 * @param \array $fields									Object field values
-	 * @return void;
+	 * @return \boolean											Validation success
 	 */
 	public static function validate(array $settings, array $fields = array()) {
-	    self::instance($settings, $fields)->_validate();
+	    return self::instance($settings, $fields)->_validate();
 	}
 	
 	/**
@@ -164,7 +178,7 @@ class Validator {
 	    
 	    // Get the antibot token name
 	    if (empty($settings['token'])) {
-	        throw new \Tollwerk\TwAntibot\Validation\Exception\InvalidSettingsException();
+	        throw new Exception\InvalidSettingsException();
 	    }
 	    
         return  $settings['token'].'_'.\TYPO3\CMS\Core\Utility\GeneralUtility::shortMD5($GLOBALS['TSFE']->fe_user->id.serialize($settings));
@@ -180,6 +194,7 @@ class Validator {
 	protected function __construct(array $settings, array $fields) {
 		$this->_settings		= $settings;
 		$this->_fields			= $fields;
+		$this->_objectManager	= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->_token           = self::_token($this->_settings);
 		$this->_ip				= $_SERVER['REMOTE_ADDR'];
 		$this->_whitelist		= \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['whitelist'], true);
@@ -207,7 +222,7 @@ class Validator {
 		        
 		    // Else: Error
 		    } else {
-		        throw new \Tollwerk\TwAntibot\Validation\Exception\InvalidTokenException();
+		        throw new Exception\MissingTokenException();
 		    }
 		}
 	}
@@ -215,7 +230,7 @@ class Validator {
 	/**
 	 * Main validation
 	 * 
-	 * @throws \Tollwerk\TwAntibot\Validation\Exception										If a validation error occurs
+	 * @return \boolean				Validation success
 	 */
 	protected function _validate() {
 		try {
@@ -231,10 +246,18 @@ class Validator {
 
 			// Validity of the antibot token implies validity of the session token, submission time and
 			// submission method order so there's non need for additional checks.
-			
+
+		// If an exception is thrown: Fail and potentially ban the request
 		} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
-			\ChromePhp::log('Blocked by exception:', get_class($e));
+			
+			\ChromePhp::log('Submission blocked by exception:', get_class($e));
+			$submission			= $this->_logSubmission($e);
+			
+			$this->_ban($submission);
+			return false;
 		}
+		
+		return true;
 	}
 	
 	/**
@@ -247,11 +270,11 @@ class Validator {
 		
 		// If no antibot token has been submitted: Error
 		if ($this->_valid === null) {
-			throw new \Tollwerk\TwAntibot\Validation\Exception\MissingAntibotTokenException();
+			throw new Exception\MissingTokenException();
 		
-			// Else: If the antibot token was invalid
+		// Else: If the antibot token was invalid
 		} elseif ($this->_valid === false) {
-			throw new \Tollwerk\TwAntibot\Validation\Exception\InvalidTokenException();
+			throw new Exception\InvalidTokenException();
 		}
 	}
 	
@@ -265,16 +288,19 @@ class Validator {
 		// If BotSmasher checks are enabled
 		if ($this->_botSmasherEnabled()) {
 			try {
-				$botSmasherEmailField		= trim($this->_settings['botsmasher']['field']);
+				$botSmasherEmailField		= trim($this->_settings['email']);
 				$botSmasherEmail			= (!strlen($botSmasherEmailField) || empty($this->_fields[$botSmasherEmailField])) ? null : trim($this->_fields[$botSmasherEmailField]);
 				$botSmasherClient			= new \Tollwerk\TwAntibot\Utility\BotSmasherClient($this->_settings['botsmasher']);
 				$botSmasherStatus			= $botSmasherClient->check($this->_ip, $botSmasherEmail);
+				
+				\ChromePhp::log($botSmasherStatus);
 
 				// If the BotSmasher status isn't valid
 				if ($botSmasherStatus !== \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_VALID) {
-					throw new \Tollwerk\TwAntibot\Validation\Exception\BotSmasherException(null, $botSmasherStatus);
+					throw new Exception\BotSmasherException(null, $botSmasherStatus);
 				}
 				
+			// If an error occurs: Don't do anything about it
 			} catch (\Tollwerk\TwAntibot\Utility\BotSmasher\Exception $e) {
 				foreach ($e->getMessages() as $message) {
 					\ChromePhp::log($message->message);
@@ -294,7 +320,7 @@ class Validator {
 		if ($this->_honeypotEnabled() && is_array($this->_data)) {
 			foreach ($this->_honeypotFields() as $honeypotField) {
 				if (!empty($this->_data[$honeypotField])) {
-					throw new \Tollwerk\TwAntibot\Validation\Exception\HoneypotException($honeypotField);
+					throw new Exception\HoneypotException($honeypotField);
 				}
 			}
 		}
@@ -312,13 +338,10 @@ class Validator {
 	    
 	    // Add the honeypot field
 	    if ($this->_honeypotEnabled()) {
-	        $objectManager		        = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
-			$setup						= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')->getTypoScriptSetup();
-			$typoscriptService			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-			$viewSettings       		= $setup['plugin.']['tx_twantibot.']['view.'];
+			$viewSettings       		= $this->_setup('view.');
 			
 			/* @var $standaloneView \TYPO3\CMS\Fluid\View\StandaloneView */
-			$standaloneView             = $objectManager->get('TYPO3\\CMS\\Fluid\\View\\StandaloneView');
+			$standaloneView             = $this->_objectManager->get('TYPO3\\CMS\\Fluid\\View\\StandaloneView');
 			$standaloneView->setTemplateRootPaths($viewSettings['templateRootPaths.']);
 			$standaloneView->setPartialRootPaths($viewSettings['partialRootPaths.']);
 			$standaloneView->setLayoutRootPaths($viewSettings['layoutRootPaths.']);
@@ -328,6 +351,21 @@ class Validator {
 	    }
 	    
 	    return $armor;
+	}
+	
+	/**
+	 * Return the TypoScript setup
+	 * 
+	 * @param \string $key				Optional: Key
+	 * @return \array					TypoScript setup
+	 */
+	protected function _setup($key = null) {
+		if ($this->_setup === null) {
+			$setup						= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')->getTypoScriptSetup();
+			$this->_setup				= $setup['plugin.']['tx_twantibot.'];
+		}
+		
+		return ($key === null) ? $this->_setup : (($key && array_key_exists($key, $this->_setup)) ? $this->_setup[$key] : null);
 	}
 	
 	/**
@@ -466,6 +504,42 @@ class Validator {
 	    && count(array_diff(\TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['honeypot']['fields'], true), array('hmac')))
 	    && (TYPO3_MODE == 'FE');
 	}
+
+	/**
+	 * Check if IP address banning is enabled
+	 *
+	 * @return \boolean                IP banning is enabled
+	 */
+	protected function _ipBanningEnabled() {
+	    return !empty($this->_settings['banning'])
+	    && is_array($this->_settings['banning'])
+	    && !empty($this->_settings['banning']['ip'])
+	    && is_array($this->_settings['banning']['ip'])
+	    && !empty($this->_settings['banning']['ip']['enable'])
+	    && intval($this->_settings['banning']['ip']['enable'])
+	    && !empty($this->_settings['banning']['ip']['period'])
+	    && (intval($this->_settings['banning']['ip']['period']) >= 0)
+	    && (TYPO3_MODE == 'FE');
+	}
+
+	/**
+	 * Check if email address banning is enabled
+	 *
+	 * @return \boolean                Email address banning is enabled
+	 */
+	protected function _emailBanningEnabled() {
+	    return !empty($this->_settings['banning'])
+	    && is_array($this->_settings['banning'])
+	    && !empty($this->_settings['banning']['email'])
+	    && is_array($this->_settings['banning']['email'])
+	    && !empty($this->_settings['banning']['email']['enable'])
+	    && intval($this->_settings['banning']['email']['enable'])
+	    && !empty($this->_settings['banning']['email']['period'])
+	    && (intval($this->_settings['banning']['email']['period']) >= 0)
+// 	    && !empty($this->_settings['email'])
+// 	    && strlen(trim($this->_settings['email']))
+	    && (TYPO3_MODE == 'FE');
+	}
 	
 	/**
 	 * Decrypt the submitted HMAC
@@ -498,7 +572,7 @@ class Validator {
             
             // If the current request method doesn't match
             if ($currentMethod != strtoupper($_SERVER['REQUEST_METHOD'])) {
-                throw new \Tollwerk\TwAntibot\Validation\Exception\InvalidRequestMethodOrderException();
+                throw new Exception\InvalidRequestMethodOrderException(strtoupper($_SERVER['REQUEST_METHOD']));
             }
             
             $hmacParams[]        = $previousMethod;
@@ -566,5 +640,141 @@ class Validator {
         }
         
         return $decrypted;
+	}
+	
+	/**
+	 * Log a blocked submission
+	 *
+	 * @param \Tollwerk\TwAntibot\Validation\Exception $e		Occured exception
+	 * @return \Tollwerk\TwAntibot\Domain\Model\Submission		Submission
+	 */
+	protected function _logSubmission(\Tollwerk\TwAntibot\Validation\Exception $e) {
+		$persistence				= $this->_setup('persistence.');
+		
+		// Readable reason
+		switch (true) {
+			case ($e instanceof Exception\MissingTokenException):
+				$reason				= 'Missing token';
+				break;
+			case ($e instanceof Exception\InvalidTokenException):
+				$reason				= 'Invalid token';
+				break;
+			case ($e instanceof Exception\InvalidSettingsException):
+				$reason				= 'Invalid settings';
+				break;
+			case ($e instanceof Exception\InvalidRequestMethodOrderException):
+				$reason				= sprintf('Invalid request method (%s)', $e->getMessage());
+				break;
+			case ($e instanceof Exception\HoneypotException):
+				$reason				= sprintf('Honeypot alert (%s)', $e->getMessage());
+				break;
+			case ($e instanceof Exception\BotSmasherException):
+				$badguy				= array();
+				if ($e->ipMatch()) {
+					$badguy[]		= 'IP';
+				}
+				if ($e->emailMatch()) {
+					$badguy[]		= 'email';
+				}
+				if ($e->nameMatch()) {
+					$badguy[]		= 'name';
+				}
+				$reason				= sprintf('BotSmasher badguy (%s)', implode(',', $badguy));
+				break;
+			default:
+				$reason				= 'Unknown';
+				break;
+		}
+		
+		$submission					= new \Tollwerk\TwAntibot\Domain\Model\Submission();
+		$submission->setReason($reason);
+		$submission->setPid(intval($persistence['storagePid']));
+		$submission->setIp($this->_ip);
+		$submission->setSettings(json_encode($this->_settings));
+		$submission->setData(json_encode($this->_data));
+		$submission->setFields(json_encode($this->_fields));
+		
+		/* @var $submissionRepository \Tollwerk\TwAntibot\Domain\Repository\SubmissionRepository */
+		$submissionRepository		= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\SubmissionRepository');
+		$submissionRepository->add($submission);
+		
+		return $submission;
+	}
+	
+	/**
+	 * Perform internal banning
+	 * 
+	 * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission		Submission
+	 * @return void
+	 */
+	protected function _ban(\Tollwerk\TwAntibot\Domain\Model\Submission $submission = null) {
+		$persistence				= $this->_setup('persistence.');
+		
+		// If IP banning is enabled
+		if ($this->_ipBanningEnabled()) {
+			
+			/* @var $ipRepository \Tollwerk\TwAntibot\Domain\Repository\IpRepository */
+			$ipRepository			= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\IpRepository');
+			$ip						= $ipRepository->findExpiredOneByIp($this->_ip);
+			
+			if (!($ip instanceof \Tollwerk\TwAntibot\Domain\Model\Ip)) {
+				$ip					= new \Tollwerk\TwAntibot\Domain\Model\Ip();
+				$ip->setPid(intval($persistence['storagePid']));
+				$ip->setIp($this->_ip);
+				$ipUpdate			= false;
+			} else {
+				$ipUpdate			= true;
+			}
+			
+			$ip->setSubmission($submission);
+			
+			// Set a period if configured
+			$ipPeriod				= intval($this->_settings['banning']['ip']['period']);
+			if ($ipPeriod > 0) {
+				$ip->setEndtime(time() + $ipPeriod);
+			}
+			
+			if ($ipUpdate) {
+				$ipRepository->update($ip);
+			} else {
+				$ipRepository->add($ip);
+			}
+		}
+		
+		// If email banning is enabled
+		if ($this->_emailBanningEnabled()) {
+			$emailField					= trim($this->_settings['email']);
+			$emailAddress				= array_key_exists($emailField, $this->_fields) ? trim($this->_fields[$emailField]) : null;
+			if (strlen($emailAddress)) {
+		 
+				/* @var $emailRepository \Tollwerk\TwAntibot\Domain\Repository\EmailRepository */
+				$emailRepository		= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\EmailRepository');
+				$email					= $emailRepository->findExpiredOneByEmail($emailAddress);
+				
+				if (!($email instanceof \Tollwerk\TwAntibot\Domain\Model\Email)) {
+					$email				= new \Tollwerk\TwAntibot\Domain\Model\Email();
+					$email->setPid(intval($persistence['storagePid']));
+					$email->setEmail($emailAddress);
+					$emailUpdate		= false;
+				} else {
+					$emailUpdate		= true;
+				}
+				
+				$email->setSubmission($submission);
+				
+				
+				// Set a period if configured
+				$emailPeriod			= intval($this->_settings['banning']['email']['period']);
+				if ($emailPeriod > 0) {
+					$email->setEndtime(time() + $emailPeriod);
+				}
+				
+				if ($emailUpdate) {
+					$emailRepository->update($email);
+				} else {
+					$emailRepository->add($email);
+				}
+			}
+		}
 	}
 }

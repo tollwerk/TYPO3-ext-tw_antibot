@@ -41,6 +41,20 @@ class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected $email = '';
 
 	/**
+	 * Associated blocked form submission
+	 *
+	 * @var \Tollwerk\TwAntibot\Domain\Model\Submission
+	 */
+	protected $submission = null;
+
+	/**
+	 * Endtime
+	 *
+	 * @var \int
+	 */
+	protected $endtime;
+
+	/**
 	 * Returns the email
 	 *
 	 * @return string $email
@@ -59,4 +73,40 @@ class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$this->email = $email;
 	}
 
+	/**
+	 * Returns the associated blocked form submission
+	 *
+	 * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission		Associated blocked form submission
+	 */
+	public function getSubmission() {
+		return $this->submission;
+	}
+	
+	/**
+	 * Sets the associated blocked form submission
+	 *
+	 * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission		Associated blocked form submission
+	 */
+	public function setSubmission($submission = null) {
+		$this->submission = $submission;
+	}
+
+	/**
+	 * Returns the endtime
+	 *
+	 * @return string $endtime
+	 */
+	public function getEndtime() {
+		return $this->endtime;
+	}
+	
+	/**
+	 * Sets the endtime
+	 *
+	 * @param string $endtime
+	 * @return void
+	 */
+	public function setEndtime($endtime) {
+		$this->endtime = $endtime;
+	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tollwerk\TwAntibot\ViewHelpers\Access;
+namespace Tollwerk\TwAntibot\Validation\Exception;
 
 /***************************************************************
  *
@@ -28,18 +28,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
  ***************************************************************/
 
 /**
- * Antibot form access viewhelper
- * 
- * @package Tollwerk\TwAntibot\ViewHelpers
+ * Invalid settings exception
+ *
  */
-class GrantedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {
-	/**
-	 * Test if the current user is granted access to the current form
-	 * 
-	 * @param \string $object		Form object name
-	 * @return \boolean				Access
-	 */
-	public function render($object = null) {
-		return $this->_validate($object);
-	}
-}
+class MissingTokenException extends \Tollwerk\TwAntibot\Validation\Exception {}

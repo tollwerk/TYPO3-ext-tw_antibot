@@ -1,6 +1,6 @@
 <?php
 
-namespace Tollwerk\TwAntibot\Validation\Exception;
+namespace Tollwerk\TwAntibot\Domain\Repository;
 
 /***************************************************************
  *
@@ -28,7 +28,18 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
  ***************************************************************/
 
 /**
- * Invalid settings exception
- *
+ * Submission repository
  */
-class MissingAntibotTokenException extends \Tollwerk\TwAntibot\Validation\Exception {}
+class SubmissionRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
+
+	/**
+	 * Disable storage PID treatment
+	 */
+	public function initializeObject() {
+	
+		/** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+		$querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
+		$querySettings->setRespectStoragePage(FALSE);
+		$this->setDefaultQuerySettings($querySettings);
+	}
+}

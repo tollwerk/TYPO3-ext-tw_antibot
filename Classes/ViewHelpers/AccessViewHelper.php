@@ -52,11 +52,7 @@ abstract class AccessViewHelper extends AbstractAntibotViewHelper {
 		
 		// If the form has just been submitted
 		if ($object && array_key_exists($object, $arguments)) {
-			try {
-				\Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments[$object]);
-			} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
-				die(get_class($e));
-			}
+			return \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments[$object]);
 		}
 		
 		return true;		

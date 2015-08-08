@@ -23,6 +23,9 @@
             <trans-unit id="constants.antibot.whitelist" xml:space="preserve">
                 <source>IP whitelist (comma separated)</source>
             </trans-unit>
+            <trans-unit id="constants.antibot.email" xml:space="preserve">
+                <source>Email field name</source>
+            </trans-unit>
             
             <trans-unit id="constants.banning" xml:space="preserve">
                 <source>Internal banning</source>
@@ -30,11 +33,14 @@
             <trans-unit id="constants.banning.ip.enable" xml:space="preserve">
                 <source>Enable internal IP banning</source>
             </trans-unit>
+            <trans-unit id="constants.banning.ip.period" xml:space="preserve">
+                <source>IP address ban period: Ban period in seconds (0 = forever)</source>
+            </trans-unit>
             <trans-unit id="constants.banning.email.enable" xml:space="preserve">
                 <source>Enable internal email banning</source>
             </trans-unit>
-            <trans-unit id="constants.banning.email.fields" xml:space="preserve">
-                <source>Email GET / POST variables (comma separated)</source>
+            <trans-unit id="constants.banning.email.period" xml:space="preserve">
+                <source>Email address ban period: Ban period in seconds (0 = forever)</source>
             </trans-unit>
             
             <trans-unit id="constants.botsmasher" xml:space="preserve">
@@ -48,9 +54,6 @@
             </trans-unit>
             <trans-unit id="constants.botsmasher.apiUrl" xml:space="preserve">
                 <source>BotSmasher API URL</source>
-            </trans-unit>
-            <trans-unit id="constants.botsmasher.field" xml:space="preserve">
-                <source>BotSmasher email field name</source>
             </trans-unit>
             
             <trans-unit id="constants.honeypot" xml:space="preserve">
@@ -97,17 +100,41 @@
             </trans-unit>
             
             <!-- Models -->
+            <trans-unit id="tx_twantibot_domain_model_submission">
+                <source>Blocked form submission</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_submission.ip">
+                <source>IP address</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_submission.reason">
+                <source>Reason</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_submission.settings">
+                <source>Settings</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_submission.data">
+                <source>Submission data</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_submission.fields">
+                <source>Submission fields</source>
+            </trans-unit>
             <trans-unit id="tx_twantibot_domain_model_ip">
-                <source>Ip</source>
+                <source>Blocked IP4 address</source>
             </trans-unit>
             <trans-unit id="tx_twantibot_domain_model_ip.ip">
-                <source>Ip</source>
+                <source>IP address</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_ip.submission">
+                <source>Submission</source>
             </trans-unit>
             <trans-unit id="tx_twantibot_domain_model_email">
-                <source>Email</source>
+                <source>Blocked email address</source>
             </trans-unit>
             <trans-unit id="tx_twantibot_domain_model_email.email">
-                <source>Email</source>
+                <source>Email address</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_email.submission">
+                <source>Submission</source>
             </trans-unit>
         </body>
     </file>

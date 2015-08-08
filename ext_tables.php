@@ -22,12 +22,11 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_ip'] = array(
 		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
-			'starttime' => 'starttime',
 			'endtime' => 'endtime',
 		),
 		'searchFields' => 'ip,',
 		'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Configuration/TCA/Ip.php',
-		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/tx_twantibot_domain_model_ip.gif'
+		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/tx_twantibot_domain_model_ip.png'
 	),
 );
 
@@ -45,11 +44,32 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_email'] = array(
 		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
-			'starttime' => 'starttime',
 			'endtime' => 'endtime',
 		),
 		'searchFields' => 'email,',
 		'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Configuration/TCA/Email.php',
-		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/tx_twantibot_domain_model_email.gif'
+		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/tx_twantibot_domain_model_email.png'
+	),
+);
+
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_submission', 'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_submission.xlf');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_submission');
+$GLOBALS['TCA']['tx_twantibot_domain_model_submission'] = array(
+	'ctrl' => array(
+		'title'	=> 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_submission',
+		'label' => 'reason',
+		'label_alt' => 'ip,crdate',
+		'label_alt_force' => true,
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'dividers2tabs' => TRUE,
+
+		'delete' => 'deleted',
+		'enablecolumns' => array(
+		),
+		'searchFields' => 'reason,ip',
+		'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Configuration/TCA/Submission.php',
+		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/tx_twantibot_domain_model_submission.png'
 	),
 );

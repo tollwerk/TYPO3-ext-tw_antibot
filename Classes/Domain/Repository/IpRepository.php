@@ -1,6 +1,6 @@
 <?php
 
-namespace Tollwerk\TwAntibot\ViewHelpers\Access;
+namespace Tollwerk\TwAntibot\Domain\Repository;
 
 /***************************************************************
  *
@@ -28,18 +28,30 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
  ***************************************************************/
 
 /**
- * Antibot form access viewhelper
- * 
- * @package Tollwerk\TwAntibot\ViewHelpers
+ * IP repository
  */
-class GrantedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {
+class IpRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
+
 	/**
-	 * Test if the current user is granted access to the current form
-	 * 
-	 * @param \string $object		Form object name
-	 * @return \boolean				Access
+	 * Disable storage PID treatment
 	 */
-	public function render($object = null) {
-		return $this->_validate($object);
+	public function initializeObject() {
+
+		/** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+		$querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
+		$querySettings->setRespectStoragePage(FALSE);
+		$this->setDefaultQuerySettings($querySettings);
+	}
+	
+	/**
+	 * Find an even expired IP record
+	 * 
+	 * @param \string $ip								IP address
+	 * @return \Tollwerk\TwAntibot\Domain\Model\Ip		IP address
+	 */
+	public function findExpiredOneByIp($ip) {
+		$query		= $this->createQuery();
+		$query->getQuerySettings()->setIgnoreEnableFields(true);
+		return $query->matching($query->equals('ip', $ip))->execute()->getFirst();
 	}
 }
