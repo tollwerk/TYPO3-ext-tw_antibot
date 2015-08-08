@@ -93,6 +93,12 @@ class Validator {
 	 */
 	protected $_honeypotFields = null;
 	/**
+	 * GET/POST data for this validator
+	 * 
+	 * @var \array
+	 */
+	protected $_data = null;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -179,8 +185,8 @@ class Validator {
 		$this->_whitelist		= \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['whitelist'], true);
 		
 		// If antibot data has been submitted
-		$data                   = \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
-		if ($data) {
+		$this->_data			= \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
+		if ($this->_data) {
 		    $this->_initial     = false;
 		    
 		    // If the current client is whitelisted
@@ -190,11 +196,11 @@ class Validator {
 		    	\ChromePhp::log('IP is whitelisted');
 		    
 		    // Else ff an array has been submitted
-		    } elseif (is_array($data) && !empty($data['hmac'])) {
+		    } elseif (is_array($this->_data) && !empty($this->_data['hmac'])) {
 		    	
-		    	\ChromePhp::log('Decrypting HMAC', $data['hmac']);
+		    	\ChromePhp::log('Decrypting HMAC', $this->_data['hmac']);
 		        
-		    	$this->_valid   = $this->_decryptHmac($data['hmac']);
+		    	$this->_valid   = $this->_decryptHmac($this->_data['hmac']);
 		    	
 		    	\ChromePhp::log('HMAC valid:', $this->_valid);
 		    	\ChromePhp::log('Submission delay:', $this->_delay);
@@ -279,12 +285,18 @@ class Validator {
 	
 	/**
 	 * Validate honeypots
+	 * 
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception\HoneypotException					If any of the registered honeypots was filled in
 	 */
 	protected function _validateHoneypots() {
 		
 		// If honeypot checks are enabled
-		if ($this->_honeypotEnabled()) {
-			
+		if ($this->_honeypotEnabled() && is_array($this->_data)) {
+			foreach ($this->_honeypotFields() as $honeypotField) {
+				if (!empty($this->_data[$honeypotField])) {
+					throw new \Tollwerk\TwAntibot\Validation\Exception\HoneypotException($honeypotField);
+				}
+			}
 		}
 	}
 	
@@ -311,7 +323,7 @@ class Validator {
 			$standaloneView->setPartialRootPaths($viewSettings['partialRootPaths.']);
 			$standaloneView->setLayoutRootPaths($viewSettings['layoutRootPaths.']);
 			$standaloneView->setTemplate('Armor'.DIRECTORY_SEPARATOR.'Honeypot.html');
-			$standaloneView->assign('honeypots', $this->_honeypotFields());
+			$standaloneView->assign('honeypots', array_keys($this->_honeypotFields()));
 	        $armor						.= $standaloneView->render();
 	    }
 	    
@@ -370,7 +382,7 @@ class Validator {
 		if ($this->_honeypotFields === null) {
 			$this->_honeypotFields			= array();
 			foreach (array_diff(\TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['honeypot']['fields'], true), array('hmac')) as $honeypotField) {
-				$this->_honeypotFields[]	= $this->_token.'['.htmlspecialchars($honeypotField).']';
+				$this->_honeypotFields[$this->_token.'['.htmlspecialchars($honeypotField).']']	= $honeypotField;
 			}
 		}
 		return $this->_honeypotFields;
