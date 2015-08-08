@@ -203,26 +203,79 @@ class Validator {
 	/**
 	 * Main validation
 	 * 
-	 * @throws \Tollwerk\TwAntibot\Validation\Exception			If a validation error occurs
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception										If a validation error occurs
 	 */
 	protected function _validate() {
-		$this->_validateAntibotToken();	
+		try {
+			
+			// Validate the presence and integrity of the antibot token
+			$this->_validateAntibotToken();
+			
+			// Validate against the BotSmasher API
+			$this->_validateBotSmasher();
+
+			// Validate honeypots
+			$this->_validateHoneypots();
+
+			// Validity of the antibot token implies validity of the session token, submission time and
+			// submission method order so there's non need for additional checks.
+			
+		} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
+			\ChromePhp::log('Blocked by exception:', get_class($e));
+		}
 	}
 	
 	/**
 	 * Validate the presence of an antibot token
 	 * 
-	 * @throws \Tollwerk\TwAntibot\Validation\Exception\InvalidSettingsException
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception\MissingAntibotTokenException		If no antibot token has been submitted
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception\InvalidTokenException				If the antibot token was invalid
 	 */
 	protected function _validateAntibotToken() {
 		
-		// Get the antibot token
-// 		$this->_hmac			= \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_settings['antibot']);
+		// If no antibot token has been submitted: Error
+		if ($this->_valid === null) {
+			throw new \Tollwerk\TwAntibot\Validation\Exception\MissingAntibotTokenException();
 		
-// 		// If the token is missing
-// 		if (empty($this->_hmac)) {
-// 			throw new \Tollwerk\TwAntibot\Validation\Exception\MissingAntibotTokenException();
-// 		}
+			// Else: If the antibot token was invalid
+		} elseif ($this->_valid === false) {
+			throw new \Tollwerk\TwAntibot\Validation\Exception\InvalidTokenException();
+		}
+	}
+	
+	/**
+	 * Validate against the BotSmasher API
+	 * 
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception\BotSmasherException					If BotSmasher returned a positive result
+	 */
+	protected function _validateBotSmasher() {
+		
+		// If BotSmasher checks are enabled
+		if ($this->_botSmasherEnabled()) {
+			try {
+				$botSmasherEmailField		= trim($this->_settings['botsmasher']['field']);
+				$botSmasherEmail			= (!strlen($botSmasherEmailField) || empty($this->_fields[$botSmasherEmailField])) ? null : trim($this->_fields[$botSmasherEmailField]);
+				$botSmasherClient			= new \Tollwerk\TwAntibot\Utility\BotSmasherClient($this->_settings['botsmasher']);
+				$botSmasherStatus			= $botSmasherClient->check($this->_ip, $botSmasherEmail);
+
+				// If the BotSmasher status isn't valid
+				if ($botSmasherStatus !== \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_VALID) {
+					throw new \Tollwerk\TwAntibot\Validation\Exception\BotSmasherException(null, $botSmasherStatus);
+				}
+				
+			} catch (\Tollwerk\TwAntibot\Utility\BotSmasher\Exception $e) {
+				foreach ($e->getMessages() as $message) {
+					\ChromePhp::log($message->message);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Validate honeypots
+	 */
+	protected function _validateHoneypots() {
+		
 	}
 	
 	/**
@@ -343,7 +396,23 @@ class Validator {
 	    && strlen(trim($this->_settings['order']['method']))
 	    && (TYPO3_MODE == 'FE');
 	}
-	
+
+	/**
+	 * Check if BotSmasher checks are enabled
+	 *
+	 * @return \boolean                BotSmasher checks enabled
+	 */
+	protected function _botSmasherEnabled() {
+	    return !empty($this->_settings['botsmasher'])
+	    && is_array($this->_settings['botsmasher'])
+	    && !empty($this->_settings['botsmasher']['enable'])
+	    && intval($this->_settings['botsmasher']['enable'])
+	    && !empty($this->_settings['botsmasher']['apiKey'])
+	    && strlen(trim($this->_settings['botsmasher']['apiKey']))
+	    && !empty($this->_settings['botsmasher']['apiUrl'])
+	    && strlen(trim($this->_settings['botsmasher']['apiUrl']))
+	    && (TYPO3_MODE == 'FE');
+	}
 
 	/**
 	 * Check if honeypot checks are enabled
@@ -403,8 +472,6 @@ class Validator {
             $maximium            = intval($this->_settings['time']['maximum']);
             $first               = max($minimum, intval($this->_settings['time']['first']));
             
-            \ChromePhp::log($minimum, $maximium, $first);
-            
             // Run through the valid seconds range
             for ($now = time(), $time = $now - $minimum, $initial = $now - $first; $time >= $now - $maximium; --$time) {
                 
@@ -420,10 +487,26 @@ class Validator {
                 \ChromePhp::log('Current HMAC:', $currentHMAC);
                 
                 if ($currentHMAC == $hmac) {
-                	\ChromePhp::log('SUCCESS!');
                     $this->_delay		= $now - $time;
                     $decrypted			= true;
                     break;
+                }
+                
+                // Additional check for late follow-up submissions
+                if ($time <= $initial) {
+                	$hmacParamsTime     = $hmacParams;
+                	$hmacParamsTime[]   = true;
+                	$hmacParamsTime[]	= $time;
+                	$currentHMAC		= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParamsTime));
+                	
+                	\ChromePhp::log('Probing HMAC with parameters', $hmacParamsTime);
+                	\ChromePhp::log('Current HMAC:', $currentHMAC);
+                	
+                	if ($currentHMAC == $hmac) {
+                		$this->_delay	= $now - $time;
+                		$decrypted		= true;
+                		break;
+                	}
                 }
             }
             

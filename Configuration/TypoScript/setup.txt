@@ -26,7 +26,9 @@ plugin.tx_twantibot {
 		whitelist	= {$plugin.tx_twantibot.settings.antibot.whitelist}
 		botsmasher {
 			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}
-			apikey	= {$plugin.tx_twantibot.settings.botsmasher.apikey}
+			apiKey	= {$plugin.tx_twantibot.settings.botsmasher.apiKey}
+			apiUrl	= {$plugin.tx_twantibot.settings.botsmasher.apiUrl}
+			field	= {$plugin.tx_twantibot.settings.botsmasher.field}
 		}
 		banning {
 			ip {

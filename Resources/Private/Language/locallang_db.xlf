@@ -43,8 +43,14 @@
             <trans-unit id="constants.botsmasher.enable" xml:space="preserve">
                 <source>Enable BotSmasher checks (botsmasher.com)</source>
             </trans-unit>
-            <trans-unit id="constants.botsmasher.apikey" xml:space="preserve">
+            <trans-unit id="constants.botsmasher.apiKey" xml:space="preserve">
                 <source>BotSmasher API key</source>
+            </trans-unit>
+            <trans-unit id="constants.botsmasher.apiUrl" xml:space="preserve">
+                <source>BotSmasher API URL</source>
+            </trans-unit>
+            <trans-unit id="constants.botsmasher.field" xml:space="preserve">
+                <source>BotSmasher email field name</source>
             </trans-unit>
             
             <trans-unit id="constants.honeypot" xml:space="preserve">
