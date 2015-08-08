@@ -69,11 +69,24 @@ class Validator {
 	 */
 	protected $_valid = null;
 	/**
+	 * Initial validation
+	 * 
+	 * @var \boolean
+	 */
+	protected $_initial = true;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
 	 */
 	protected static $_instances = array();
+	
+	/**
+	 * Block access
+	 * 
+	 * @var \string
+	 */
+	const BLOCK = 'BLOCK';
 	
 	/**
 	 * Instanciate a validator
@@ -148,12 +161,17 @@ class Validator {
 		// If antibot data has been submitted
 		$data                   = \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
 		if ($data) {
+		    $this->_initial     = false;
 		    
 		    // If an array has been submitted
 		    if (is_array($data) && !empty($data['hmac'])) {
-		        $this->_valid   = $this->_decryptHmac($data['hmac'], $this->_method);
-		        var_export($this->_valid);
-		        var_export($this->_delay);
+		    	
+		    	\ChromePhp::log('Decrypting HMAC', $data['hmac']);
+		        
+		    	$this->_valid   = $this->_decryptHmac($data['hmac']);
+		    	
+		    	\ChromePhp::log('HMAC valid:', $this->_valid);
+		    	\ChromePhp::log('Submission delay:', $this->_delay);
 		        
 		    // Else: Error
 		    } else {
@@ -195,7 +213,7 @@ class Validator {
 	protected function _armor() {
 	    
 	    // Add the HMAC hidden field
-	    $armor                = '<input type="hidden" name="'.htmlspecialchars($this->_token).'[hmac]" value="'.htmlspecialchars($this->_hmac()).'"/>';
+	    $armor                         = '<input type="hidden" name="'.htmlspecialchars($this->_token).'[hmac]" value="'.htmlspecialchars($this->_hmac()).'"/>';
 	    
 	    // Add the honeypot field
 	    if ($this->_honeypotEnabled()) {
@@ -223,24 +241,41 @@ class Validator {
 	 * @return \string                 Submission HMAC
 	 */
 	protected function _hmac() {
-        $hmacParams             = array($this->_token);
+        $hmacParams					= array($this->_token);
 
         // If session token checks are enabled
         if ($this->_sessionTokenEnabled()) {
-           $hmacParams[]        = $GLOBALS['TSFE']->fe_user->id;
+           $hmacParams[]			= $GLOBALS['TSFE']->fe_user->id;
         }
+        
+        // If there is an invalid current HMAC
+        if ($this->_valid === false) {
+        	$hmacParams[]			= self::BLOCK;
+        	
+        // Else
+        } else {
 
-        // If submission time checks are enabled
-        if ($this->_submissionMethodOrderEnabled()) {
-           $hmacParams[]        = $this->_method ?: strtoupper($_SERVER['REQUEST_METHOD']);
+	        // If submission time checks are enabled
+	        if ($this->_submissionMethodOrderEnabled()) {
+	           $hmacParams[]        = $this->_method ?: strtoupper($_SERVER['REQUEST_METHOD']);
+	        }
+	        
+	        // If submission time checks are enabled
+	        if ($this->_submissionTimeEnabled()) {
+	        	if (!$this->_initial) {
+	            	$hmacParams[]	= true;
+	        	}
+	            $hmacParams[]		= time();
+	        }
         }
         
-        // If submission time checks are enabled
-        if ($this->_submissionTimeEnabled()) {
-            $hmacParams[]        = time();
-        }
+        $hmac						= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
         
-        return \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
+        \ChromePhp::log('---------------------------------');
+        \ChromePhp::log('Creating HMAC for parameters', $hmacParams);
+        \ChromePhp::log('HMAC:', $hmac);
+        
+        return $hmac;
 	}
 	
 	/**
@@ -311,15 +346,23 @@ class Validator {
 	 * In fact the HMAC cannot be decrypted, but it can be validated against the expected values. 
 	 * 
 	 * @param \string $hmac            HMAC
-	 * @param \string $previousMethod  Previously used HTTP method
 	 * @return \boolean                HMAC validity
 	 */
-	public function _decryptHmac($hmac, &$previousMethod) {
+	public function _decryptHmac($hmac) {
+	    $decrypted              = false;
+	    $previousMethod         = null;
 	    $hmacParams             = array($this->_token);
 	    
 	    // If session token checks are enabled
         if ($this->_sessionTokenEnabled()) {
            $hmacParams[]        = $GLOBALS['TSFE']->fe_user->id;
+        }
+        
+        // Short-circuit blocked HMAC
+        $hmacBlock				= $hmacParams;
+        $hmacBlock[]			= self::BLOCK;
+        if (\TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacBlock)) == $hmac) {
+        	return false;
         }
 
         // If submission time checks are enabled
@@ -336,24 +379,51 @@ class Validator {
         
         // If submission time checks are enabled
         if ($this->_submissionTimeEnabled()) {
+            $minimum             = intval($this->_settings['time']['minimum']);
+            $maximium            = intval($this->_settings['time']['maximum']);
+            $first               = max($minimum, intval($this->_settings['time']['first']));
             
-            // TODO: In the second, third etc. submission the time checks should be relaxed / skipped ...
+            \ChromePhp::log($minimum, $maximium, $first);
             
             // Run through the valid seconds range
-            for ($now = time(), $time = $now - intval($this->_settings['time']['minimum']); $time >= $now - intval($this->_settings['time']['maximum']); --$time) {
-                $hmacParamsTime     = $hmacParams;
-                $hmacParamsTime[]   = $time;
-                if (\TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParamsTime)) == $hmac) {
-                    $this->_delay   = $now - $time;
-                    return true;
+            for ($now = time(), $time = $now - $minimum, $initial = $now - $first; $time >= $now - $maximium; --$time) {
+                
+            	// Compose the HMAC parameters
+            	$hmacParamsTime     	= $hmacParams;
+                if ($time > $initial) {
+                	$hmacParamsTime[]   = true;
+                }
+                $hmacParamsTime[]		= $time;
+                $currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParamsTime));
+                
+                \ChromePhp::log('Probing HMAC with parameters', $hmacParamsTime);
+                \ChromePhp::log('Current HMAC:', $currentHMAC);
+                
+                if ($currentHMAC == $hmac) {
+                	\ChromePhp::log('SUCCESS!');
+                    $this->_delay		= $now - $time;
+                    $decrypted			= true;
+                    break;
                 }
             }
             
-            return false;
-            
         // Else: Check for HMAC match
         } else {
-            return $hmac == \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
+        	$currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
+            $decrypted              = $hmac == $currentHMAC;
+            
+            \ChromePhp::log('Probing HMAC with parameters', $hmacParams);
+            \ChromePhp::log('Current HMAC:', $currentHMAC);
+            if ($decrypted) {
+            	\ChromePhp::log('SUCCESS!');
+            }
         }
+        
+        // Register the initial HTTP method in case decryption was successfull
+        if ($decrypted && $previousMethod) {
+            $this->_method          = $previousMethod;
+        }
+        
+        return $decrypted;
 	}
 }

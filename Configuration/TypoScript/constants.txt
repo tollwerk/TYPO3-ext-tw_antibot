@@ -67,10 +67,13 @@ plugin.tx_twantibot {
 			# cat=plugin.tx_twantibot/time/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
 			enable = 0
 			
-			# cat=plugin.tx_twantibot/time/b; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.minimum
-			minimum = 10
+			# cat=plugin.tx_twantibot/time/b; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.first
+			first = 10
 			
-			# cat=plugin.tx_twantibot/time/c; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
+			# cat=plugin.tx_twantibot/time/c; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.minimum
+			minimum = 3
+			
+			# cat=plugin.tx_twantibot/time/d; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.time.enable
 			maximum = 2400
 		}
 		

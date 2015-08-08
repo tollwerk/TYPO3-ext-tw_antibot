@@ -3,6 +3,9 @@ if (!defined('TYPO3_MODE')) {
 	die('Access denied.');
 }
 
+// Registering and including classes and namespaces from external libraries (chromephp etc.).
+require_once (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY, 'Resources/Private/Libraries/autoload.php'));
+
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile($_EXTKEY, 'Configuration/TypoScript', 'tollwerk Anti-Spambot tools');
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_ip', 'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_ip.xlf');

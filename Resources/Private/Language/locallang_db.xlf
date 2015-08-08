@@ -67,6 +67,9 @@
             <trans-unit id="constants.time.enable" xml:space="preserve">
                 <source>Enable submission time checks</source>
             </trans-unit>
+            <trans-unit id="constants.time.first" xml:space="preserve">
+                <source>Min. first submission time (seconds)</source>
+            </trans-unit>
             <trans-unit id="constants.time.minimum" xml:space="preserve">
                 <source>Min. submission time (seconds)</source>
             </trans-unit>

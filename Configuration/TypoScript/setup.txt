@@ -45,6 +45,7 @@ plugin.tx_twantibot {
 		}
 		time {
 			enable	= {$plugin.tx_twantibot.settings.time.enable}
+			first	= {$plugin.tx_twantibot.settings.time.first}
 			minimum	= {$plugin.tx_twantibot.settings.time.minimum}
 			maximum	= {$plugin.tx_twantibot.settings.time.maximum}
 		}
