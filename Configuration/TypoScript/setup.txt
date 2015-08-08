@@ -23,6 +23,7 @@ plugin.tx_twantibot {
 	}
 	settings {
 		token		= {$plugin.tx_twantibot.settings.antibot.token}
+		whitelist	= {$plugin.tx_twantibot.settings.antibot.whitelist}
 		botsmasher {
 			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}
 			apikey	= {$plugin.tx_twantibot.settings.botsmasher.apikey}

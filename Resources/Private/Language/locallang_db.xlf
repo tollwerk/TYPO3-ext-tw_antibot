@@ -20,6 +20,9 @@
             <trans-unit id="constants.antibot.token" xml:space="preserve">
                 <source>Antibot form token</source>
             </trans-unit>
+            <trans-unit id="constants.antibot.whitelist" xml:space="preserve">
+                <source>IP whitelist (comma separated)</source>
+            </trans-unit>
             
             <trans-unit id="constants.banning" xml:space="preserve">
                 <source>Internal banning</source>

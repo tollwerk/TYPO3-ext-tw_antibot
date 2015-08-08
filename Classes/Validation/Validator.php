@@ -75,6 +75,18 @@ class Validator {
 	 */
 	protected $_initial = true;
 	/**
+	 * Client IP address
+	 * 
+	 * @var \string
+	 */
+	protected $_ip = null;
+	/**
+	 * IP whitelist
+	 * 
+	 * @var \array
+	 */
+	protected $_whitelist = null;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -157,14 +169,22 @@ class Validator {
 		$this->_settings		= $settings;
 		$this->_fields			= $fields;
 		$this->_token           = self::_token($this->_settings);
+		$this->_ip				= $_SERVER['REMOTE_ADDR'];
+		$this->_whitelist		= \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['whitelist'], true);
 		
 		// If antibot data has been submitted
 		$data                   = \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
 		if ($data) {
 		    $this->_initial     = false;
 		    
-		    // If an array has been submitted
-		    if (is_array($data) && !empty($data['hmac'])) {
+		    // If the current client is whitelisted
+		    if (in_array($this->_ip, $this->_whitelist)) {
+		    	$this->_valid	= true;
+		    	
+		    	\ChromePhp::log('IP is whitelisted');
+		    
+		    // Else ff an array has been submitted
+		    } elseif (is_array($data) && !empty($data['hmac'])) {
 		    	
 		    	\ChromePhp::log('Decrypting HMAC', $data['hmac']);
 		        

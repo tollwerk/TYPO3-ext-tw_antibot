@@ -26,6 +26,9 @@ plugin.tx_twantibot {
 		antibot {
 			# cat=plugin.tx_twantibot//a; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.antibot.token
 			token = antibot
+			
+			# cat=plugin.tx_twantibot//a; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:constants.antibot.whitelist
+			whitelist =
 		}
 		
 		botsmasher {
