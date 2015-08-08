@@ -1,0 +1,15 @@
+{
+  "name": "tollwerk/tw-antibot",
+  "config": {
+    "vendor-dir": "Libraries"
+  },
+  "require": {
+    "ccampbell/chromephp": "~4.1"
+  },
+  "authors": [
+    {
+      "name": "Joschi Kuphal",
+      "email": "joschi@tollwerk.de"
+    }
+  ]
+}
