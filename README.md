@@ -190,4 +190,4 @@ HTML template
 Legal
 =====
 
-Copyright © 2015 tollwerk GmbH / Joschi Kuphal <joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl). *svg-sprite* is licensed under the terms of the [MIT license](LICENSE.txt).
+Copyright © 2015 [tollwerk GmbH](https://tollwerk.de) / Joschi Kuphal (<joschi@kuphal.net> / [@jkphl](https://twitter.com/jkphl)). *svg-sprite* is licensed under the terms of the [MIT license](LICENSE.txt).
