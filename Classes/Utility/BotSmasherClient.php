@@ -189,49 +189,49 @@ class BotSmasherClient {
 			\ChromePhp::log($checks);
 		}
 		
-// 		$ch							= curl_init();
-// 		curl_setopt($ch, CURLOPT_URL, $this->_apiUrl);
-// 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-// 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-// 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-// 		curl_setopt($ch, CURLOPT_POST, TRUE);
-// 		curl_setopt($ch, CURLOPT_FAILONERROR, TRUE);
-// 		curl_setopt($ch, CURLOPT_POSTFIELDS, $checks);
+		$ch							= curl_init();
+		curl_setopt($ch, CURLOPT_URL, $this->_apiUrl);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, TRUE);
+		curl_setopt($ch, CURLOPT_FAILONERROR, TRUE);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $checks);
 		
-// 		// Execute post and get results
-// 		$result						= curl_exec($ch);
-// 		$info						= curl_getinfo($ch);
-// 		curl_close($ch);
+		// Execute post and get results
+		$result						= curl_exec($ch);
+		$info						= curl_getinfo($ch);
+		curl_close($ch);
 			
-		$result = '{"response":{"summary":{"badguys":"false","requesttype":"check","code":"success","description":"Your request was successful - "},"request":{"email":{"submitted":"joschi@tollwerk.de","flaggedbyyou":"false","found":"false","count":"0"}}}}';
-		$info = array(
-			'url' => 'https://www.botsmasher.com/api/',
-			'content_type' => 'text/html; charset=utf-8',
-			'http_code' => 200,
-			'header_size' => 261,
-			'request_size' => 191,
-			'filetime' => -1,
-			'ssl_verify_result' => 10,
-			'redirect_count' => 0,
-			'total_time' => 1.4916369999999999,
-			'namelookup_time' => 0.0038340000000000002,
-			'connect_time' => 0.122919,
-			'pretransfer_time' => 0.37947500000000001,
-			'size_upload' => 414,
-			'size_download' => 236,
-			'speed_download' => 158,
-			'speed_upload' => 277,
-			'download_content_length' => 236,
-			'upload_content_length' => 414,
-			'starttransfer_time' => 0.49339500000000003,
-			'redirect_time' => 0,
-			'redirect_url' => '',
-			'primary_ip' => '65.181.127.31',
-			'certinfo' => array(),
-			'primary_port' => 443,
-			'local_ip' => '192.168.123.18',
-			'local_port' => 34043
-		);
+// 		$result = '{"response":{"summary":{"badguys":"false","requesttype":"check","code":"success","description":"Your request was successful - "},"request":{"email":{"submitted":"joschi@tollwerk.de","flaggedbyyou":"false","found":"false","count":"0"}}}}';
+// 		$info = array(
+// 			'url' => 'https://www.botsmasher.com/api/',
+// 			'content_type' => 'text/html; charset=utf-8',
+// 			'http_code' => 200,
+// 			'header_size' => 261,
+// 			'request_size' => 191,
+// 			'filetime' => -1,
+// 			'ssl_verify_result' => 10,
+// 			'redirect_count' => 0,
+// 			'total_time' => 1.4916369999999999,
+// 			'namelookup_time' => 0.0038340000000000002,
+// 			'connect_time' => 0.122919,
+// 			'pretransfer_time' => 0.37947500000000001,
+// 			'size_upload' => 414,
+// 			'size_download' => 236,
+// 			'speed_download' => 158,
+// 			'speed_upload' => 277,
+// 			'download_content_length' => 236,
+// 			'upload_content_length' => 414,
+// 			'starttransfer_time' => 0.49339500000000003,
+// 			'redirect_time' => 0,
+// 			'redirect_url' => '',
+// 			'primary_ip' => '65.181.127.31',
+// 			'certinfo' => array(),
+// 			'primary_port' => 443,
+// 			'local_ip' => '192.168.123.18',
+// 			'local_port' => 34043
+// 		);
 		
 // 		$result = '{"response":{"summary":{"badguys":"true","requesttype":"check","code":"success","description":"Your request was successful - "},"request":{"email":{"submitted":"test@test.com","flaggedbyyou":"false","found":"true","count":"6","lastseen":"2015-08-08 10:10:04"}}}}';
 // 		$info = array(

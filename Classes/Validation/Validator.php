@@ -358,6 +358,11 @@ class Validator {
 			$submission			= $this->_logSubmission($e);
 			
 			$this->_ban($submission);
+			
+			// Immediately persist all changes
+			$persistenceManager		= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
+			$persistenceManager->persistAll();
+			
 			return false;
 		}
 		

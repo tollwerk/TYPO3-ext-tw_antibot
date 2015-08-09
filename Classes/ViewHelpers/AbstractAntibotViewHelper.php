@@ -34,12 +34,6 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
  */
 abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 	/**
-	 * Basic settings
-	 * 
-	 * @var \array
-	 */
-	protected static $_settings = null;
-	/**
 	 * Extended settings
 	 * 
 	 * @var \array
@@ -59,7 +53,7 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 	 * @api
 	 */
 	public function initialize() {
-		$this->_extendedSettings		= self::_settings();
+		$this->_extendedSettings		= \Tollwerk\TwAntibot\Utility\Utility::settings();
 		$templateVariableContainer		= $this->renderingContext->getTemplateVariableContainer();
 		$settings						= $templateVariableContainer->get('settings');
 		if (is_array($settings) && !empty($settings['antibot']) && is_array($settings['antibot'])) {
@@ -70,22 +64,6 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 	/************************************************************************************************
 	 * PRIVATE METHODS
 	 ***********************************************************************************************/
-	
-	/**
-	 * Initialize and return the base settings
-	 * 
-	 * @return \array				Base settings
-	 */
-	protected static function _settings() {
-		if (self::$_settings === null) {
-			$objectManager				= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
-			$setup						= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')->getTypoScriptSetup();
-			$typoscriptService			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-			self::$_settings			= $typoscriptService->convertTypoScriptArrayToPlainArray($setup['plugin.']['tx_twantibot.']['settings.']);
-		}
-		
-		return self::$_settings;
-	}
 	
 	/**
 	 * Validate the current user
