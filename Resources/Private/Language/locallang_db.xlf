@@ -26,6 +26,9 @@
             <trans-unit id="constants.antibot.email" xml:space="preserve">
                 <source>Email field name</source>
             </trans-unit>
+            <trans-unit id="constants.antibot.logging" xml:space="preserve">
+                <source>Logging</source>
+            </trans-unit>
             
             <trans-unit id="constants.banning" xml:space="preserve">
                 <source>Internal banning</source>

@@ -25,6 +25,7 @@ plugin.tx_twantibot {
 		token		= {$plugin.tx_twantibot.settings.antibot.token}
 		whitelist	= {$plugin.tx_twantibot.settings.antibot.whitelist}
 		email		= {$plugin.tx_twantibot.settings.antibot.email}
+		logging		= {$plugin.tx_twantibot.settings.antibot.logging}
 		
 		botsmasher {
 			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}

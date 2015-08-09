@@ -132,6 +132,18 @@ class Validator {
 	 */
 	protected $_banned = 0;
 	/**
+	 * Logger instance
+	 * 
+	 * @var \TYPO3\CMS\Core\Log\Logger
+	 */
+	protected $_logger = null;
+	/**
+	 * Log mode
+	 * 
+	 * @var \string
+	 */
+	protected $_logging = 'None';
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -157,6 +169,18 @@ class Validator {
 	 * @var \int
 	 */
 	const BANNED_EMAIL = 2;
+	/**
+	 * Log via Logger
+	 * 
+	 * @var \string
+	 */
+	const LOG_LOGGER = 'Logger';
+	/**
+	 * Log via ChromePhp
+	 * 
+	 * @var \string
+	 */
+	const LOG_CHROMEPHP = 'ChromePhp';
 	
 	/**
 	 * Instanciate a validator
@@ -233,13 +257,15 @@ class Validator {
 		$this->_settings		= $settings;
 		$this->_fields			= $fields;
 		$this->_objectManager	= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$this->_logging			= trim($this->_settings['logging']);
+		$this->_logger			= ($this->_logging == self::LOG_LOGGER) ? \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Core\Log\LogManager')->getLogger(__CLASS__) : null;
 		$this->_token           = self::_token($this->_settings);
 		$this->_ip				= $_SERVER['REMOTE_ADDR'];
 		$this->_whitelist		= \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['whitelist'], true);
 		
 		// If the current client is whitelisted: No further steps will be taken ...
 		if (in_array($this->_ip, $this->_whitelist)) {
-			$this->_log('IP is whitelisted');
+			$this->_info(sprintf('Client %s is whitelisted', $this->_ip));
 			$this->_valid	= true;
 			
 		// Else: Prepare validation
@@ -273,7 +299,7 @@ class Validator {
 			    
 			    // If a HMAC has been submitted
 			    if (is_array($this->_data) && !empty($this->_data['hmac'])) {
-			    	$this->_log('Decrypting HMAC', $this->_data['hmac']);
+			    	$this->_info('Decrypting HMAC', $this->_data['hmac']);
 			        
 			    	// Check if a timestamp hint has been sent
 			    	if (!empty($this->_data['ts'])) {
@@ -282,8 +308,8 @@ class Validator {
 			    	
 			    	$this->_valid				= $this->_decryptHmac($this->_data['hmac']);
 			    	
-			    	$this->_log('HMAC valid:', $this->_valid);
-			    	$this->_log('Submission delay:', $this->_delay);
+			    	$this->_info('HMAC valid:', $this->_valid);
+			    	$this->_debug('Submission delay:', $this->_delay);
 			        
 			    // Else: Error
 			    } else {
@@ -306,7 +332,7 @@ class Validator {
 		
 		// Deny access in case the client is banned
 		if ($this->_banned) {
-			$this->_log(sprintf('Client is banned (%s)', $this->_banned));
+			$this->_error(sprintf('Client %s is banned (%s)', $this->_ip, $this->_banned));
 			return false;
 		}
 		
@@ -328,7 +354,7 @@ class Validator {
 		} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
 			$reflect			= new \ReflectionClass($e);
 			
-			$this->_log('Submission blocked by', $reflect->getShortName());
+			$this->_error('Submission blocked by', $reflect->getShortName());
 			$submission			= $this->_logSubmission($e);
 			
 			$this->_ban($submission);
@@ -358,11 +384,11 @@ class Validator {
 				throw new Exception\InvalidTokenException();
 			}
 			
-			$this->_log('Passed antibot token checks ...');
+			$this->_info('Passed antibot token checks ...');
 			
 		// Else: Skip
 		} else {
-			$this->_log('Skipped antibot token checks');
+			$this->_info('Skipped antibot token checks');
 		}
 	}
 	
@@ -389,15 +415,15 @@ class Validator {
 			// If an error occurs: Don't do anything about it
 			} catch (\Tollwerk\TwAntibot\Utility\BotSmasher\Exception $e) {
 // 				foreach ($e->getMessages() as $message) {
-// 					$this->_log($message->message);
+// 					$this->_info($message->message);
 // 				}
 			}
 			
-			$this->_log('Passed BotSmasher checks ...');
+			$this->_info('Passed BotSmasher checks ...');
 			
 		// Else: Skip
 		} else {
-			$this->_log('Skipped BotSmasher checks');
+			$this->_info('Skipped BotSmasher checks');
 		}
 	}
 	
@@ -416,11 +442,11 @@ class Validator {
 				}
 			}
 			
-			$this->_log('Passed honeypot checks ...');
+			$this->_info('Passed honeypot checks ...');
 			
 		// Else: Skip
 		} else {
-			$this->_log('Skipped honeypot checks');
+			$this->_info('Skipped honeypot checks');
 		}
 	}
 	
@@ -510,9 +536,8 @@ class Validator {
         
         $hmac						= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
         
-        $this->_log('---------------------------------');
-        $this->_log('Creating HMAC for parameters', $hmacParams);
-        $this->_log('HMAC:', $hmac);
+        $this->_debug('Creating HMAC for parameters', $hmacParams);
+        $this->_debug('HMAC:', $hmac);
         
         return $hmac;
 	}
@@ -694,7 +719,7 @@ class Validator {
             $initial			= $now - $first;
 
             // If a timestamp hint has been submitted: Probe this first
-            if ($this->_timestamp && (($this->_timestamp + $minimum) <= $now) && (($this->_timestamp + $maximium) >= $now) && $this->_log('Probing timestamp hint first') && (
+            if ($this->_timestamp && (($this->_timestamp + $minimum) <= $now) && (($this->_timestamp + $maximium) >= $now) && $this->_info('Probing timestamp hint first') && (
             	$this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, $this->_timestamp > $initial) ||
             	(($this->_timestamp <= $initial) ? $this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, true) : false))) {
             		
@@ -721,11 +746,8 @@ class Validator {
         	$currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
             $decrypted              = $hmac == $currentHMAC;
             
-            $this->_log('Probing HMAC with parameters', $hmacParams);
-            $this->_log('Current HMAC:', $currentHMAC);
-            if ($decrypted) {
-            	$this->_log('SUCCESS!');
-            }
+            $this->_debug('Probing HMAC with parameters', $hmacParams);
+            $this->_debug('Current HMAC:', $currentHMAC);
         }
         
         // Register the initial HTTP method in case decryption was successfull
@@ -752,8 +774,8 @@ class Validator {
 		$hmacParams[]			= $timestamp;
 		$currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
 		
-		$this->_log('Probing HMAC with parameters', $hmacParams);
-		$this->_log('Current HMAC:', $currentHMAC);
+		$this->_debug('Probing HMAC with parameters', $hmacParams);
+		$this->_debug('Current HMAC:', $currentHMAC);
 		
 		return $currentHMAC == $hmac;
 	}
@@ -889,13 +911,47 @@ class Validator {
 	}
 	
 	/**
-	 * Log a message
+	 * Log an info message
 	 * 
 	 * @param \string $message			Message
 	 * @return \boolean					Always TRUE
 	 */
-	protected function _log($message) {
-		call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
+	protected function _info($message) {
+		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
+			call_user_func_array(array($this->_logger, 'info'), func_get_args());
+		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
+			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
+		}
+		return true;
+	}
+	
+	/**
+	 * Log an error message
+	 * 
+	 * @param \string $message			Message
+	 * @return \boolean					Always TRUE
+	 */
+	protected function _error($message) {
+		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
+			call_user_func_array(array($this->_logger, 'error'), func_get_args());
+		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
+			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
+		}
+		return true;
+	}
+	
+	/**
+	 * Log a debug message
+	 * 
+	 * @param \string $message			Message
+	 * @return \boolean					Always TRUE
+	 */
+	protected function _debug($message) {
+		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
+			call_user_func_array(array($this->_logger, 'debug'), func_get_args());
+		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
+			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
+		}
 		return true;
 	}
 }
