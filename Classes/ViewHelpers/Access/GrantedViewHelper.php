@@ -36,10 +36,10 @@ class GrantedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper
 	/**
 	 * Test if the current user is granted access to the current form
 	 * 
-	 * @param \string $object		Form object name
+	 * @param \string $argument		Form argument name
 	 * @return \boolean				Access
 	 */
-	public function render($object = null) {
-		return $this->_validate($object);
+	public function render($argument) {
+		return $this->_validate($argument);
 	}
 }

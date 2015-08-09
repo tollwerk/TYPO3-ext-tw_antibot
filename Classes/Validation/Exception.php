@@ -31,17 +31,4 @@ namespace Tollwerk\TwAntibot\Validation;
  * A generic antibot exception
  *
  */
-class Exception extends \Exception {
-	/**
-	 * Block access
-	 * 
-	 * @var \int
-	 */
-	const ANTIBOT_BLOCK = 1;
-	/**
-	 * Ban user
-	 * 
-	 * @var \int
-	 */
-	const ANTIBOT_BAN = 2;
-}
+class Exception extends \Exception {}

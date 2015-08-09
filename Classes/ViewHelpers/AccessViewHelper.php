@@ -41,20 +41,15 @@ abstract class AccessViewHelper extends AbstractAntibotViewHelper {
 	/**
 	 * Validate the current user
 	 * 
-	 * @param \string $object		Form object name
+	 * @param \string $argument		Form argument name
 	 * @return \boolean				Successful validation
 	 */
-	protected function _validate($object = null) {
+	protected function _validate($argument) {
 		$templateVariableContainer		= $this->renderingContext->getTemplateVariableContainer();
 		$request						= $this->controllerContext->getRequest();
 		$request						= $request->getOriginalRequest() ?: $request;
 		$arguments						= $request->getArguments();
 		
-		// If the form has just been submitted
-		if ($object && array_key_exists($object, $arguments)) {
-			return \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments[$object]);
-		}
-		
-		return true;		
+		return \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, ($argument && array_key_exists($argument, $arguments)) ? $arguments[$argument] : null);
 	}
 }

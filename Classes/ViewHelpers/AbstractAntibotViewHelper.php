@@ -90,19 +90,19 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 	/**
 	 * Validate the current user
 	 * 
-	 * @param \string $object		Form object name
+	 * @param \string $argument		Form argument name
 	 * @return \boolean				Successful validation
 	 */
-	protected function _validate($object = null) {
+	protected function _validate($argument = null) {
 		$templateVariableContainer		= $this->renderingContext->getTemplateVariableContainer();
 		$request						= $this->controllerContext->getRequest();
 		$request						= $request->getOriginalRequest() ?: $request;
 		$arguments						= $request->getArguments();
 		
 		// If the form has just been submitted
-		if ($object && array_key_exists($object, $arguments)) {
+		if ($argument && array_key_exists($argument, $arguments)) {
 			try {
-				\Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments[$object]);
+				\Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments[$argument]);
 			} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
 				die(get_class($e));
 			}

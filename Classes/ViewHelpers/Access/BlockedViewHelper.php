@@ -34,11 +34,12 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
  */
 class BlockedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {
 	/**
-	 * Test if the current user is blocked access to the current form
-	 * 
-	 * @return \boolean				Blocked
+	 * Test if the current user is denied access to the current form
+	 *
+	 * @param \string $argument		Form argument name
+	 * @return \boolean				Access
 	 */
-	public function render() {
-		return !$this->_validate();
+	public function render($argument) {
+		return !$this->_validate($argument);
 	}
 }

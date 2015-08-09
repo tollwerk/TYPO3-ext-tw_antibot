@@ -37,7 +37,8 @@ class Validator {
 	/**
 	 * Object manager
 	 * 
-	 * @var unknown
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @inject
 	 */
 	protected $_objectManager = null;
 	/**
@@ -77,12 +78,6 @@ class Validator {
 	 */
 	protected $_valid = null;
 	/**
-	 * Initial validation
-	 * 
-	 * @var \boolean
-	 */
-	protected $_initial = true;
-	/**
 	 * Client IP address
 	 * 
 	 * @var \string
@@ -107,6 +102,12 @@ class Validator {
 	 */
 	protected $_data = null;
 	/**
+	 * Antibot token timestamp (used as a hint)
+	 * 
+	 * @var \int
+	 */
+	protected $_timestamp = null;
+	/**
 	 * TypoScript setup
 	 * 
 	 * @var \array
@@ -130,10 +131,10 @@ class Validator {
 	 * Instanciate a validator
 	 *
 	 * @param \array $settings									Settings
-	 * @param \array $fields									Object field values
+	 * @param \array $fields									Optional: Field values to use for validation
 	 * @return \Tollwerk\TwAntibot\Validation\Validator         Validator instance
 	 */
-	public static function &instance(array $settings, array $fields = array()) {
+	public static function &instance(array $settings, array $fields = null) {
         $token                          = self::_token($settings);
         if (!array_key_exists($token, self::$_instances)) {
             self::$_instances[$token]   = new self($settings, $fields);
@@ -146,10 +147,10 @@ class Validator {
 	 * Validate a request
 	 *
 	 * @param \array $settings									Settings
-	 * @param \array $fields									Object field values
+	 * @param \array $fields									Optional: Field values to use for validation
 	 * @return \boolean											Validation success
 	 */
-	public static function validate(array $settings, array $fields = array()) {
+	public static function validate(array $settings, array $fields = null) {
 	    return self::instance($settings, $fields)->_validate();
 	}
 	
@@ -189,9 +190,15 @@ class Validator {
 	 *
 	 * @param \array $settings									Settings
 	 * @param \array $fields									Object field values
-	 
+	 * @throws \Tollwerk\TwAntibot\Validation\Exception			If TYPO3 mode is not FE
 	 */
-	protected function __construct(array $settings, array $fields) {
+	protected function __construct(array $settings, array $fields = null) {
+		
+		// Ensure that we're in FE mode
+		if (TYPO3_MODE != 'FE') {
+			throw new Exception('Antibot validation works for FE only');
+		}
+		
 		$this->_settings		= $settings;
 		$this->_fields			= $fields;
 		$this->_objectManager	= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
@@ -199,31 +206,42 @@ class Validator {
 		$this->_ip				= $_SERVER['REMOTE_ADDR'];
 		$this->_whitelist		= \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->_settings['whitelist'], true);
 		
-		// If antibot data has been submitted
-		$this->_data			= \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
-		if ($this->_data) {
-		    $this->_initial     = false;
-		    
-		    // If the current client is whitelisted
-		    if (in_array($this->_ip, $this->_whitelist)) {
-		    	$this->_valid	= true;
-		    	
-		    	\ChromePhp::log('IP is whitelisted');
-		    
-		    // Else ff an array has been submitted
-		    } elseif (is_array($this->_data) && !empty($this->_data['hmac'])) {
-		    	
-		    	\ChromePhp::log('Decrypting HMAC', $this->_data['hmac']);
-		        
-		    	$this->_valid   = $this->_decryptHmac($this->_data['hmac']);
-		    	
-		    	\ChromePhp::log('HMAC valid:', $this->_valid);
-		    	\ChromePhp::log('Submission delay:', $this->_delay);
-		        
-		    // Else: Error
-		    } else {
-		        throw new Exception\MissingTokenException();
-		    }
+		// If the current client is whitelisted: No further steps will be taken ...
+		if (in_array($this->_ip, $this->_whitelist)) {
+			$this->_log('IP is whitelisted');
+			$this->_valid	= true;
+			
+		// Else: Prepare validation
+		} else {
+		
+			// If antibot data has been submitted
+			$this->_data			= \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
+			if ($this->_data) {
+				$this->_fields		= (array)$this->_fields;
+			    
+			    // If a HMAC has been submitted
+			    if (is_array($this->_data) && !empty($this->_data['hmac'])) {
+			    	$this->_log('Decrypting HMAC', $this->_data['hmac']);
+			        
+			    	// Check if a timestamp hint has been sent
+			    	if (!empty($this->_data['ts'])) {
+			    		$this->_timestamp		= intval($this->_data['ts']);
+			    	}
+			    	
+			    	$this->_valid				= $this->_decryptHmac($this->_data['hmac']);
+			    	
+			    	$this->_log('HMAC valid:', $this->_valid);
+			    	$this->_log('Submission delay:', $this->_delay);
+			        
+			    // Else: Error
+			    } else {
+			        throw new Exception\MissingTokenException();
+			    }
+			    
+			// Else: Reset data
+			} else {
+				$this->_data		= false;
+			}
 		}
 	}
 	
@@ -249,8 +267,9 @@ class Validator {
 
 		// If an exception is thrown: Fail and potentially ban the request
 		} catch (\Tollwerk\TwAntibot\Validation\Exception $e) {
+			$reflect			= new \ReflectionClass($e);
 			
-			\ChromePhp::log('Submission blocked by exception:', get_class($e));
+			$this->_log('Submission blocked by', $reflect->getShortName());
 			$submission			= $this->_logSubmission($e);
 			
 			$this->_ban($submission);
@@ -268,13 +287,23 @@ class Validator {
 	 */
 	protected function _validateAntibotToken() {
 		
-		// If no antibot token has been submitted: Error
-		if ($this->_valid === null) {
-			throw new Exception\MissingTokenException();
+		// Only validate if antibot data has been submitted
+		if ($this->_data) {
 		
-		// Else: If the antibot token was invalid
-		} elseif ($this->_valid === false) {
-			throw new Exception\InvalidTokenException();
+			// If no antibot token has been submitted: Error
+			if ($this->_valid === null) {
+				throw new Exception\MissingTokenException();
+			
+			// Else: If the antibot token was invalid
+			} elseif ($this->_valid === false) {
+				throw new Exception\InvalidTokenException();
+			}
+			
+			$this->_log('Passed antibot token checks ...');
+			
+		// Else: Skip
+		} else {
+			$this->_log('Skipped antibot token checks');
 		}
 	}
 	
@@ -293,7 +322,7 @@ class Validator {
 				$botSmasherClient			= new \Tollwerk\TwAntibot\Utility\BotSmasherClient($this->_settings['botsmasher']);
 				$botSmasherStatus			= $botSmasherClient->check($this->_ip, $botSmasherEmail);
 				
-				\ChromePhp::log($botSmasherStatus);
+				$this->_log($botSmasherStatus);
 
 				// If the BotSmasher status isn't valid
 				if ($botSmasherStatus !== \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_VALID) {
@@ -303,9 +332,15 @@ class Validator {
 			// If an error occurs: Don't do anything about it
 			} catch (\Tollwerk\TwAntibot\Utility\BotSmasher\Exception $e) {
 				foreach ($e->getMessages() as $message) {
-					\ChromePhp::log($message->message);
+					$this->_log($message->message);
 				}
 			}
+			
+			$this->_log('Passed BotSmasher checks ...');
+			
+		// Else: Skip
+		} else {
+			$this->_log('Skipped BotSmasher checks');
 		}
 	}
 	
@@ -316,13 +351,19 @@ class Validator {
 	 */
 	protected function _validateHoneypots() {
 		
-		// If honeypot checks are enabled
+		// If honeypot checks are enabled and data has been submitted
 		if ($this->_honeypotEnabled() && is_array($this->_data)) {
 			foreach ($this->_honeypotFields() as $honeypotField) {
 				if (!empty($this->_data[$honeypotField])) {
 					throw new Exception\HoneypotException($honeypotField);
 				}
 			}
+			
+			$this->_log('Passed honeypot checks ...');
+			
+		// Else: Skip
+		} else {
+			$this->_log('Skipped honeypot checks');
 		}
 	}
 	
@@ -332,9 +373,15 @@ class Validator {
 	 * @return \string                 Armor fields
 	 */
 	protected function _armor() {
+		$now							= null;
 	    
 	    // Add the HMAC hidden field
-	    $armor                         = '<input type="hidden" name="'.htmlspecialchars($this->_token).'[hmac]" value="'.htmlspecialchars($this->_hmac()).'"/>';
+	    $armor							= '<input type="hidden" name="'.htmlspecialchars($this->_token).'[hmac]" value="'.htmlspecialchars($this->_hmac($now)).'"/>';
+	    
+	    // Add the timestamp field
+	    if ($now !== null) {
+	    	$armor						.= '<input type="hidden" name="'.htmlspecialchars($this->_token).'[ts]" value="'.intval($now).'"/>';
+	    }
 	    
 	    // Add the honeypot field
 	    if ($this->_honeypotEnabled()) {
@@ -371,9 +418,10 @@ class Validator {
 	/**
 	 * Create and return the submission HMAC
 	 * 
-	 * @return \string                 Submission HMAC
+	 * @param \int $now					Current timestamp
+	 * @return \string					Submission HMAC
 	 */
-	protected function _hmac() {
+	protected function _hmac(&$now = null) {
         $hmacParams					= array($this->_token);
 
         // If session token checks are enabled
@@ -395,18 +443,19 @@ class Validator {
 	        
 	        // If submission time checks are enabled
 	        if ($this->_submissionTimeEnabled()) {
-	        	if (!$this->_initial) {
+	        	if ($this->_data) {
 	            	$hmacParams[]	= true;
 	        	}
-	            $hmacParams[]		= time();
+	            $hmacParams[]		=
+	            $now				= time();
 	        }
         }
         
         $hmac						= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
         
-        \ChromePhp::log('---------------------------------');
-        \ChromePhp::log('Creating HMAC for parameters', $hmacParams);
-        \ChromePhp::log('HMAC:', $hmac);
+        $this->_log('---------------------------------');
+        $this->_log('Creating HMAC for parameters', $hmacParams);
+        $this->_log('HMAC:', $hmac);
         
         return $hmac;
 	}
@@ -580,46 +629,34 @@ class Validator {
         
         // If submission time checks are enabled
         if ($this->_submissionTimeEnabled()) {
-            $minimum             = intval($this->_settings['time']['minimum']);
-            $maximium            = intval($this->_settings['time']['maximum']);
-            $first               = max($minimum, intval($this->_settings['time']['first']));
+        	
+            $minimum			= intval($this->_settings['time']['minimum']);
+            $maximium			= intval($this->_settings['time']['maximum']);
+            $first				= max($minimum, intval($this->_settings['time']['first']));
+            $now				= time();
+            $initial			= $now - $first;
+
+            // If a timestamp hint has been submitted: Probe this first
+            if ($this->_timestamp && $this->_log('Probing timestamp hint first') && (
+            	$this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, $this->_timestamp > $initial) ||
+            	(($this->_timestamp <= $initial) ? $this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, true) : false))) {
+            		
+            	$this->_delay	= $now - $this->_timestamp;
+            	$decrypted		= true;
+            	
+            // Else (or if decryption failed for some reason: Probe the valid time range
+            } else {
             
-            // Run through the valid seconds range
-            for ($now = time(), $time = $now - $minimum, $initial = $now - $first; $time >= $now - $maximium; --$time) {
-                
-            	// Compose the HMAC parameters
-            	$hmacParamsTime     	= $hmacParams;
-                if ($time > $initial) {
-                	$hmacParamsTime[]   = true;
-                }
-                $hmacParamsTime[]		= $time;
-                $currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParamsTime));
-                
-                \ChromePhp::log('Probing HMAC with parameters', $hmacParamsTime);
-                \ChromePhp::log('Current HMAC:', $currentHMAC);
-                
-                if ($currentHMAC == $hmac) {
-                    $this->_delay		= $now - $time;
-                    $decrypted			= true;
-                    break;
-                }
-                
-                // Additional check for late follow-up submissions
-                if ($time <= $initial) {
-                	$hmacParamsTime     = $hmacParams;
-                	$hmacParamsTime[]   = true;
-                	$hmacParamsTime[]	= $time;
-                	$currentHMAC		= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParamsTime));
-                	
-                	\ChromePhp::log('Probing HMAC with parameters', $hmacParamsTime);
-                	\ChromePhp::log('Current HMAC:', $currentHMAC);
-                	
-                	if ($currentHMAC == $hmac) {
-                		$this->_delay	= $now - $time;
-                		$decrypted		= true;
-                		break;
-                	}
-                }
+	            // Run through the valid seconds range
+	            for ($time = $now - $minimum; $time >= $now - $maximium; --$time) {
+	            	
+	            	// Probe the current timestamp
+	            	if ($this->_probeTimedHMAC($hmac, $hmacParams, $time, $time > $initial) || (($time <= $initial) && $this->_probeTimedHMAC($hmac, $hmacParams, $time, true))) {
+	            		$this->_delay		= $now - $time;
+	            		$decrypted			= true;
+	            		break;
+	            	}
+	            }
             }
             
         // Else: Check for HMAC match
@@ -627,10 +664,10 @@ class Validator {
         	$currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
             $decrypted              = $hmac == $currentHMAC;
             
-            \ChromePhp::log('Probing HMAC with parameters', $hmacParams);
-            \ChromePhp::log('Current HMAC:', $currentHMAC);
+            $this->_log('Probing HMAC with parameters', $hmacParams);
+            $this->_log('Current HMAC:', $currentHMAC);
             if ($decrypted) {
-            	\ChromePhp::log('SUCCESS!');
+            	$this->_log('SUCCESS!');
             }
         }
         
@@ -640,6 +677,28 @@ class Validator {
         }
         
         return $decrypted;
+	}
+	
+	/**
+	 * Probe a set of HMAC parameters with timestamp (for both initial or follow-up requests)
+	 * 
+	 * @param \string $hmac			HMAC
+	 * @param \array $hmacParams	HMAC parameters
+	 * @param \int $timestamp		Timestamp
+	 * @param \boolean $followUp	Follow-up request
+	 * @return \boolean				HMAC matches
+	 */
+	protected function _probeTimedHMAC($hmac, array $hmacParams, $timestamp, $followUp = false) {
+		if ($followUp) {
+			$hmacParams[]		= true;
+		}
+		$hmacParams[]			= $timestamp;
+		$currentHMAC			= \TYPO3\CMS\Core\Utility\GeneralUtility::hmac(serialize($hmacParams));
+		
+		$this->_log('Probing HMAC with parameters', $hmacParams);
+		$this->_log('Current HMAC:', $currentHMAC);
+		
+		return $currentHMAC == $hmac;
 	}
 	
 	/**
@@ -776,5 +835,16 @@ class Validator {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Log a message
+	 * 
+	 * @param \string $message			Message
+	 * @return \boolean					Always TRUE
+	 */
+	protected function _log($message) {
+		call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
+		return true;
 	}
 }
