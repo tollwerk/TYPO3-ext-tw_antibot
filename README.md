@@ -1,9 +1,29 @@
 About
 =====
 
-*Antibot* is a quick proof of concept of how to provide **captcha-less security for forms in TYPO3 projects**. It may be used with **Fluid templates** and / or **[formhandler](http://www.typo3-formhandler.com/) forms**. Apologies for the extension neither being very well tested nor documented at the moment. Feedback and suggestions are highly appreciated!
+*Antibot* (`tw_antibot`) is a quick proof of concept of how to provide **captcha-less security for forms in TYPO3 projects**. It may be used with **Fluid templates** and / or **[formhandler](http://www.typo3-formhandler.com/) forms**. Apologies for the extension neither being very well tested nor documented at the moment. Feedback and suggestions are highly appreciated!
 
 The extension was heavily inspired by [Karl Groves](http://www.karlgroves.com/)' article ["CAPTCHA-less Security"](http://www.karlgroves.com/2012/04/03/captcha-less-security/) from 2012/2013 and supports his [BotSmasher API](https://www.botsmasher.com/) as external blacklist.
+
+
+Installation
+============
+
+Right now the extension is not yet released to the TYPO3 extension directory (TER), but you may install it from GitHub:
+
+```bash
+cd typo3conf/ext
+git clone git@github.com:tollwerk/TYPO3-ext-tw_antibot.git tw_antibot
+``` 
+
+Simply add *Antibot*'s static TypoScript to your main template then and start configuring the desired options.
+
+*Antibot* supports [ChromePhp](https://github.com/ccampbell/chromephp) for logging to your Chrome console. If you want to use it, please pull in ChromePhp via Composer:
+
+```bash
+cd typo3conf/ext/tw_antibot/Resources/Private
+composer install
+``` 
 
 
 Configuration
