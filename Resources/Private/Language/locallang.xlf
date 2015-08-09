@@ -18,6 +18,17 @@
 			<trans-unit id="armor.honeypot">
 				<source>Don't fill in this field if you're not a spammer!</source>
 			</trans-unit>
+			
+			<!-- Garbage collection scheduler task -->
+			<trans-unit id="gc">
+				<source>Antibot garbage collection</source>
+			</trans-unit>
+			<trans-unit id="gc.ip">
+				<source>IP addresses</source>
+			</trans-unit>
+			<trans-unit id="gc.email">
+				<source>Email addresses</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

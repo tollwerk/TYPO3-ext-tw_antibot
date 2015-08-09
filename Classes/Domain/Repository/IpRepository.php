@@ -30,18 +30,7 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * IP repository
  */
-class IpRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
-
-	/**
-	 * Disable storage PID treatment
-	 */
-	public function initializeObject() {
-
-		/** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
-		$querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
-		$querySettings->setRespectStoragePage(FALSE);
-		$this->setDefaultQuerySettings($querySettings);
-	}
+class IpRepository extends ExpirableRepository {
 	
 	/**
 	 * Find an even expired IP record

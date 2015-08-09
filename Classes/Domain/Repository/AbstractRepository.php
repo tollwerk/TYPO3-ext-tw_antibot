@@ -28,19 +28,18 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  ***************************************************************/
 
 /**
- * Email repository
+ * Abstract repository base
  */
-class EmailRepository extends ExpirableRepository {
+abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 
 	/**
-	 * Find an even expired email address record
-	 *
-	 * @param \string $email							Email address
-	 * @return \Tollwerk\TwAntibot\Domain\Model\Email	Email address
+	 * Disable storage PID treatment
 	 */
-	public function findExpiredOneByEmail($email) {
-		$query		= $this->createQuery();
-		$query->getQuerySettings()->setIgnoreEnableFields(true);
-		return $query->matching($query->equals('email', $email))->execute()->getFirst();
+	public function initializeObject() {
+	
+		/** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+		$querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
+		$querySettings->setRespectStoragePage(FALSE);
+		$this->setDefaultQuerySettings($querySettings);
 	}
 }
