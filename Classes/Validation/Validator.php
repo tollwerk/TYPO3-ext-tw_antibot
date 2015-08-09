@@ -42,6 +42,18 @@ class Validator {
 	 */
 	protected $_objectManager = null;
 	/**
+	 * IP repository
+	 * 
+	 * @var \Tollwerk\TwAntibot\Domain\Repository\IpRepository
+	 */
+	protected $_ipRepository = null;
+	/**
+	 * Email repository
+	 * 
+	 * @var \Tollwerk\TwAntibot\Domain\Repository\EmailRepository
+	 */
+	protected $_emailRepository = null;
+	/**
 	 * Settings
 	 * 
 	 * @var \array
@@ -114,6 +126,12 @@ class Validator {
 	 */
 	protected $_setup = null;
 	/**
+	 * Ban reason
+	 * 
+	 * @var \int
+	 */
+	protected $_banned = 0;
+	/**
 	 * Validator instances
 	 * 
 	 * @var \array
@@ -126,6 +144,19 @@ class Validator {
 	 * @var \string
 	 */
 	const BLOCK = 'BLOCK';
+	/**
+	 * IP address is banned
+	 * 
+	 * @var \int
+	 */
+	const BANNED_IP = 1;
+	
+	/**
+	 * Email address is banned
+	 * 
+	 * @var \int
+	 */
+	const BANNED_EMAIL = 2;
 	
 	/**
 	 * Instanciate a validator
@@ -213,11 +244,32 @@ class Validator {
 			
 		// Else: Prepare validation
 		} else {
+			
+			// Check IP ban
+			if ($this->_ipBanningEnabled()) {
+				$this->_ipRepository			= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\IpRepository');
+				if ($this->_ipRepository->findOneByIp($this->_ip) instanceof \Tollwerk\TwAntibot\Domain\Model\Ip) {
+					$this->_banned				= self::BANNED_IP;
+				}
+			}
 		
 			// If antibot data has been submitted
 			$this->_data			= \TYPO3\CMS\Core\Utility\GeneralUtility::_GP($this->_token);
 			if ($this->_data) {
 				$this->_fields		= (array)$this->_fields;
+				
+				// Check email ban
+				if ($this->_emailBanningEnabled()) {
+					$emailField					= trim($this->_settings['email']);
+					$emailAddress				= array_key_exists($emailField, $this->_fields) ? trim($this->_fields[$emailField]) : null;
+					if (strlen($emailAddress)) {
+						$this->_emailRepository	= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\EmailRepository');
+						if ($this->_emailRepository->findOneByEmail($emailAddress) instanceof \Tollwerk\TwAntibot\Domain\Model\Email) {
+							$this->_banned		|= self::BANNED_EMAIL;
+							return;
+						}
+					}
+				}
 			    
 			    // If a HMAC has been submitted
 			    if (is_array($this->_data) && !empty($this->_data['hmac'])) {
@@ -251,6 +303,13 @@ class Validator {
 	 * @return \boolean				Validation success
 	 */
 	protected function _validate() {
+		
+		// Deny access in case the client is banned
+		if ($this->_banned) {
+			$this->_log(sprintf('Client is banned (%s)', $this->_banned));
+			return false;
+		}
+		
 		try {
 			
 			// Validate the presence and integrity of the antibot token
@@ -322,8 +381,6 @@ class Validator {
 				$botSmasherClient			= new \Tollwerk\TwAntibot\Utility\BotSmasherClient($this->_settings['botsmasher']);
 				$botSmasherStatus			= $botSmasherClient->check($this->_ip, $botSmasherEmail);
 				
-				$this->_log($botSmasherStatus);
-
 				// If the BotSmasher status isn't valid
 				if ($botSmasherStatus !== \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_VALID) {
 					throw new Exception\BotSmasherException(null, $botSmasherStatus);
@@ -331,9 +388,9 @@ class Validator {
 				
 			// If an error occurs: Don't do anything about it
 			} catch (\Tollwerk\TwAntibot\Utility\BotSmasher\Exception $e) {
-				foreach ($e->getMessages() as $message) {
-					$this->_log($message->message);
-				}
+// 				foreach ($e->getMessages() as $message) {
+// 					$this->_log($message->message);
+// 				}
 			}
 			
 			$this->_log('Passed BotSmasher checks ...');
@@ -585,8 +642,8 @@ class Validator {
 	    && intval($this->_settings['banning']['email']['enable'])
 	    && !empty($this->_settings['banning']['email']['period'])
 	    && (intval($this->_settings['banning']['email']['period']) >= 0)
-// 	    && !empty($this->_settings['email'])
-// 	    && strlen(trim($this->_settings['email']))
+	    && !empty($this->_settings['email'])
+	    && strlen(trim($this->_settings['email']))
 	    && (TYPO3_MODE == 'FE');
 	}
 	
@@ -637,7 +694,7 @@ class Validator {
             $initial			= $now - $first;
 
             // If a timestamp hint has been submitted: Probe this first
-            if ($this->_timestamp && $this->_log('Probing timestamp hint first') && (
+            if ($this->_timestamp && (($this->_timestamp + $minimum) <= $now) && (($this->_timestamp + $maximium) >= $now) && $this->_log('Probing timestamp hint first') && (
             	$this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, $this->_timestamp > $initial) ||
             	(($this->_timestamp <= $initial) ? $this->_probeTimedHMAC($hmac, $hmacParams, $this->_timestamp, true) : false))) {
             		
@@ -771,10 +828,7 @@ class Validator {
 		
 		// If IP banning is enabled
 		if ($this->_ipBanningEnabled()) {
-			
-			/* @var $ipRepository \Tollwerk\TwAntibot\Domain\Repository\IpRepository */
-			$ipRepository			= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\IpRepository');
-			$ip						= $ipRepository->findExpiredOneByIp($this->_ip);
+			$ip						= $this->_ipRepository->findExpiredOneByIp($this->_ip);
 			
 			if (!($ip instanceof \Tollwerk\TwAntibot\Domain\Model\Ip)) {
 				$ip					= new \Tollwerk\TwAntibot\Domain\Model\Ip();
@@ -794,9 +848,9 @@ class Validator {
 			}
 			
 			if ($ipUpdate) {
-				$ipRepository->update($ip);
+				$this->_ipRepository->update($ip);
 			} else {
-				$ipRepository->add($ip);
+				$this->_ipRepository->add($ip);
 			}
 		}
 		
@@ -805,10 +859,7 @@ class Validator {
 			$emailField					= trim($this->_settings['email']);
 			$emailAddress				= array_key_exists($emailField, $this->_fields) ? trim($this->_fields[$emailField]) : null;
 			if (strlen($emailAddress)) {
-		 
-				/* @var $emailRepository \Tollwerk\TwAntibot\Domain\Repository\EmailRepository */
-				$emailRepository		= $this->_objectManager->get('Tollwerk\\TwAntibot\\Domain\\Repository\\EmailRepository');
-				$email					= $emailRepository->findExpiredOneByEmail($emailAddress);
+				$email					= $this->_emailRepository->findExpiredOneByEmail($emailAddress);
 				
 				if (!($email instanceof \Tollwerk\TwAntibot\Domain\Model\Email)) {
 					$email				= new \Tollwerk\TwAntibot\Domain\Model\Email();
@@ -829,9 +880,9 @@ class Validator {
 				}
 				
 				if ($emailUpdate) {
-					$emailRepository->update($email);
+					$this->_emailRepository->update($email);
 				} else {
-					$emailRepository->add($email);
+					$this->_emailRepository->add($email);
 				}
 			}
 		}

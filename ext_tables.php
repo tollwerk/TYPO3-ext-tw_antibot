@@ -19,7 +19,6 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_ip'] = array(
 		'cruser_id' => 'cruser_id',
 		'dividers2tabs' => TRUE,
 
-		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
 			'endtime' => 'endtime',
@@ -41,7 +40,6 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_email'] = array(
 		'cruser_id' => 'cruser_id',
 		'dividers2tabs' => TRUE,
 
-		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
 			'endtime' => 'endtime',
@@ -65,7 +63,6 @@ $GLOBALS['TCA']['tx_twantibot_domain_model_submission'] = array(
 		'cruser_id' => 'cruser_id',
 		'dividers2tabs' => TRUE,
 
-		'delete' => 'deleted',
 		'enablecolumns' => array(
 		),
 		'searchFields' => 'reason,ip',
