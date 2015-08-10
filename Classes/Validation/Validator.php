@@ -477,7 +477,19 @@ class Validator {
 			
 			/* @var $standaloneView \TYPO3\CMS\Fluid\View\StandaloneView */
 			$standaloneView             = $this->_objectManager->get('TYPO3\\CMS\\Fluid\\View\\StandaloneView');
-			$standaloneView->setTemplateRootPaths($viewSettings['templateRootPaths.']);
+			if (version_compare(TYPO3_version, '7.3.0', '>=')) {
+				$standaloneView->setTemplateRootPaths($viewSettings['templateRootPaths.']);
+			} else {
+				$templateRootPaths		= \TYPO3\CMS\Extbase\Utility\ArrayUtility::sortArrayWithIntegerKeys($viewSettings['templateRootPaths.']);
+				foreach (array_reverse($templateRootPaths) as $templateRootPath) {
+					$templateRootPathAndFileName		= \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName(\TYPO3\CMS\Core\Utility\GeneralUtility::fixWindowsFilePath($templateRootPath.'/Honeypot.html'), FALSE);
+					if (@file_exists($templateRootPathAndFileName) && @is_readable($templateRootPathAndFileName)) {
+						$standaloneView->setTemplatePathAndFilename($templateRootPathAndFileName);
+						break;
+					}
+				}
+			}
+			
 			$standaloneView->setPartialRootPaths($viewSettings['partialRootPaths.']);
 			$standaloneView->setLayoutRootPaths($viewSettings['layoutRootPaths.']);
 			$standaloneView->setTemplate('Armor'.DIRECTORY_SEPARATOR.'Honeypot.html');
