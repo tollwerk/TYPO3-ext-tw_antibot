@@ -479,10 +479,11 @@ class Validator {
 			$standaloneView             = $this->_objectManager->get('TYPO3\\CMS\\Fluid\\View\\StandaloneView');
 			if (version_compare(TYPO3_version, '7.3.0', '>=')) {
 				$standaloneView->setTemplateRootPaths($viewSettings['templateRootPaths.']);
+				$standaloneView->setTemplate('Armor/Honeypot.html');
 			} else {
 				$templateRootPaths		= \TYPO3\CMS\Extbase\Utility\ArrayUtility::sortArrayWithIntegerKeys($viewSettings['templateRootPaths.']);
 				foreach (array_reverse($templateRootPaths) as $templateRootPath) {
-					$templateRootPathAndFileName		= \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName(\TYPO3\CMS\Core\Utility\GeneralUtility::fixWindowsFilePath($templateRootPath.'/Honeypot.html'), FALSE);
+					$templateRootPathAndFileName		= \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName(\TYPO3\CMS\Core\Utility\GeneralUtility::fixWindowsFilePath($templateRootPath.'/Armor/Honeypot.html'), FALSE);
 					if (@file_exists($templateRootPathAndFileName) && @is_readable($templateRootPathAndFileName)) {
 						$standaloneView->setTemplatePathAndFilename($templateRootPathAndFileName);
 						break;
@@ -492,7 +493,6 @@ class Validator {
 			
 			$standaloneView->setPartialRootPaths($viewSettings['partialRootPaths.']);
 			$standaloneView->setLayoutRootPaths($viewSettings['layoutRootPaths.']);
-			$standaloneView->setTemplate('Armor'.DIRECTORY_SEPARATOR.'Honeypot.html');
 			$standaloneView->assign('honeypots', array_keys($this->_honeypotFields()));
 	        $armor						.= $standaloneView->render();
 	    }
@@ -935,7 +935,9 @@ class Validator {
 	 */
 	protected function _info($message) {
 		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-			call_user_func_array(array($this->_logger, 'info'), func_get_args());
+			$data						= func_get_args();
+			$message					= array_shift($data);
+			call_user_func_array(array($this->_logger, 'info'), array($message, $data));
 		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
 			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
 		}
@@ -950,7 +952,9 @@ class Validator {
 	 */
 	protected function _error($message) {
 		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-			call_user_func_array(array($this->_logger, 'error'), func_get_args());
+			$data						= func_get_args();
+			$message					= array_shift($data);
+			call_user_func_array(array($this->_logger, 'error'), array($message, $data));
 		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
 			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
 		}
@@ -965,7 +969,9 @@ class Validator {
 	 */
 	protected function _debug($message) {
 		if ($this->_logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-			call_user_func_array(array($this->_logger, 'debug'), func_get_args());
+			$data						= func_get_args();
+			$message					= array_shift($data);
+			call_user_func_array(array($this->_logger, 'debug'), array($message, $data));
 		} elseif (($this->_logging == self::LOG_CHROMEPHP) && class_exists('ChromePhp')) {
 			call_user_func_array(array('\ChromePhp', 'log'), func_get_args());
 		}
