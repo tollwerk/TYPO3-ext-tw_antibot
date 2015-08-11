@@ -126,7 +126,21 @@ Extbase / Fluid example
 </section>
 ```
 
+Please be aware that it's essential to make the controller actions involved in sending the form **non-cachable**! To achieve this, include them in the non-cachable action list of your plugin registration (`ext_localconf.php`):
 
+```php
+\TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
+	'Tollwerk.' . $_EXTKEY,
+	'Comments',
+	array(
+		'Comment' => 'list, show, new, create',
+	),
+	// non-cacheable actions
+	array(
+		'Comment' => 'new, create',
+	)
+);
+```  
 Formhandler example
 ===================
 
