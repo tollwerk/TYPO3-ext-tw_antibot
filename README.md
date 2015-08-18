@@ -169,7 +169,7 @@ plugin.Tx_Formhandler.settings.predef.contact {
 	markers{
 		antibotArmor		= USER_INT
 		antibotArmor {
-			userFunc		= Tollwerk\TwAntibot\Interceptor\Utility->armor
+			userFunc		= Tollwerk\TwAntibot\Formhandler\Utility->armor
 			
 			# Custom config should be the same as above
 			antibot			< plugin.Tx_Formhandler.settings.predef.contact.initInterceptors.1.config.antibot
