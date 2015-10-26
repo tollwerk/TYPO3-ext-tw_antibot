@@ -28,10 +28,18 @@ namespace Tollwerk\TwAntibot\Formhandler;
  ***************************************************************/
 
 if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler')) {
+
+	// Build the interceptor adapter
+	if (class_exists('\\Typoheads\\Formhandler\\Interceptor\\AbstractInterceptor')) {
+		abstract class InterceptorAdapter extends \Typoheads\Formhandler\Interceptor\AbstractInterceptor {}
+	} else {
+		abstract class InterceptorAdapter extends \Tx_Formhandler_AbstractInterceptor {}
+	}
+
 	/**
 	 * Formhandler init interceptor
 	 */
-	class Interceptor extends \Tx_Formhandler_AbstractInterceptor {
+	class Interceptor extends InterceptorAdapter {
 		/**
 		 * Basic settings
 		 *
@@ -73,7 +81,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 			$submitted				= !empty($this->gp['submitted']) && intval($this->gp['submitted']);
 			$arguments				= $submitted ? array_diff_key($this->gp, array_flip(array('submitted', 'randomID', 'removeFile', 'removeFileField', 'submitField'))) : null;
 			$valid					= \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, $arguments);
-			
+
 			// If the request is not valid
 			if (!$valid) {
 				$this->log(true);

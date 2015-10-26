@@ -236,8 +236,8 @@ class Validator {
 	    if (empty($settings['token'])) {
 	        throw new Exception\InvalidSettingsException();
 	    }
-	    
-        return  $settings['token'].'_'.\TYPO3\CMS\Core\Utility\GeneralUtility::shortMD5($GLOBALS['TSFE']->fe_user->id.serialize($settings));
+
+        return  $settings['token'].'_'.\TYPO3\CMS\Core\Utility\GeneralUtility::shortMD5(session_id().serialize($settings));
 	}
 	
 	/**
@@ -329,18 +329,18 @@ class Validator {
 	 * @return \boolean				Validation success
 	 */
 	protected function _validate() {
-		
+
 		// Deny access in case the client is banned
 		if ($this->_banned) {
 			$this->_error(sprintf('Client %s is banned (%s)', $this->_ip, $this->_banned));
 			return false;
 		}
-		
+
 		try {
 			
 			// Validate the presence and integrity of the antibot token
 			$this->_validateAntibotToken();
-			
+
 			// Validate against the BotSmasher API
 			$this->_validateBotSmasher();
 
@@ -438,7 +438,7 @@ class Validator {
 	 * @throws \Tollwerk\TwAntibot\Validation\Exception\HoneypotException					If any of the registered honeypots was filled in
 	 */
 	protected function _validateHoneypots() {
-		
+
 		// If honeypot checks are enabled and data has been submitted
 		if ($this->_honeypotEnabled() && is_array($this->_data)) {
 			foreach ($this->_honeypotFields() as $honeypotField) {
@@ -526,7 +526,7 @@ class Validator {
 
         // If session token checks are enabled
         if ($this->_sessionTokenEnabled()) {
-           $hmacParams[]			= $GLOBALS['TSFE']->fe_user->id;
+           $hmacParams[]			= session_id();
         }
         
         // If there is an invalid current HMAC
@@ -704,7 +704,7 @@ class Validator {
 	    
 	    // If session token checks are enabled
         if ($this->_sessionTokenEnabled()) {
-           $hmacParams[]        = $GLOBALS['TSFE']->fe_user->id;
+           $hmacParams[]        = session_id();
         }
         
         // Short-circuit blocked HMAC
