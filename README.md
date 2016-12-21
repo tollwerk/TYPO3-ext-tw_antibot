@@ -9,21 +9,16 @@ The extension was heavily inspired by [Karl Groves](http://www.karlgroves.com/)'
 Installation
 ============
 
-Right now the extension is not yet released to the TYPO3 extension directory (TER), but you may install it from GitHub:
+Install the extension into your composer mode TYPO3 installation:
 
 ```bash
-cd typo3conf/ext
-git clone git@github.com:tollwerk/TYPO3-ext-tw_antibot.git tw_antibot
+cd /path/to/site/root
+composer require tollwerk/tw-antibot
 ``` 
 
 Simply add *Antibot*'s static TypoScript to your main template then and start configuring the desired options.
 
-*Antibot* supports [ChromePhp](https://github.com/ccampbell/chromephp) for logging to your Chrome console. If you want to use it, please pull in ChromePhp via Composer:
-
-```bash
-cd typo3conf/ext/tw_antibot/Resources/Private
-composer install
-``` 
+*Antibot* supports [ChromePhp](https://github.com/ccampbell/chromephp) for logging to your Chrome console. During installation, composer will pull in ChromePhp automatically.
 
 
 Configuration

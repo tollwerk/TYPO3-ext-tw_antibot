@@ -5,7 +5,7 @@
   "homepage": "https://github.com/tollwerk/TYPO3-ext-tw_antibot",
   "license": "GPL-2.0+",
   "require": {
-    "typo3/cms": "*",
+    "typo3/cms": "8.x",
     "ccampbell/chromephp": "*"
   },
   "autoload": {

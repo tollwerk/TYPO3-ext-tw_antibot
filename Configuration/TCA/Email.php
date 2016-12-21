@@ -4,7 +4,22 @@ if (!defined('TYPO3_MODE')) {
 }
 
 $GLOBALS['TCA']['tx_twantibot_domain_model_email'] = array(
-    'ctrl' => $GLOBALS['TCA']['tx_twantibot_domain_model_email']['ctrl'],
+    'ctrl' => array(
+        'title' => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_email',
+        'label' => 'email',
+        'tstamp' => 'tstamp',
+        'crdate' => 'crdate',
+        'cruser_id' => 'cruser_id',
+        'dividers2tabs' => true,
+
+        'enablecolumns' => array(
+            'disabled' => 'hidden',
+            'endtime' => 'endtime',
+        ),
+        'searchFields' => 'email,',
+        'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('tw_antibot').'Configuration/TCA/Email.php',
+        'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('tw_antibot').'Resources/Public/Icons/tx_twantibot_domain_model_email.png'
+    ),
     'interface' => array(
         'showRecordFieldList' => 'hidden, email, submission',
     ),

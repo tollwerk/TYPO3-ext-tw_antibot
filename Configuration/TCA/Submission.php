@@ -4,7 +4,21 @@ if (!defined('TYPO3_MODE')) {
 }
 
 $GLOBALS['TCA']['tx_twantibot_domain_model_submission'] = array(
-    'ctrl' => $GLOBALS['TCA']['tx_twantibot_domain_model_submission']['ctrl'],
+    'ctrl' => array(
+        'title' => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_submission',
+        'label' => 'reason',
+        'label_alt' => 'ip,crdate',
+        'label_alt_force' => true,
+        'tstamp' => 'tstamp',
+        'crdate' => 'crdate',
+        'cruser_id' => 'cruser_id',
+        'dividers2tabs' => true,
+
+        'enablecolumns' => array(),
+        'searchFields' => 'reason,ip',
+        'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('tw_antibot').'Configuration/TCA/Submission.php',
+        'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('tw_antibot').'Resources/Public/Icons/tx_twantibot_domain_model_submission.png'
+    ),
     'interface' => array(
         'showRecordFieldList' => 'ip, reason, ip, settings, data, fields',
     ),
