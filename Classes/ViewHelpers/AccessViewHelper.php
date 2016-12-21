@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
  *
  *  Copyright notice
  *
- *  (c) 2015 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -29,27 +29,25 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
 
 /**
  * Abstract antibot form access viewhelper base
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
-abstract class AccessViewHelper extends AbstractAntibotViewHelper {
-	
-	/************************************************************************************************
-	 * PRIVATE METHODS
-	 ***********************************************************************************************/
-	
-	/**
-	 * Validate the current user
-	 * 
-	 * @param \string $argument		Form argument name
-	 * @return \boolean				Successful validation
-	 */
-	protected function _validate($argument) {
-		$templateVariableContainer		= $this->renderingContext->getTemplateVariableContainer();
-		$request						= $this->controllerContext->getRequest();
-		$request						= $request->getOriginalRequest() ?: $request;
-		$arguments						= $request->getArguments();
-		
-		return \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings, ($argument && array_key_exists($argument, $arguments)) ? $arguments[$argument] : null);
-	}
+abstract class AccessViewHelper extends AbstractAntibotViewHelper
+{
+    /**
+     * Validate the current user
+     *
+     * @param \string $argument Form argument name
+     * @return \boolean Successful validation
+     */
+    protected function _validate($argument)
+    {
+        $templateVariableContainer = $this->renderingContext->getTemplateVariableContainer();
+        $request = $this->controllerContext->getRequest();
+        $request = $request->getOriginalRequest() ?: $request;
+        $arguments = $request->getArguments();
+
+        return \Tollwerk\TwAntibot\Validation\Validator::validate($this->_extendedSettings,
+            ($argument && array_key_exists($argument, $arguments)) ? $arguments[$argument] : null);
+    }
 }

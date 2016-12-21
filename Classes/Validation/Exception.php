@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Validation;
  *
  *  Copyright notice
  *
- *  (c) 2015 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *

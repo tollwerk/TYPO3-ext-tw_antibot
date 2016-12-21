@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Command;
  *
  *  Copyright notice
  *
- *  (c) 2015 Joschi <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2016 Joschi <joschi@tollwerk.de>, tollwerk GmbH
  *           Klaus Fiedler <klaus@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved

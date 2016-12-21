@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Formhandler;
  *
  *  Copyright notice
  *
- *  (c) 2015 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -91,6 +91,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 				if ($this->settings['view']) {
 					$viewClass		= $this->utilityFuncs->getSingle($this->settings, 'view');
 				}
+
 				$viewClass			= $this->utilityFuncs->prepareClassName($viewClass);
 				
 				/* @var $view \Tx_Formhandler_View_AntiSpam */

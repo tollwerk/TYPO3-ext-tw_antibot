@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Utility;
  *
  *  Copyright notice
  *
- *  (c) 2015 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -43,7 +43,7 @@ class Utility {
 	 *
 	 * @return \array				Base settings
 	 */
-	public function settings() {
+	public static function settings() {
 		if (self::$_settings === null) {
 			$objectManager				= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
 			$setup						= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')->getTypoScriptSetup();
