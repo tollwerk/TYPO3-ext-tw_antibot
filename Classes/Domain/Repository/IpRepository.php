@@ -30,17 +30,19 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * IP repository
  */
-class IpRepository extends ExpirableRepository {
-	
-	/**
-	 * Find an even expired IP record
-	 * 
-	 * @param \string $ip								IP address
-	 * @return \Tollwerk\TwAntibot\Domain\Model\Ip		IP address
-	 */
-	public function findExpiredOneByIp($ip) {
-		$query		= $this->createQuery();
-		$query->getQuerySettings()->setIgnoreEnableFields(true);
-		return $query->matching($query->equals('ip', $ip))->execute()->getFirst();
-	}
+class IpRepository extends ExpirableRepository
+{
+
+    /**
+     * Find an even expired IP record
+     *
+     * @param \string $ip IP address
+     * @return \Tollwerk\TwAntibot\Domain\Model\Ip        IP address
+     */
+    public function findExpiredOneByIp($ip)
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        return $query->matching($query->equals('ip', $ip))->execute()->getFirst();
+    }
 }

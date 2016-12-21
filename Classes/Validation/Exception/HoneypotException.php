@@ -31,4 +31,6 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
  * Honeypot exception
  *
  */
-class HoneypotException extends \Tollwerk\TwAntibot\Validation\Exception {}
+class HoneypotException extends \Tollwerk\TwAntibot\Validation\Exception
+{
+}

@@ -31,4 +31,6 @@ namespace Tollwerk\TwAntibot\Validation;
  * A generic antibot exception
  *
  */
-class Exception extends \Exception {}
+class Exception extends \Exception
+{
+}

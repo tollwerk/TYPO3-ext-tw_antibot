@@ -1,63 +1,74 @@
 # Antibot extension setup
 plugin.tx_twantibot {
-	view {
-		templateRootPaths {
-			10	= EXT:tw_antibot/Resources/Private/Templates/
-			20	= {$plugin.tx_twantibot.view.templateRootPath}
-		}
-		partialRootPaths {
-			10	= EXT:tw_antibot/Resources/Private/Partials/
-			20	= {$plugin.tx_twantibot.view.partialRootPath}
-		}
-		layoutRootPaths {
-			10	= EXT:tw_antibot/Resources/Private/Layouts/
-			20	= {$plugin.tx_twantibot.view.layoutRootPath}
-		}
-	}
-	persistence {
-		storagePid	= {$plugin.tx_twantibot.persistence.storagePid}
-	}
-	features {
-		# uncomment the following line to enable the new Property Mapper.
-		# rewrittenPropertyMapper	= 1
-	}
-	settings {
-		token		= {$plugin.tx_twantibot.settings.antibot.token}
-		whitelist	= {$plugin.tx_twantibot.settings.antibot.whitelist}
-		email		= {$plugin.tx_twantibot.settings.antibot.email}
-		logging		= {$plugin.tx_twantibot.settings.antibot.logging}
-		
-		botsmasher {
-			enable	= {$plugin.tx_twantibot.settings.botsmasher.enable}
-			apiKey	= {$plugin.tx_twantibot.settings.botsmasher.apiKey}
-			apiUrl	= {$plugin.tx_twantibot.settings.botsmasher.apiUrl}
-		}
-		banning {
-			ip {
-				enable	= {$plugin.tx_twantibot.settings.banning.ip.enable}
-				period	= {$plugin.tx_twantibot.settings.banning.ip.period}
-			}
-			email {
-				enable	= {$plugin.tx_twantibot.settings.banning.email.enable}
-				period	= {$plugin.tx_twantibot.settings.banning.email.period}
-			}
-		}
-		honeypot {
-			enable	= {$plugin.tx_twantibot.settings.honeypot.enable}
-			fields	= {$plugin.tx_twantibot.settings.honeypot.fields}
-		}
-		session {
-			enable	= {$plugin.tx_twantibot.settings.session.enable}
-		}
-		time {
-			enable	= {$plugin.tx_twantibot.settings.time.enable}
-			first	= {$plugin.tx_twantibot.settings.time.first}
-			minimum	= {$plugin.tx_twantibot.settings.time.minimum}
-			maximum	= {$plugin.tx_twantibot.settings.time.maximum}
-		}
-		order {
-			enable	= {$plugin.tx_twantibot.settings.order.enable}
-			method	= {$plugin.tx_twantibot.settings.order.method}
-		}
-	}
+    view {
+        templateRootPaths {
+            10 = EXT:tw_antibot/Resources/Private/Templates/
+            20 = {$plugin.tx_twantibot.view.templateRootPath}
+        }
+
+        partialRootPaths {
+            10 = EXT:tw_antibot/Resources/Private/Partials/
+            20 = {$plugin.tx_twantibot.view.partialRootPath}
+        }
+
+        layoutRootPaths {
+            10 = EXT:tw_antibot/Resources/Private/Layouts/
+            20 = {$plugin.tx_twantibot.view.layoutRootPath}
+        }
+    }
+
+    persistence {
+        storagePid = {$plugin.tx_twantibot.persistence.storagePid}
+    }
+
+    features {
+        # uncomment the following line to enable the new Property Mapper.
+        # rewrittenPropertyMapper    = 1
+    }
+
+    settings {
+        token = {$plugin.tx_twantibot.settings.antibot.token}
+        whitelist = {$plugin.tx_twantibot.settings.antibot.whitelist}
+        email = {$plugin.tx_twantibot.settings.antibot.email}
+        logging = {$plugin.tx_twantibot.settings.antibot.logging}
+
+        botsmasher {
+            enable = {$plugin.tx_twantibot.settings.botsmasher.enable}
+            apiKey = {$plugin.tx_twantibot.settings.botsmasher.apiKey}
+            apiUrl = {$plugin.tx_twantibot.settings.botsmasher.apiUrl}
+        }
+
+        banning {
+            ip {
+                enable = {$plugin.tx_twantibot.settings.banning.ip.enable}
+                period = {$plugin.tx_twantibot.settings.banning.ip.period}
+            }
+
+            email {
+                enable = {$plugin.tx_twantibot.settings.banning.email.enable}
+                period = {$plugin.tx_twantibot.settings.banning.email.period}
+            }
+        }
+
+        honeypot {
+            enable = {$plugin.tx_twantibot.settings.honeypot.enable}
+            fields = {$plugin.tx_twantibot.settings.honeypot.fields}
+        }
+
+        session {
+            enable = {$plugin.tx_twantibot.settings.session.enable}
+        }
+
+        time {
+            enable = {$plugin.tx_twantibot.settings.time.enable}
+            first = {$plugin.tx_twantibot.settings.time.first}
+            minimum = {$plugin.tx_twantibot.settings.time.minimum}
+            maximum = {$plugin.tx_twantibot.settings.time.maximum}
+        }
+
+        order {
+            enable = {$plugin.tx_twantibot.settings.order.enable}
+            method = {$plugin.tx_twantibot.settings.order.method}
+        }
+    }
 }

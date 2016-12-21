@@ -30,16 +30,18 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * Abstract repository base
  */
-abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
+abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+{
 
-	/**
-	 * Disable storage PID treatment
-	 */
-	public function initializeObject() {
-	
-		/** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
-		$querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
-		$querySettings->setRespectStoragePage(FALSE);
-		$this->setDefaultQuerySettings($querySettings);
-	}
+    /**
+     * Disable storage PID treatment
+     */
+    public function initializeObject()
+    {
+
+        /** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+        $querySettings = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Typo3QuerySettings');
+        $querySettings->setRespectStoragePage(false);
+        $this->setDefaultQuerySettings($querySettings);
+    }
 }

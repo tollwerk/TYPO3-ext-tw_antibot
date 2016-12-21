@@ -29,17 +29,19 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
 
 /**
  * Antibot form block viewhelper
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
-class BlockedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {
-	/**
-	 * Test if the current user is denied access to the current form
-	 *
-	 * @param \string $argument		Form argument name
-	 * @return \boolean				Access
-	 */
-	public function render($argument) {
-		return !$this->_validate($argument);
-	}
+class BlockedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper
+{
+    /**
+     * Test if the current user is denied access to the current form
+     *
+     * @param \string $argument Form argument name
+     * @return \boolean                Access
+     */
+    public function render($argument)
+    {
+        return !$this->_validate($argument);
+    }
 }

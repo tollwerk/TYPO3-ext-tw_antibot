@@ -30,17 +30,19 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * Email repository
  */
-class EmailRepository extends ExpirableRepository {
+class EmailRepository extends ExpirableRepository
+{
 
-	/**
-	 * Find an even expired email address record
-	 *
-	 * @param \string $email							Email address
-	 * @return \Tollwerk\TwAntibot\Domain\Model\Email	Email address
-	 */
-	public function findExpiredOneByEmail($email) {
-		$query		= $this->createQuery();
-		$query->getQuerySettings()->setIgnoreEnableFields(true);
-		return $query->matching($query->equals('email', $email))->execute()->getFirst();
-	}
+    /**
+     * Find an even expired email address record
+     *
+     * @param \string $email Email address
+     * @return \Tollwerk\TwAntibot\Domain\Model\Email    Email address
+     */
+    public function findExpiredOneByEmail($email)
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        return $query->matching($query->equals('email', $email))->execute()->getFirst();
+    }
 }

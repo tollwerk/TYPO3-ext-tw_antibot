@@ -31,4 +31,6 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
  * Invalid settings exception
  *
  */
-class InvalidTokenException extends \Tollwerk\TwAntibot\Validation\Exception {}
+class InvalidTokenException extends \Tollwerk\TwAntibot\Validation\Exception
+{
+}

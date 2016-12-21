@@ -31,29 +31,35 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
  * BotSmasher exception
  *
  */
-class BotSmasherException extends \Tollwerk\TwAntibot\Validation\Exception {
-	/**
-	 * Return if an IP address match was found
-	 * 
-	 * @return \boolean				Positive IP address match
-	 */
-	public function ipMatch() {
-		return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_IP);
-	}
-	/**
-	 * Return if an email address match was found
-	 * 
-	 * @return \boolean				Positive email address match
-	 */
-	public function emailMatch() {
-		return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_EMAIL);
-	}
-	/**
-	 * Return if a name match was found
-	 * 
-	 * @return \boolean				Positive name match
-	 */
-	public function nameMatch() {
-		return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_NAME);
-	}
+class BotSmasherException extends \Tollwerk\TwAntibot\Validation\Exception
+{
+    /**
+     * Return if an IP address match was found
+     *
+     * @return \boolean                Positive IP address match
+     */
+    public function ipMatch()
+    {
+        return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_IP);
+    }
+
+    /**
+     * Return if an email address match was found
+     *
+     * @return \boolean                Positive email address match
+     */
+    public function emailMatch()
+    {
+        return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_EMAIL);
+    }
+
+    /**
+     * Return if a name match was found
+     *
+     * @return \boolean                Positive name match
+     */
+    public function nameMatch()
+    {
+        return !!($this->getCode() & \Tollwerk\TwAntibot\Utility\BotSmasherClient::STATUS_NAME);
+    }
 }

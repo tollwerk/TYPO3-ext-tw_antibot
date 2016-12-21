@@ -30,6 +30,7 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * Submission repository
  */
-class SubmissionRepository extends AbstractRepository {
-	
+class SubmissionRepository extends AbstractRepository
+{
+
 }

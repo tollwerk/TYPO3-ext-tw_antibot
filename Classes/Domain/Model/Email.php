@@ -30,83 +30,90 @@ namespace Tollwerk\TwAntibot\Domain\Model;
 /**
  * Blocked email address
  */
-class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
+class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+{
 
-	/**
-	 * Email address
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $email = '';
+    /**
+     * Email address
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $email = '';
 
-	/**
-	 * Associated blocked form submission
-	 *
-	 * @var \Tollwerk\TwAntibot\Domain\Model\Submission
-	 */
-	protected $submission = null;
+    /**
+     * Associated blocked form submission
+     *
+     * @var \Tollwerk\TwAntibot\Domain\Model\Submission
+     */
+    protected $submission = null;
 
-	/**
-	 * Endtime
-	 *
-	 * @var \int
-	 */
-	protected $endtime;
+    /**
+     * Endtime
+     *
+     * @var \int
+     */
+    protected $endtime;
 
-	/**
-	 * Returns the email
-	 *
-	 * @return string $email
-	 */
-	public function getEmail() {
-		return $this->email;
-	}
+    /**
+     * Returns the email
+     *
+     * @return string $email
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
 
-	/**
-	 * Sets the email
-	 *
-	 * @param string $email
-	 * @return void
-	 */
-	public function setEmail($email) {
-		$this->email = $email;
-	}
+    /**
+     * Sets the email
+     *
+     * @param string $email
+     * @return void
+     */
+    public function setEmail($email)
+    {
+        $this->email = $email;
+    }
 
-	/**
-	 * Returns the associated blocked form submission
-	 *
-	 * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission		Associated blocked form submission
-	 */
-	public function getSubmission() {
-		return $this->submission;
-	}
-	
-	/**
-	 * Sets the associated blocked form submission
-	 *
-	 * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission		Associated blocked form submission
-	 */
-	public function setSubmission($submission = null) {
-		$this->submission = $submission;
-	}
+    /**
+     * Returns the associated blocked form submission
+     *
+     * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission        Associated blocked form submission
+     */
+    public function getSubmission()
+    {
+        return $this->submission;
+    }
 
-	/**
-	 * Returns the endtime
-	 *
-	 * @return string $endtime
-	 */
-	public function getEndtime() {
-		return $this->endtime;
-	}
-	
-	/**
-	 * Sets the endtime
-	 *
-	 * @param string $endtime
-	 * @return void
-	 */
-	public function setEndtime($endtime) {
-		$this->endtime = $endtime;
-	}
+    /**
+     * Sets the associated blocked form submission
+     *
+     * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission Associated blocked form submission
+     */
+    public function setSubmission($submission = null)
+    {
+        $this->submission = $submission;
+    }
+
+    /**
+     * Returns the endtime
+     *
+     * @return string $endtime
+     */
+    public function getEndtime()
+    {
+        return $this->endtime;
+    }
+
+    /**
+     * Sets the endtime
+     *
+     * @param string $endtime
+     * @return void
+     */
+    public function setEndtime($endtime)
+    {
+        $this->endtime = $endtime;
+    }
 }

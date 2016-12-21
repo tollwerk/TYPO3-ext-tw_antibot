@@ -29,18 +29,20 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
 
 /**
  * View helper for rendering the armor form fields
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
-class ArmorViewHelper extends AbstractAntibotViewHelper {
+class ArmorViewHelper extends AbstractAntibotViewHelper
+{
     /**
      * Test if the current user is blocked access to the current form
      *
-     * @return \boolean				Blocked
+     * @return \boolean                Blocked
      */
-    public function render() {
+    public function render()
+    {
         $GLOBALS['TSFE']->set_no_cache(); // TODO: Only exclude the current plugin from cache?!
-        
+
         return \Tollwerk\TwAntibot\Validation\Validator::armor($this->_extendedSettings);
     }
 }

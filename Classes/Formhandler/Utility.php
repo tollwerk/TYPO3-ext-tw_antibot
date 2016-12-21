@@ -30,25 +30,27 @@ namespace Tollwerk\TwAntibot\Formhandler;
 /**
  * Formhandler utility
  */
-class Utility {
-	/**
-	 * Create and return the antibot armor HTML
-	 * 
-	 * @param \string $content			Content
-	 * @param \array $config			Configuration
-	 * @return \string					Armor fields 
-	 */
-	public function armor($content, array $config) {
-		try {
-		$settings						= \Tollwerk\TwAntibot\Utility\Utility::settings();
-		if (array_key_exists('antibot.', $config) && is_array($config['antibot.'])) {
-			$typoscriptService			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-			$antibotSettings			= $typoscriptService->convertTypoScriptArrayToPlainArray($config['antibot.']);
-			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($settings, $antibotSettings);
-		}
-		return \Tollwerk\TwAntibot\Validation\Validator::armor($settings);
-		} catch (\Exception $e) {
-			die(get_class($e));
-		}
-	}
+class Utility
+{
+    /**
+     * Create and return the antibot armor HTML
+     *
+     * @param \string $content Content
+     * @param \array $config Configuration
+     * @return \string                    Armor fields
+     */
+    public function armor($content, array $config)
+    {
+        try {
+            $settings = \Tollwerk\TwAntibot\Utility\Utility::settings();
+            if (array_key_exists('antibot.', $config) && is_array($config['antibot.'])) {
+                $typoscriptService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
+                $antibotSettings = $typoscriptService->convertTypoScriptArrayToPlainArray($config['antibot.']);
+                \TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($settings, $antibotSettings);
+            }
+            return \Tollwerk\TwAntibot\Validation\Validator::armor($settings);
+        } catch (\Exception $e) {
+            die(get_class($e));
+        }
+    }
 }

@@ -30,83 +30,90 @@ namespace Tollwerk\TwAntibot\Domain\Model;
 /**
  * Blocked IP address
  */
-class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
+class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+{
 
-	/**
-	 * IP4 address
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $ip = '';
-	
-	/**
-	 * Associated blocked form submission
-	 * 
-	 * @var \Tollwerk\TwAntibot\Domain\Model\Submission
-	 */
-	protected $submission = null;
-	
-	/**
-	 * Endtime
-	 * 
-	 * @var \int
-	 */
-	protected $endtime;
+    /**
+     * IP4 address
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $ip = '';
 
-	/**
-	 * Returns the ip
-	 *
-	 * @return string $ip
-	 */
-	public function getIp() {
-		return $this->ip;
-	}
+    /**
+     * Associated blocked form submission
+     *
+     * @var \Tollwerk\TwAntibot\Domain\Model\Submission
+     */
+    protected $submission = null;
 
-	/**
-	 * Sets the ip
-	 *
-	 * @param string $ip
-	 * @return void
-	 */
-	public function setIp($ip) {
-		$this->ip = $ip;
-	}
-	
-	/**
-	 * Returns the associated blocked form submission
-	 * 
-	 * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission		Associated blocked form submission
-	 */
-	public function getSubmission() {
-		return $this->submission;
-	}
+    /**
+     * Endtime
+     *
+     * @var \int
+     */
+    protected $endtime;
 
-	/**
-	 * Sets the associated blocked form submission
-	 * 
-	 * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission		Associated blocked form submission
-	 */
-	public function setSubmission($submission = null) {
-		$this->submission = $submission;
-	}
+    /**
+     * Returns the ip
+     *
+     * @return string $ip
+     */
+    public function getIp()
+    {
+        return $this->ip;
+    }
 
-	/**
-	 * Returns the endtime
-	 *
-	 * @return string $endtime
-	 */
-	public function getEndtime() {
-		return $this->endtime;
-	}
-	
-	/**
-	 * Sets the endtime
-	 *
-	 * @param string $endtime
-	 * @return void
-	 */
-	public function setEndtime($endtime) {
-		$this->endtime = $endtime;
-	}
+    /**
+     * Sets the ip
+     *
+     * @param string $ip
+     * @return void
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+    }
+
+    /**
+     * Returns the associated blocked form submission
+     *
+     * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission        Associated blocked form submission
+     */
+    public function getSubmission()
+    {
+        return $this->submission;
+    }
+
+    /**
+     * Sets the associated blocked form submission
+     *
+     * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission Associated blocked form submission
+     */
+    public function setSubmission($submission = null)
+    {
+        $this->submission = $submission;
+    }
+
+    /**
+     * Returns the endtime
+     *
+     * @return string $endtime
+     */
+    public function getEndtime()
+    {
+        return $this->endtime;
+    }
+
+    /**
+     * Sets the endtime
+     *
+     * @param string $endtime
+     * @return void
+     */
+    public function setEndtime($endtime)
+    {
+        $this->endtime = $endtime;
+    }
 }

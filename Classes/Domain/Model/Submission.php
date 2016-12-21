@@ -30,140 +30,151 @@ namespace Tollwerk\TwAntibot\Domain\Model;
 /**
  * Blocked form submission
  */
-class Submission extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
+class Submission extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+{
 
-	/**
-	 * Block reason
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $reason = '';
+    /**
+     * Block reason
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $reason = '';
 
-	/**
-	 * IP4 address
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $ip = '';
-	
-	/**
-	 * Settings
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $settings = '';
-	
-	/**
-	 * Submission data
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $data = '';
-	
-	/**
-	 * Submission fields
-	 *
-	 * @var string
-	 * @validate NotEmpty
-	 */
-	protected $fields = '';
+    /**
+     * IP4 address
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $ip = '';
 
-	/**
-	 * Returns the ip
-	 *
-	 * @return string $ip
-	 */
-	public function getIp() {
-		return $this->ip;
-	}
+    /**
+     * Settings
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $settings = '';
 
-	/**
-	 * Sets the ip
-	 *
-	 * @param string $ip
-	 * @return void
-	 */
-	public function setIp($ip) {
-		$this->ip = $ip;
-	}
+    /**
+     * Submission data
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $data = '';
 
-	/**
-	 * Returns the reason
-	 *
-	 * @return string $reason
-	 */
-	public function getReason() {
-		return $this->reason;
-	}
+    /**
+     * Submission fields
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $fields = '';
 
-	/**
-	 * Sets the reason
-	 *
-	 * @param string $reason
-	 * @return void
-	 */
-	public function setReason($reason) {
-		$this->reason = $reason;
-	}
+    /**
+     * Returns the ip
+     *
+     * @return string $ip
+     */
+    public function getIp()
+    {
+        return $this->ip;
+    }
 
-	/**
-	 * Returns the settings
-	 *
-	 * @return string $settings
-	 */
-	public function getSettings() {
-		return $this->settings;
-	}
+    /**
+     * Sets the ip
+     *
+     * @param string $ip
+     * @return void
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+    }
 
-	/**
-	 * Sets the settings
-	 *
-	 * @param string $settings
-	 * @return void
-	 */
-	public function setSettings($settings) {
-		$this->settings = $settings;
-	}
+    /**
+     * Returns the reason
+     *
+     * @return string $reason
+     */
+    public function getReason()
+    {
+        return $this->reason;
+    }
 
-	/**
-	 * Returns the data
-	 *
-	 * @return string $data
-	 */
-	public function getData() {
-		return $this->data;
-	}
+    /**
+     * Sets the reason
+     *
+     * @param string $reason
+     * @return void
+     */
+    public function setReason($reason)
+    {
+        $this->reason = $reason;
+    }
 
-	/**
-	 * Sets the data
-	 *
-	 * @param string $data
-	 * @return void
-	 */
-	public function setData($data) {
-		$this->data = $data;
-	}
+    /**
+     * Returns the settings
+     *
+     * @return string $settings
+     */
+    public function getSettings()
+    {
+        return $this->settings;
+    }
 
-	/**
-	 * Returns the fields
-	 *
-	 * @return string $fields
-	 */
-	public function getFields() {
-		return $this->fields;
-	}
+    /**
+     * Sets the settings
+     *
+     * @param string $settings
+     * @return void
+     */
+    public function setSettings($settings)
+    {
+        $this->settings = $settings;
+    }
 
-	/**
-	 * Sets the fields
-	 *
-	 * @param string $fields
-	 * @return void
-	 */
-	public function setFields($fields) {
-		$this->fields = $fields;
-	}
+    /**
+     * Returns the data
+     *
+     * @return string $data
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * Sets the data
+     *
+     * @param string $data
+     * @return void
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * Returns the fields
+     *
+     * @return string $fields
+     */
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    /**
+     * Sets the fields
+     *
+     * @param string $fields
+     * @return void
+     */
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+    }
 }

@@ -30,39 +30,43 @@ namespace Tollwerk\TwAntibot\Utility\BotSmasher;
 /**
  * BotSmasher exception
  */
-class Exception extends \Exception implements \Countable {
-	/**
-	 * Messages
-	 * 
-	 * @var \array
-	 */
-	protected $_messages = array();
-	
-	/**
-	 * Add a message
-	 * 
-	 * @param \string $message			Message
-	 * @param \number $error			Error code
-	 */
-	public function addMessage($message, $error = 0) {
-		$this->_messages[]	= (object)array('message' => $message, 'error' => $error);
-	}
-	
-	/**
-	 * Return all registered messages
-	 * 
-	 * @return \array					Messages
-	 */
-	public function getMessages() {
-		return $this->_messages;
-	}
-	
-	/**
-	 * Return the number of registered messages
-	 * 
-	 * @return \int						Number of messages
-	 */
-	public function count() {
-		return count($this->_messages);
-	}
+class Exception extends \Exception implements \Countable
+{
+    /**
+     * Messages
+     *
+     * @var \array
+     */
+    protected $_messages = array();
+
+    /**
+     * Add a message
+     *
+     * @param \string $message Message
+     * @param \number $error Error code
+     */
+    public function addMessage($message, $error = 0)
+    {
+        $this->_messages[] = (object)array('message' => $message, 'error' => $error);
+    }
+
+    /**
+     * Return all registered messages
+     *
+     * @return \array                    Messages
+     */
+    public function getMessages()
+    {
+        return $this->_messages;
+    }
+
+    /**
+     * Return the number of registered messages
+     *
+     * @return \int                        Number of messages
+     */
+    public function count()
+    {
+        return count($this->_messages);
+    }
 }

@@ -30,27 +30,30 @@ namespace Tollwerk\TwAntibot\Utility;
 /**
  * Formhandler utility
  */
-class Utility {
-	/**
-	 * Basic settings
-	 *
-	 * @var \array
-	 */
-	protected static $_settings = null;
-	
-	/**
-	 * Initialize and return the antibot base settings
-	 *
-	 * @return \array				Base settings
-	 */
-	public static function settings() {
-		if (self::$_settings === null) {
-			$objectManager				= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
-			$setup						= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')->getTypoScriptSetup();
-			$typoscriptService			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-			self::$_settings			= $typoscriptService->convertTypoScriptArrayToPlainArray($setup['plugin.']['tx_twantibot.']['settings.']);
-		}
-	
-		return self::$_settings;
-	}
+class Utility
+{
+    /**
+     * Basic settings
+     *
+     * @var \array
+     */
+    protected static $_settings = null;
+
+    /**
+     * Initialize and return the antibot base settings
+     *
+     * @return \array                Base settings
+     */
+    public static function settings()
+    {
+        if (self::$_settings === null) {
+            $objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
+            $setup = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager')
+                ->getTypoScriptSetup();
+            $typoscriptService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
+            self::$_settings = $typoscriptService->convertTypoScriptArrayToPlainArray($setup['plugin.']['tx_twantibot.']['settings.']);
+        }
+
+        return self::$_settings;
+    }
 }

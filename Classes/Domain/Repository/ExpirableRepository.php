@@ -30,25 +30,27 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
 /**
  * Abstract expirable repository base
  */
-abstract class ExpirableRepository extends AbstractRepository {
-	
-	/**
-	 * Delete expired records
-	 * 
-	 * @return \int				Deleted records
-	 */
-	public function collectGarbage() {
-		$count		= 0;
-		$query		= $this->createQuery();
-		$query->getQuerySettings()->setIgnoreEnableFields(true);
-		$query->matching($query->logicalAnd(array(
-			$query->greaterThan('endtime', 0),
-			$query->lessThan('endtime', time()),
-		)));
-		foreach ($query->execute() as $record) {
-			$this->remove($record);
-			++$count;
-		}
-		return $count;
-	}
+abstract class ExpirableRepository extends AbstractRepository
+{
+
+    /**
+     * Delete expired records
+     *
+     * @return \int                Deleted records
+     */
+    public function collectGarbage()
+    {
+        $count = 0;
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $query->matching($query->logicalAnd(array(
+            $query->greaterThan('endtime', 0),
+            $query->lessThan('endtime', time()),
+        )));
+        foreach ($query->execute() as $record) {
+            $this->remove($record);
+            ++$count;
+        }
+        return $count;
+    }
 }
