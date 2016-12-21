@@ -487,6 +487,7 @@ class Validator
             /* @var $standaloneView \TYPO3\CMS\Fluid\View\StandaloneView */
             $standaloneView = $this->_objectManager->get('TYPO3\\CMS\\Fluid\\View\\StandaloneView');
             if (version_compare(TYPO3_version, '7.3.0', '>=')) {
+                $standaloneView->getRenderingContext()->setControllerName('Armor');
                 $standaloneView->setTemplateRootPaths($viewSettings['templateRootPaths.']);
                 $standaloneView->setTemplate('Armor/Honeypot.html');
 
