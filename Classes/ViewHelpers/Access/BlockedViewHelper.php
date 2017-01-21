@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -29,7 +29,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers\Access;
 
 /**
  * Antibot form block viewhelper
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
 class BlockedViewHelper extends \Tollwerk\TwAntibot\ViewHelpers\AccessViewHelper {

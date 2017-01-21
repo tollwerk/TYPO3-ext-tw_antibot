@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -47,7 +47,7 @@ class Submission extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @validate NotEmpty
 	 */
 	protected $ip = '';
-	
+
 	/**
 	 * Settings
 	 *
@@ -55,7 +55,7 @@ class Submission extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @validate NotEmpty
 	 */
 	protected $settings = '';
-	
+
 	/**
 	 * Submission data
 	 *
@@ -63,7 +63,7 @@ class Submission extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @validate NotEmpty
 	 */
 	protected $data = '';
-	
+
 	/**
 	 * Submission fields
 	 *

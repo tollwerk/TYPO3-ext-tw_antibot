@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -29,21 +29,21 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
 
 /**
  * Abstract antibot form access viewhelper base
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
 abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 	/**
 	 * Extended settings
-	 * 
+	 *
 	 * @var \array
 	 */
 	protected $_extendedSettings = null;
-	
+
 	/************************************************************************************************
 	 * PUBLIC METHODS
 	 ***********************************************************************************************/
-	
+
 	/**
 	 * Initializes the view helper before invoking the render method.
 	 *
@@ -60,14 +60,14 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($this->_extendedSettings, $settings['antibot']);
 		}
 	}
-	
+
 	/************************************************************************************************
 	 * PRIVATE METHODS
 	 ***********************************************************************************************/
-	
+
 	/**
 	 * Validate the current user
-	 * 
+	 *
 	 * @param \string $argument		Form argument name
 	 * @return \boolean				Successful validation
 	 */
@@ -76,7 +76,7 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 		$request						= $this->controllerContext->getRequest();
 		$request						= $request->getOriginalRequest() ?: $request;
 		$arguments						= $request->getArguments();
-		
+
 		// If the form has just been submitted
 		if ($argument && array_key_exists($argument, $arguments)) {
 			try {
@@ -85,7 +85,7 @@ abstract class AbstractAntibotViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelpe
 				die(get_class($e));
 			}
 		}
-		
-		return true;		
+
+		return true;
 	}
 }

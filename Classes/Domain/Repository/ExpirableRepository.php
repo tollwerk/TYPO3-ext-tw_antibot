@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -31,10 +31,10 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  * Abstract expirable repository base
  */
 abstract class ExpirableRepository extends AbstractRepository {
-	
+
 	/**
 	 * Delete expired records
-	 * 
+	 *
 	 * @return \int				Deleted records
 	 */
 	public function collectGarbage() {

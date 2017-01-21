@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Utility;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -34,7 +34,7 @@ namespace Tollwerk\TwAntibot\Utility;
 class BotSmasherClient {
 	/**
 	 * API key
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $_apiKey = null;
@@ -46,61 +46,61 @@ class BotSmasherClient {
 	protected $_apiUrl = null;
 	/**
 	 * Invalid IP address
-	 * 
+	 *
 	 * @var \int
 	 */
 	const IP_INVALID = 1;
 	/**
 	 * Private IP address
-	 * 
+	 *
 	 * @var \int
 	 */
 	const IP_PRIVATE = 2;
 	/**
 	 * Invalid email address
-	 * 
+	 *
 	 * @var \int
 	 */
 	const EMAIL_INVALID = 3;
 	/**
 	 * Check action
-	 * 
+	 *
 	 * @var \string
 	 */
 	const ACTION_CHECK = 'check';
 	/**
 	 * Invalid response status (check was not successful)
-	 * 
+	 *
 	 * @var \int
 	 */
 	const STATUS_INVALID = 0;
 	/**
 	 * Check was negative (none of the checks were positive)
-	 * 
+	 *
 	 * @var \int
 	 */
 	const STATUS_VALID = 1;
 	/**
 	 * The IP address is known as a spammer / fraudulent
-	 * 
+	 *
 	 * @var \int
 	 */
 	const STATUS_IP = 2;
 	/**
 	 * The email address is known as a spammer / fraudulent
-	 * 
+	 *
 	 * @var \int
 	 */
 	const STATUS_EMAIL = 4;
 	/**
 	 * The name is known as a spammer / fraudulent
-	 * 
+	 *
 	 * @var \int
 	 */
 	const STATUS_NAME = 8;
 	/**
 	 * Check to status mapping
-	 * 
+	 *
 	 * @var \array
 	 */
 	protected static $_checks = array(
@@ -108,29 +108,29 @@ class BotSmasherClient {
 		'email'			=> self::STATUS_EMAIL,
 		'name'			=> self::STATUS_NAME
 	);
-	
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param \array $config										Configuration
 	 * @throws \Tollwerk\TwAntibot\Utility\BotSmasher\Exception		If there is no API key or URL provided
 	 */
 	public function __construct(array $config) {
 		$this->_apiKey			= empty($config['apiKey']) ? '' : trim($config['apiKey']);
 		$this->_apiUrl			= empty($config['apiKey']) ? '' : trim(trim($config['apiUrl']), '/').'/';
-		
+
 		if (!strlen($this->_apiUrl) || !filter_var($this->_apiUrl, FILTER_VALIDATE_URL)) {
 			throw new BotSmasher\Exception(sprintf('Invalid BotSmasher API URL "%s"', $this->_apiUrl));
 		}
-		
+
 		if (!strlen($this->_apiKey) || (strlen($this->_apiKey) != 64)) {
 			throw new BotSmasher\Exception(sprintf('Invalid BotSmasher API key "%s"', $this->_apiKey));
 		}
 	}
 
 	/**
-	 * Check the BotSmasher API 
-	 * 
+	 * Check the BotSmasher API
+	 *
 	 * @param \string $ip				IP address
 	 * @param \string $email			Email address
 	 * @param \string $name				Name
@@ -145,15 +145,15 @@ class BotSmasherClient {
 
 		// IP address check
 		if (strlen(trim($ip))) {
-				
+
 			// If the IP address is invalid
 			if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
 				$errors->addMessage(sprintf('Invalid IP address "%s"', $ip), self::IP_INVALID);
-		
+
 			// Else if the IP address is private
 			} elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
 				$errors->addMessage(sprintf('Private IP address "%s"', $ip), self::IP_PRIVATE);
-		
+
 			// Else
 			} else {
 				$checks['ip']		= trim($ip);
@@ -168,12 +168,12 @@ class BotSmasherClient {
 				$checks['email']	= trim($email);
 			}
 		}
-		
+
 		// Name check
 		if (strlen(trim($name))) {
 			$checks['name']			= trim($name);
 		}
-		
+
 		// If no checks are requested: Error
 		if (!count($checks)) {
 			if (count($errors)) {
@@ -182,13 +182,13 @@ class BotSmasherClient {
 				return $status;
 			}
 		}
-		
+
 		$checks['key']				= $this->_apiKey;
 		$checks['action']			= self::ACTION_CHECK;
 		if ($debug) {
 			\ChromePhp::log($checks);
 		}
-		
+
 		$ch							= curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->_apiUrl);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -197,12 +197,12 @@ class BotSmasherClient {
 		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_FAILONERROR, TRUE);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $checks);
-		
+
 		// Execute post and get results
 		$result						= curl_exec($ch);
 		$info						= curl_getinfo($ch);
 		curl_close($ch);
-			
+
 // 		$result = '{"response":{"summary":{"badguys":"false","requesttype":"check","code":"success","description":"Your request was successful - "},"request":{"email":{"submitted":"joschi@tollwerk.de","flaggedbyyou":"false","found":"false","count":"0"}}}}';
 // 		$info = array(
 // 			'url' => 'https://www.botsmasher.com/api/',
@@ -232,7 +232,7 @@ class BotSmasherClient {
 // 			'local_ip' => '192.168.123.18',
 // 			'local_port' => 34043
 // 		);
-		
+
 // 		$result = '{"response":{"summary":{"badguys":"true","requesttype":"check","code":"success","description":"Your request was successful - "},"request":{"email":{"submitted":"test@test.com","flaggedbyyou":"false","found":"true","count":"6","lastseen":"2015-08-08 10:10:04"}}}}';
 // 		$info = array(
 // 			'url' => 'https://www.botsmasher.com/api/',
@@ -262,30 +262,30 @@ class BotSmasherClient {
 // 			'local_ip' => '192.168.123.18',
 // 			'local_port' => 39524
 // 		);
-		
+
 		if ($debug) {
 			echo curl_error($ch).PHP_EOL;
 			var_export($info);
 			print_r($result);
 		}
-		
+
 		if (($info['http_code'] == 200) && strlen($result)){
 			$response				= @json_decode($result);
 			if (is_object($response) && isset($response->response) && is_object($response->response)) {
 				$response			= $response->response;
-				$summary			= (isset($response->summary) && is_object($response->summary)) ? $response->summary : null; 
-				$request			= (isset($response->request) && is_object($response->request)) ? $response->request : null; 
+				$summary			= (isset($response->summary) && is_object($response->summary)) ? $response->summary : null;
+				$request			= (isset($response->request) && is_object($response->request)) ? $response->request : null;
 				if ($summary && $request) {
 					if (!empty($summary->code) && (strtolower($summary->code) == 'success')) {
 						if (!empty($summary->badguys) && (strtolower($summary->badguys) == 'true')) {
-							
+
 							// Run through all check results
 							foreach ($request as $check => $checkResult) {
 								if (is_object($checkResult) && isset($checkResult->found) && (strtolower($checkResult->found) == 'true')) {
 									$status	|= self::$_checks[$check];
 								}
 							}
-							
+
 						} else {
 							$status	= self::STATUS_VALID;
 						}
@@ -293,7 +293,7 @@ class BotSmasherClient {
 				}
 			}
 		}
-		
+
 		return $status;
 	}
 }

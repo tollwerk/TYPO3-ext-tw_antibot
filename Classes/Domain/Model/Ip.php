@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -39,17 +39,17 @@ class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @validate NotEmpty
 	 */
 	protected $ip = '';
-	
+
 	/**
 	 * Associated blocked form submission
-	 * 
+	 *
 	 * @var \Tollwerk\TwAntibot\Domain\Model\Submission
 	 */
 	protected $submission = null;
-	
+
 	/**
 	 * Endtime
-	 * 
+	 *
 	 * @var \int
 	 */
 	protected $endtime;
@@ -72,10 +72,10 @@ class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function setIp($ip) {
 		$this->ip = $ip;
 	}
-	
+
 	/**
 	 * Returns the associated blocked form submission
-	 * 
+	 *
 	 * @return \Tollwerk\TwAntibot\Domain\Model\Submission $submission $submission		Associated blocked form submission
 	 */
 	public function getSubmission() {
@@ -84,7 +84,7 @@ class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 * Sets the associated blocked form submission
-	 * 
+	 *
 	 * @param \Tollwerk\TwAntibot\Domain\Model\Submission $submission		Associated blocked form submission
 	 */
 	public function setSubmission($submission = null) {
@@ -99,7 +99,7 @@ class Ip extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function getEndtime() {
 		return $this->endtime;
 	}
-	
+
 	/**
 	 * Sets the endtime
 	 *

@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -34,7 +34,7 @@ namespace Tollwerk\TwAntibot\Validation\Exception;
 class BotSmasherException extends \Tollwerk\TwAntibot\Validation\Exception {
 	/**
 	 * Return if an IP address match was found
-	 * 
+	 *
 	 * @return \boolean				Positive IP address match
 	 */
 	public function ipMatch() {
@@ -42,7 +42,7 @@ class BotSmasherException extends \Tollwerk\TwAntibot\Validation\Exception {
 	}
 	/**
 	 * Return if an email address match was found
-	 * 
+	 *
 	 * @return \boolean				Positive email address match
 	 */
 	public function emailMatch() {
@@ -50,7 +50,7 @@ class BotSmasherException extends \Tollwerk\TwAntibot\Validation\Exception {
 	}
 	/**
 	 * Return if a name match was found
-	 * 
+	 *
 	 * @return \boolean				Positive name match
 	 */
 	public function nameMatch() {

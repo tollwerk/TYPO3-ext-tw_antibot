@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -31,5 +31,5 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  * Submission repository
  */
 class SubmissionRepository extends AbstractRepository {
-	
+
 }

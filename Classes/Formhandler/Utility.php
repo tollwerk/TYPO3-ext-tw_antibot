@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Formhandler;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -33,10 +33,10 @@ namespace Tollwerk\TwAntibot\Formhandler;
 class Utility {
 	/**
 	 * Create and return the antibot armor HTML
-	 * 
+	 *
 	 * @param \string $content			Content
 	 * @param \array $config			Configuration
-	 * @return \string					Armor fields 
+	 * @return \string					Armor fields
 	 */
 	public function armor($content, array $config) {
 		try {

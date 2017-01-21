@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Formhandler;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -52,7 +52,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 		 * @var \array
 		 */
 		protected $_extendedSettings = null;
-		
+
 		/**
 		 * Initialize the class variables
 		 *
@@ -63,7 +63,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 		 */
 		public function init($gp, $settings) {
 			parent::init($gp, $settings);
-			
+
 			// Prepare the antibot settings
 			$this->_extendedSettings		= \Tollwerk\TwAntibot\Utility\Utility::settings();
 			if (array_key_exists('antibot.', $this->settings) && is_array($this->settings['antibot.'])) {
@@ -85,7 +85,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 			// If the request is not valid
 			if (!$valid) {
 				$this->log(true);
-				
+
 				//set view
 				$viewClass			= 'Tx_Formhandler_View_AntiSpam';
 				if ($this->settings['view']) {
@@ -93,7 +93,7 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 				}
 
 				$viewClass			= $this->utilityFuncs->prepareClassName($viewClass);
-				
+
 				/* @var $view \Tx_Formhandler_View_AntiSpam */
 				$view				= $this->componentManager->getComponent($viewClass);
 				$view->setLangFiles($this->globals->getLangFiles());
@@ -108,12 +108,12 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 					$this->utilityFuncs->throwException('spam_detected');
 					return 'Lousy spammer!';
 				}
-				
+
 				$content			= $view->render($this->gp, array());
 				$this->globals->getSession()->reset();
 				return $content;
 			}
-			
+
 			return $this->gp;
 		}
 	}
@@ -130,5 +130,5 @@ if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('formhandler'))
 		public function process() {
 			return $this->gp;
 		}
-	}	
+	}
 }

@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Utility;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -37,7 +37,7 @@ class Utility {
 	 * @var \array
 	 */
 	protected static $_settings = null;
-	
+
 	/**
 	 * Initialize and return the antibot base settings
 	 *
@@ -50,7 +50,7 @@ class Utility {
 			$typoscriptService			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
 			self::$_settings			= $typoscriptService->convertTypoScriptArrayToPlainArray($setup['plugin.']['tx_twantibot.']['settings.']);
 		}
-	
+
 		return self::$_settings;
 	}
 }

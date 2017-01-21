@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -29,7 +29,7 @@ namespace Tollwerk\TwAntibot\ViewHelpers;
 
 /**
  * View helper for rendering the armor form fields
- * 
+ *
  * @package Tollwerk\TwAntibot\ViewHelpers
  */
 class ArmorViewHelper extends AbstractAntibotViewHelper {
@@ -40,7 +40,7 @@ class ArmorViewHelper extends AbstractAntibotViewHelper {
      */
     public function render() {
         $GLOBALS['TSFE']->set_no_cache(); // TODO: Only exclude the current plugin from cache?!
-        
+
         return \Tollwerk\TwAntibot\Validation\Validator::armor($this->_extendedSettings);
     }
 }

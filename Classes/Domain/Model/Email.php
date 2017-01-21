@@ -6,7 +6,7 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  *
  *  Copyright notice
  *
- *  (c) 2016 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
+ *  (c) 2017 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  *  All rights reserved
  *
@@ -81,7 +81,7 @@ class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function getSubmission() {
 		return $this->submission;
 	}
-	
+
 	/**
 	 * Sets the associated blocked form submission
 	 *
@@ -99,7 +99,7 @@ class Email extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function getEndtime() {
 		return $this->endtime;
 	}
-	
+
 	/**
 	 * Sets the endtime
 	 *
