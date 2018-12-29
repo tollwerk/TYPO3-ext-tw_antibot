@@ -1,144 +1,41 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2015-08-06T21:07:24Z" product-name="tw_antibot">
-        <header/>
-        <body>
-            <!-- Constants -->
-            <trans-unit id="constants.file.templateRootPath" xml:space="preserve">
-                <source>Path to template root (FE)</source>
-            </trans-unit>
-            <trans-unit id="constants.file.partialRootPath" xml:space="preserve">
-                <source>Path to template partials (FE)</source>
-            </trans-unit>
-            <trans-unit id="constants.file.layoutRootPath" xml:space="preserve">
-                <source>Path to template layouts (FE)</source>
-            </trans-unit>
-            <trans-unit id="constants.pid.storagePid" xml:space="preserve">
-                <source>Default storage page (ID)</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.antibot.token" xml:space="preserve">
-                <source>Antibot form token</source>
-            </trans-unit>
-            <trans-unit id="constants.antibot.whitelist" xml:space="preserve">
-                <source>IP whitelist (comma separated)</source>
-            </trans-unit>
-            <trans-unit id="constants.antibot.email" xml:space="preserve">
-                <source>Email field name</source>
-            </trans-unit>
-            <trans-unit id="constants.antibot.logging" xml:space="preserve">
-                <source>Logging</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.banning" xml:space="preserve">
-                <source>Internal banning</source>
-            </trans-unit>
-            <trans-unit id="constants.banning.ip.enable" xml:space="preserve">
-                <source>Enable internal IP banning</source>
-            </trans-unit>
-            <trans-unit id="constants.banning.ip.period" xml:space="preserve">
-                <source>IP address ban period: Ban period in seconds (0 = forever)</source>
-            </trans-unit>
-            <trans-unit id="constants.banning.email.enable" xml:space="preserve">
-                <source>Enable internal email banning</source>
-            </trans-unit>
-            <trans-unit id="constants.banning.email.period" xml:space="preserve">
-                <source>Email address ban period: Ban period in seconds (0 = forever)</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.botsmasher" xml:space="preserve">
-                <source>External banning</source>
-            </trans-unit>
-            <trans-unit id="constants.botsmasher.enable" xml:space="preserve">
-                <source>Enable BotSmasher checks (botsmasher.com)</source>
-            </trans-unit>
-            <trans-unit id="constants.botsmasher.apiKey" xml:space="preserve">
-                <source>BotSmasher API key</source>
-            </trans-unit>
-            <trans-unit id="constants.botsmasher.apiUrl" xml:space="preserve">
-                <source>BotSmasher API URL</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.honeypot" xml:space="preserve">
-                <source>Honeypot</source>
-            </trans-unit>
-            <trans-unit id="constants.honeypot.enable" xml:space="preserve">
-                <source>Enable honeypot checks</source>
-            </trans-unit>
-            <trans-unit id="constants.honeypot.fields" xml:space="preserve">
-                <source>Honeypot form fields (comma separated)</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.session" xml:space="preserve">
-                <source>Session token</source>
-            </trans-unit>
-            <trans-unit id="constants.session.enable" xml:space="preserve">
-                <source>Enable session token checks</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.time" xml:space="preserve">
-                <source>Submission time</source>
-            </trans-unit>
-            <trans-unit id="constants.time.enable" xml:space="preserve">
-                <source>Enable submission time checks</source>
-            </trans-unit>
-            <trans-unit id="constants.time.first" xml:space="preserve">
-                <source>Min. first submission time (seconds)</source>
-            </trans-unit>
-            <trans-unit id="constants.time.minimum" xml:space="preserve">
-                <source>Min. submission time (seconds)</source>
-            </trans-unit>
-            <trans-unit id="constants.time.maximum" xml:space="preserve">
-                <source>Max. submission time (seconds)</source>
-            </trans-unit>
-            
-            <trans-unit id="constants.order" xml:space="preserve">
-                <source>Submission method order</source>
-            </trans-unit>
-            <trans-unit id="constants.order.enable" xml:space="preserve">
-                <source>Enable submission method order checks</source>
-            </trans-unit>
-            <trans-unit id="constants.order.method" xml:space="preserve">
-                <source>Submission method order</source>
-            </trans-unit>
-            
-            <!-- Models -->
-            <trans-unit id="tx_twantibot_domain_model_submission">
-                <source>Blocked form submission</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_submission.ip">
-                <source>IP address</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_submission.reason">
-                <source>Reason</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_submission.settings">
-                <source>Settings</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_submission.data">
-                <source>Submission data</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_submission.fields">
-                <source>Submission fields</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_ip">
-                <source>Blocked IP4 address</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_ip.ip">
-                <source>IP address</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_ip.submission">
-                <source>Submission</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_email">
-                <source>Blocked email address</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_email.email">
-                <source>Email address</source>
-            </trans-unit>
-            <trans-unit id="tx_twantibot_domain_model_email.submission">
-                <source>Submission</source>
-            </trans-unit>
-        </body>
-    </file>
+	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
+		<header/>
+		<body>
+			<trans-unit id="tx_twantibot_domain_model_blacklist">
+				<source>Blacklist</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_blacklist.property">
+				<source>Property</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_blacklist.value">
+				<source>Value</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_blacklist.data">
+				<source>Data</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_blacklist.error">
+				<source>Error</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_whitelist">
+				<source>Whitelist</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_whitelist.property">
+				<source>Property</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_whitelist.value">
+				<source>Value</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_whitelist.note">
+				<source>Note</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_list.property.ip">
+				<source>IP Address</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_list.property.email">
+				<source>Email Address</source>
+			</trans-unit>
+		</body>
+	</file>
 </xliff>

@@ -1,32 +1,29 @@
 {
-  "name": "tollwerk/tw-antibot",
-  "type": "typo3-cms-extension",
-  "description": "Death to Spambots! — CAPTCHA-less security for TYPO3 forms",
-  "homepage": "https://github.com/tollwerk/TYPO3-ext-tw_antibot",
-  "license": "GPL-2.0+",
-  "require": {
-    "typo3/cms": "8.x",
-    "ccampbell/chromephp": "*"
-  },
-  "autoload": {
-    "psr-4": {
-      "Tollwerk\\TwAntibot\\": "Classes/"
+    "name": "tollwerk/tw-antibot",
+    "type": "typo3-cms-extension",
+    "description": "Validators and tools for protecting forms against spambots",
+    "authors": [
+        {
+            "name": "Joschi Kuphal",
+            "role": "Developer"
+        }
+    ],
+    "version": "1.0.0",
+    "require": {
+        "typo3/cms-core": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tollwerk\\TwAntibot\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tollwerk\\TwAntibot\\Tests\\": "Tests"
+        }
+    },
+    "replace": {
+        "tw_antibot": "self.version",
+        "typo3-ter/tw-antibot": "self.version"
     }
-  },
-  "replace": {
-    "tw_antibot": "self.version",
-    "typo3-ter/tw_antibot": "self.version"
-  },
-  "authors": [
-    {
-      "name": "Joschi Kuphal",
-      "email": "joschi@tollwerk.de"
-    }
-  ],
-  "extra": {
-    "typo3/cms": {
-      "cms-package-dir": "{$vendor-dir}/typo3/cms",
-      "web-dir": ".Build/Web"
-    }
-  }
 }

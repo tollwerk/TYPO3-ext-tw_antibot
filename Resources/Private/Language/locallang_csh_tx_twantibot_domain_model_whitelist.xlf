@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
+		<header/>
+		<body>
+			<trans-unit id="property.description">
+				<source>Property</source>
+			</trans-unit>
+			<trans-unit id="value.description">
+				<source>value</source>
+			</trans-unit>
+			<trans-unit id="note.description">
+				<source>note</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

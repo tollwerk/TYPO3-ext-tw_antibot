@@ -1,16 +1,20 @@
 <?php
 
-if (!defined('TYPO3_MODE')) {
-	die('Access denied.');
-}
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile($_EXTKEY, 'Configuration/TypoScript', 'tollwerk Anti-Spambot tools');
+defined('TYPO3_MODE') || die('Access denied.');
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_ip', 'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_ip.xlf');
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_ip');
+call_user_func(
+    function() {
+        ExtensionManagementUtility::addStaticFile('tw_antibot', 'Configuration/TypoScript',
+            'tollwerk Antibot');
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_email', 'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_email.xlf');
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_email');
+        ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_blacklist',
+            'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_blacklist.xlf');
+        ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_blacklist');
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_submission', 'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_submission.xlf');
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_submission');
+        ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_whitelist',
+            'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_whitelist.xlf');
+        ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_whitelist');
+    }
+);
