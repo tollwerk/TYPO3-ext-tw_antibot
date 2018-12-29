@@ -1,13 +1,15 @@
 <?php
 return [
     'ctrl'      => [
-        'title'        => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_whitelist',
-        'label'        => 'property',
-        'tstamp'       => 'tstamp',
-        'crdate'       => 'crdate',
-        'cruser_id'    => 'cruser_id',
-        'searchFields' => 'value,note',
-        'iconfile'     => 'EXT:tw_antibot/Resources/Public/Icons/whitelist.png'
+        'title'           => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_whitelist',
+        'label'           => 'value',
+        'label_alt'       => 'note',
+        'label_alt_force' => true,
+        'tstamp'          => 'tstamp',
+        'crdate'          => 'crdate',
+        'cruser_id'       => 'cruser_id',
+        'searchFields'    => 'value,note',
+        'iconfile'        => 'EXT:tw_antibot/Resources/Public/Icons/whitelist.png'
     ],
     'interface' => [
         'showRecordFieldList' => 'property, value, note',
@@ -15,7 +17,7 @@ return [
     'types'     => [
         '1' => ['showitem' => '--palette--;;propertyvalue, note'],
     ],
-    'palettes'     => [
+    'palettes'  => [
         'propertyvalue' => ['showitem' => 'property, value', 'canNotCollapse' => true],
     ],
     'columns'   => [
@@ -55,7 +57,7 @@ return [
             'config'  => [
                 'type' => 'text',
                 'cols' => 40,
-                'rows' => 15,
+                'rows' => 4,
                 'eval' => 'trim'
             ]
         ],

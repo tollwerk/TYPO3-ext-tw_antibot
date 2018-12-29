@@ -1,0 +1,28 @@
+# customsubcategory=common=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:common
+# customsubcategory=file=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:file
+# customsubcategory=media=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:media
+# customsubcategory=ids=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:ids
+
+plugin.tx_antibot {
+    view {
+        # cat=plugin.tx_tollwerk/file/a; type=string; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:file.templateRootPath
+        templateRootPath = EXT:tw_tollwerk/Resources/Private/Templates/
+        # cat=plugin.tx_tollwerk/file/b; type=string; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:file.partialRootPath
+        partialRootPath = EXT:tw_tollwerk/Resources/Private/Partials/
+        # cat=plugin.tx_tollwerk/file/c; type=string; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:file.layoutRootPath
+        layoutRootPath = EXT:tw_tollwerk/Resources/Private/Layouts/
+    }
+
+    settings {
+        ids {
+            # cat=plugin.tx_tollwerk/ids/a; type=int+; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:ids.home
+            home = 1
+
+            # cat=plugin.tx_tollwerk/ids/c; type=string; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:ids.search
+            search =
+        }
+
+        # cat=plugin.tx_tollwerk/media/a; type=string; label=LLL:EXT:tw_tollwerk/Resources/Private/Language/locallang_db.xlf:media.billboard.preset
+        billboard.preset =
+    }
+}

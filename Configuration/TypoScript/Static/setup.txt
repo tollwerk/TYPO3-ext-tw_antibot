@@ -1,0 +1,15 @@
+plugin.tx_form {
+    settings {
+        yamlConfigurations {
+            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
+        }
+    }
+}
+
+module.tx_form {
+    settings {
+        yamlConfigurations {
+            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
+        }
+    }
+}

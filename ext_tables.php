@@ -6,7 +6,7 @@ defined('TYPO3_MODE') || die('Access denied.');
 
 call_user_func(
     function() {
-        ExtensionManagementUtility::addStaticFile('tw_antibot', 'Configuration/TypoScript',
+        ExtensionManagementUtility::addStaticFile('tw_antibot', 'Configuration/TypoScript/Static',
             'tollwerk Antibot');
 
         ExtensionManagementUtility::addLLrefForTCAdescr('tx_twantibot_domain_model_blacklist',

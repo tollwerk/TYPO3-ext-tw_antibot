@@ -13,7 +13,11 @@ return [
         'showRecordFieldList' => 'hidden, property, value, data, error',
     ],
     'types'     => [
-        '1' => ['showitem' => 'property, value, data, error'],
+        '1' => ['showitem' => '\'--palette--;;propertyvalue, --palette--;;dataerror'],
+    ],
+    'palettes'  => [
+        'propertyvalue' => ['showitem' => 'property, value', 'canNotCollapse' => true],
+        'dataerror' => ['showitem' => 'data, error', 'canNotCollapse' => true],
     ],
     'columns'   => [
         'property' => [
@@ -62,10 +66,9 @@ return [
             'config'  => [
                 'type' => 'text',
                 'cols' => 40,
-                'rows' => 15,
+                'rows' => 4,
                 'eval' => 'trim'
             ]
         ],
-
     ],
 ];

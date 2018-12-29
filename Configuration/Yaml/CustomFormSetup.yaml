@@ -1,0 +1,19 @@
+TYPO3:
+  CMS:
+    Form:
+      prototypes:
+        standard:
+          validatorsDefinition:
+            Antibot:
+              implementationClassName: 'Tollwerk\TwAntibot\Validation\AntibotValidator'
+          formElementsDefinition:
+            Form:
+              renderingOptions:
+                partialRootPaths:
+                  777: 'EXT:tw_antibot/Resources/Private/Partials'
+            Antibot:
+              __inheritances:
+                10: 'TYPO3.CMS.Form.mixins.formElementMixins.FormElementMixin'
+              implementationClassName: 'Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot'
+              renderingOptions:
+                _isCompositeFormElement: true
