@@ -11,7 +11,8 @@
   "version": "1.0.0",
   "require": {
     "php": ">=7.2",
-    "typo3/cms-core": ">=9.4"
+    "typo3/cms-core": ">=9.4",
+    "jkphl/antibot": "@dev"
   },
   "autoload": {
     "psr-4": {
