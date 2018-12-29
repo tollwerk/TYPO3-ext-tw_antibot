@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'tollwerk Antibot',
-    'description' => 'Validators and tools for protecting forms against spambots',
+    'description' => 'Death to Spambots! — CAPTCHA-less spam security for TYPO3 forms',
     'category' => 'plugin',
     'author' => 'Joschi Kuphal',
     'author_email' => 'joschi@tollwerk.de',
