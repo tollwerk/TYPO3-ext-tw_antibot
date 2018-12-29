@@ -1,29 +1,43 @@
 {
-    "name": "tollwerk/tw-antibot",
-    "type": "typo3-cms-extension",
-    "description": "Validators and tools for protecting forms against spambots",
-    "authors": [
-        {
-            "name": "Joschi Kuphal",
-            "role": "Developer"
-        }
-    ],
-    "version": "1.0.0",
-    "require": {
-        "typo3/cms-core": "^9.5"
-    },
-    "autoload": {
-        "psr-4": {
-            "Tollwerk\\TwAntibot\\": "Classes"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tollwerk\\TwAntibot\\Tests\\": "Tests"
-        }
-    },
-    "replace": {
-        "tw_antibot": "self.version",
-        "typo3-ter/tw-antibot": "self.version"
+  "name": "tollwerk/tw-antibot",
+  "type": "typo3-cms-extension",
+  "description": "Validators and tools for protecting forms against spambots",
+  "authors": [
+    {
+      "name": "Joschi Kuphal",
+      "role": "Developer"
     }
+  ],
+  "version": "1.0.0",
+  "require": {
+    "php": ">=7.2",
+    "typo3/cms-core": "^9.4",
+    "typo3/cms-form": "^9.4",
+    "jkphl/antibot": "@dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "Tollwerk\\TwAntibot\\": "Classes"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tollwerk\\TwAntibot\\Tests\\": "Tests"
+    }
+  },
+  "replace": {
+    "tw_antibot": "self.version",
+    "typo3-ter/tw-antibot": "self.version"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.typo3.org/"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:jkphl/antibot.git",
+      "reference": "master"
+    }
+  ]
 }
