@@ -135,20 +135,6 @@ class AntibotCommandController extends CommandController {
 	 */
 	protected $_log = null;
 	
-	/**
-	 * Language suffices
-	 * 
-	 * @var \array
-	 */
-	protected static $_languageSuffices = null;
-	
-	/**
-	 * Import mapping
-	 * 
-	 * @var \string
-	 */
-	const IMPORT_MAPPING = 'EXT:tw_facsimile/Resources/Private/Mapping/Import.php';
-		
 	/************************************************************************************************
 	 * PUBLIC METHODS
 	 ***********************************************************************************************/
