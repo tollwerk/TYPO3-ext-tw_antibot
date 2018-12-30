@@ -47,6 +47,7 @@ use Tollwerk\TwAntibot\Lookup\WhitelistLookupProxy;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 
 /**
@@ -91,7 +92,7 @@ class Antibot implements SingletonInterface
      *
      * @return AntibotCore Antibot instance
      */
-    public function getAntibot($prefix, array $configuration)
+    public function getAntibot($prefix, array $configuration): AntibotCore
     {
         $sessionPrefixHash = md5($this->session.':'.$prefix.':'.serialize($configuration));
         if (!array_key_exists($sessionPrefixHash, $this->antibot)) {
@@ -104,17 +105,21 @@ class Antibot implements SingletonInterface
     }
 
     /**
-     * After Building Finished Hook
+     * Finalize form setup
      *
      * @param RenderableInterface $renderable
      *
-     * @return void
+     * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException
+     * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
      */
-    public function afterBuildingFinished(RenderableInterface $renderable)
+    public function afterBuildingFinished(RenderableInterface $renderable): void
     {
         // If this is an Antibot element
         if ($renderable instanceof \Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot) {
-            $renderable->armor();
+            $request = $GLOBALS['TYPO3_REQUEST'];
+            $renderable->validate($request);
+            $renderable->armor($request);
         }
     }
 
@@ -126,10 +131,12 @@ class Antibot implements SingletonInterface
      */
     protected function addValidators(AntibotCore $antibot, array $config): void
     {
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+
         // Register whitelist validators
         foreach ($config['whitelist'] as $whitelist) {
             if ($whitelist == AbstractList::PROPERTY_IP) {
-                $lookupProxy = new WhitelistLookupProxy($whitelist);
+                $lookupProxy = $objectManager->get(WhitelistLookupProxy::class, $whitelist);
                 $antibot->addValidator(new IpWhitelistValidator($lookupProxy));
             }
         }
@@ -138,7 +145,8 @@ class Antibot implements SingletonInterface
         foreach ($config['blacklist'] as $blacklist) {
             switch ($blacklist) {
                 case AbstractList::PROPERTY_IP:
-                    $antibot->addValidator(new IpBlacklistValidator(new BlacklistLookupProxy($blacklist)));
+                    $lookupProxy = $objectManager->get(BlacklistLookupProxy::class, $blacklist);
+                    $antibot->addValidator(new IpBlacklistValidator($lookupProxy));
                     break;
                 case AbstractList::PROPERTY_EMAIL:
 //                    $lookupProxy = new BlacklistLookupProxy($blacklist);

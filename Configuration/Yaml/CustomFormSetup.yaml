@@ -9,6 +9,8 @@ TYPO3:
           formElementsDefinition:
             Form:
               renderingOptions:
+                templateRootPaths:
+                  777: 'EXT:tw_antibot/Resources/Private/Templates'
                 partialRootPaths:
                   777: 'EXT:tw_antibot/Resources/Private/Partials'
             Antibot:

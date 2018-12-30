@@ -5,7 +5,7 @@
  *
  * @category   Jkphl
  * @package    Jkphl\Antibot
- * @subpackage ${NAMESPACE}
+ * @subpackage Tollwerk\TwAntibot\Domain\Repository
  * @author     Joschi Kuphal <joschi@kuphal.net> / @jkphl
  * @copyright  Copyright © 2018 Joschi Kuphal <joschi@kuphal.net> / @jkphl
  * @license    http://opensource.org/licenses/MIT The MIT License (MIT)
@@ -34,58 +34,26 @@
  *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ***********************************************************************************/
 
-namespace Tollwerk\TwAntibot\Lookup;
+namespace Tollwerk\TwAntibot\Domain\Repository;
 
-use Jkphl\Antibot\Ports\Contract\LookupStrategyInterface;
-use TYPO3\CMS\Core\Resource\AbstractRepository;
+use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
- * Abstract Lookup Proxy
+ * Abstract List Repository
  *
- * @package    Tollwerk\TwAntibot
- * @subpackage Tollwerk\TwAntibot\Utility
+ * @package    Jkphl\Antibot
+ * @subpackage Tollwerk\TwAntibot\Domain\Repository
  */
-class AbstractLookupProxy implements LookupStrategyInterface
+abstract class AbstractListRepository extends Repository
 {
     /**
-     * Repository
-     *
-     * @var AbstractRepository
+     * Repository initialization
      */
-    protected $repository;
-    /**
-     * Property type
-     *
-     * @var int
-     */
-    protected $property;
-
-    /**
-     * Abstract Lookup Proxy constructor
-     *
-     * @param int $property Property type
-     */
-    public function __construct(int $property)
+    public function initializeObject(): void
     {
-        $this->property = $property;
-    }
-
-    /**
-     * Test whether the value in question can be found in the lookup pool
-     *
-     * @param string $value Value
-     *
-     * @return bool Value is contained in the pool
-     */
-    public function lookup(string $value): bool
-    {
-        $query       = $this->repository->createQuery();
-        $constraints = [
-            $query->equals('property', $this->property),
-            $query->equals('value', $value),
-        ];
-        $query->matching($query->logicalAnd($constraints));
-
-        return $query->count() > 0;
+        $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
+        $querySettings->setRespectStoragePage(false);
+        $this->setDefaultQuerySettings($querySettings);
     }
 }

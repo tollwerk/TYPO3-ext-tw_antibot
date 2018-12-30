@@ -1,4 +1,5 @@
 <?php
+
 namespace Tollwerk\TwAntibot\Domain\Repository;
 
 
@@ -12,9 +13,10 @@ namespace Tollwerk\TwAntibot\Domain\Repository;
  *  (c) 2018 Joschi Kuphal <joschi@tollwerk.de>, tollwerk GmbH
  *
  ***/
+
 /**
  * The repository for Whitelists
  */
-class WhitelistRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class WhitelistRepository extends AbstractListRepository
 {
 }

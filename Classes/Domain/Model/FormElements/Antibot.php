@@ -37,7 +37,10 @@
 namespace Tollwerk\TwAntibot\Domain\Model\FormElements;
 
 use Jkphl\Antibot\Infrastructure\Model\InputElement;
+use Jkphl\Antibot\Ports\Antibot as AntibotCore;
 use Tollwerk\TwAntibot\Domain\Model\AbstractList;
+use Tollwerk\TwAntibot\Utility\Antibot as AntibotUtility;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -49,6 +52,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
 {
     /**
+     * Antibot instance
+     *
+     * @var AntibotCore
+     */
+    protected $antibot;
+    /**
      * Default Antibot configuration
      */
     const DEFAULT_CONFIG = [
@@ -57,15 +66,48 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
     ];
 
     /**
-     * Armor Armor
+     * Instantiate and return an associate Antibot instance
+     *
+     * @return AntibotCore
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
      */
-    public function armor()
+    protected function getAntibot()
     {
-        $antibot = GeneralUtility::makeInstance(\Tollwerk\TwAntibot\Utility\Antibot::class)->getAntibot(
-            $this->getRootForm()->getIdentifier(),
-            $this->getAntibotConfiguration()
-        );
-        $armor   = $antibot->armorInputs($GLOBALS['TYPO3_REQUEST']);
+        if ($this->antibot === null) {
+            $this->antibot = GeneralUtility::makeInstance(AntibotUtility::class)->getAntibot(
+                $this->getRootForm()->getIdentifier(),
+                $this->getAntibotConfiguration()
+            );
+        }
+
+        return $this->antibot;
+    }
+
+    /**
+     * Validate the current request
+     *
+     * @param ServerRequest $request Current request
+     *
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     */
+    public function validate(ServerRequest $request): void
+    {
+        $validationResult = $this->getAntibot()->validate($request);
+        print_r($validationResult);
+    }
+
+    /**
+     * Create and add the Antibot armor form elements
+     *
+     * @param ServerRequest $request Current request
+     *
+     * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException
+     * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     */
+    public function armor(ServerRequest $request): void
+    {
+        $armor = $this->getAntibot()->armorInputs($request);
 
         // Run through all armor input parameters
         /** @var InputElement $armorInput */
