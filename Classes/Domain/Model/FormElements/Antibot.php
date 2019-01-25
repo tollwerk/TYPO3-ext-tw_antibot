@@ -42,6 +42,7 @@ use Tollwerk\TwAntibot\Domain\Model\AbstractList;
 use Tollwerk\TwAntibot\Utility\Antibot as AntibotUtility;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException;
 
 /**
  * Antibot Form Section
@@ -57,19 +58,51 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      * @var AntibotCore
      */
     protected $antibot;
+
+    /**
+     * Current form validity
+     *
+     * @var null|bool
+     */
+    protected $valid = null;
+
     /**
      * Default Antibot configuration
      */
     const DEFAULT_CONFIG = [
         'blacklist' => [],
-        'whitelist' => []
+        'whitelist' => [],
+        'honeypots' => [],
+    ];
+
+    /**
+     * Valid input types
+     */
+    const INPUT_TYPES = [
+        'checkbox' => 'Checkbox',
+        'date'     => 'Date',
+        'email'    => 'Email',
+        'hidden'   => 'Hidden',
+        'number'   => 'Number',
+        'password' => 'Password',
+        'radio'    => 'RadioButton',
+        'tel'      => 'Telephone',
+        'text'     => 'Text',
+        'url'      => 'Url',
+//        'color',
+//        'datetime-local',
+//        'month',
+//        'range',
+//        'search',
+//        'time',
+//        'week'
     ];
 
     /**
      * Instantiate and return an associate Antibot instance
      *
      * @return AntibotCore
-     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     * @throws FormDefinitionConsistencyException
      */
     protected function getAntibot()
     {
@@ -88,12 +121,18 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @param ServerRequest $request Current request
      *
-     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     * @return bool Validates
+     * @throws FormDefinitionConsistencyException
      */
-    public function validate(ServerRequest $request): void
+    public function validate(ServerRequest $request): bool
     {
-        $validationResult = $this->getAntibot()->validate($request);
-        print_r($validationResult);
+        // One time validation
+        if ($this->valid === null) {
+            $validationResult = $this->getAntibot()->validate($request);
+            $this->valid      = !$validationResult->isFailed();
+        }
+
+        return $this->valid;
     }
 
     /**
@@ -103,23 +142,30 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotFoundException
      * @throws \TYPO3\CMS\Form\Domain\Exception\TypeDefinitionNotValidException
-     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     * @throws FormDefinitionConsistencyException
      */
     public function armor(ServerRequest $request): void
     {
+        $this->validate($request);
         $armor = $this->getAntibot()->armorInputs($request);
 
         // Run through all armor input parameters
         /** @var InputElement $armorInput */
         foreach ($armor as $armorInput) {
             $armorInputAttributes = $armorInput->getAttributes();
-
-            switch ($armorInputAttributes['type']) {
-                case 'hidden':
-                    $this->createElement($armorInputAttributes['name'], 'Hidden')
-                         ->setDefaultValue($armorInputAttributes['value']);
-                    break;
-            }
+            $identifier           = preg_replace('/\]?\[/', '.', rtrim($armorInputAttributes['name'], ']'));
+            $input                = $this->createElement($identifier, 'AntibotField');
+            $label                = explode(
+                ' ',
+                ucwords(trim(preg_replace('/\W+/', ' ', $armorInputAttributes['name'])))
+            );
+            $input->setDefaultValue($armorInputAttributes['value']);
+            $input->setLabel(array_pop($label));
+            $input->setRenderingOption('fluidAdditionalAttributes', [
+                'autocomplete' => 'off',
+                'aria-hidden'  => 'true',
+            ]);
+            $input->setRenderingOption('fluidType', $armorInputAttributes['type']);
         }
     }
 
@@ -128,12 +174,12 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @return array Antibot configuration
      */
-    protected
-    function getAntibotConfiguration(): array
+    protected function getAntibotConfiguration(): array
     {
         $config = self::DEFAULT_CONFIG;
         $this->configureWhitelist($config);
         $this->configureBlacklist($config);
+        $this->configureHoneypots($config);
         $this->configureMethodVector($config);
         $this->configureSubmissionTimes($config);
 
@@ -145,10 +191,8 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @param array $config Antibot configuration
      */
-    protected
-    function configureWhitelist(
-        array &$config
-    ): void {
+    protected function configureWhitelist(array &$config): void
+    {
         if (isset($this->renderingOptions['whitelist']) && is_array($this->renderingOptions['whitelist'])) {
             foreach (['ip' => AbstractList::PROPERTY_IP] as $property => $value) {
                 if (!empty($this->renderingOptions['whitelist'][$property])) {
@@ -163,10 +207,8 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @param array $config Antibot configuration
      */
-    protected
-    function configureBlacklist(
-        array &$config
-    ): void {
+    protected function configureBlacklist(array &$config): void
+    {
         if (isset($this->renderingOptions['blacklist']) && is_array($this->renderingOptions['blacklist'])) {
             foreach (
                 [
@@ -182,14 +224,51 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
     }
 
     /**
+     * Configure the honeypots
+     *
+     * @param array $config Antibot configuration
+     */
+    protected function configureHoneypots(array &$config): void
+    {
+        if (!empty($this->renderingOptions['honeypots']) && is_array($this->renderingOptions['honeypots'])) {
+            $config['honeypots'] = $this->filterHoneypotsRecursive($this->renderingOptions['honeypots']);
+        }
+    }
+
+    /**
+     * Recursively sanitize and filter a honeypot configuration and remove invalid entries
+     *
+     * @param array $honeypots Honeypot configuration
+     *
+     * @return array Filtered honeypot configuration
+     */
+    protected function filterHoneypotsRecursive(array $honeypots): array
+    {
+        $filtered = [];
+        foreach ($honeypots as $name => $type) {
+            if (is_array($type)) {
+                $filtered[$name] = $this->filterHoneypotsRecursive($type);
+                continue;
+            }
+            if (is_string($type)) {
+                $type = strtolower($type);
+                if (array_key_exists($type, self::INPUT_TYPES)) {
+                    $filtered[$name] = $type;
+                    continue;
+                }
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
      * Configure the expected request method vector
      *
      * @param array $config Antibot configuration
      */
-    protected
-    function configureMethodVector(
-        array &$config
-    ): void {
+    protected function configureMethodVector(array &$config): void
+    {
         // TODO
     }
 
@@ -198,10 +277,8 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      *
      * @param array $config Antibot configuration
      */
-    protected
-    function configureSubmissionTimes(
-        array &$config
-    ): void {
+    protected function configureSubmissionTimes(array &$config): void
+    {
         // TODO
     }
 }

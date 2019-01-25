@@ -1,0 +1,15 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+    <f:if condition="{element.renderingOptions.fluidType} == 'hidden'">
+        <f:then>
+            <f:form.hidden property="{element.identifier}" id="{element.uniqueIdentifier}"
+                           additionalAttributes="{element.renderingOptions.fluidAdditionalAttributes}"/>
+        </f:then>
+        <f:else>
+            <label for="{element.uniqueIdentifier}">{element.label}</label>
+            <f:form.textfield property="{element.identifier}" id="{element.uniqueIdentifier}"
+                              type="{element.renderingOptions.fluidType}"
+                              additionalAttributes="{element.renderingOptions.fluidAdditionalAttributes}" tabindex="-1"
+                              style="{element.properties.styleAttribute}"/>
+        </f:else>
+    </f:if>
+</html>

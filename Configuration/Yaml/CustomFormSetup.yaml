@@ -19,3 +19,6 @@ TYPO3:
               implementationClassName: 'Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot'
               renderingOptions:
                 _isCompositeFormElement: true
+            AntibotField:
+              __inheritances:
+                10: 'TYPO3.CMS.Form.mixins.formElementMixins.TextMixin'

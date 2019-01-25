@@ -37,6 +37,9 @@
 namespace Tollwerk\TwAntibot\ViewHelpers\Antibot;
 
 use Jkphl\Antibot\Domain\Contract\AntibotException;
+use Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot;
+use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
 
 /**
@@ -59,9 +62,19 @@ class ValidViewHelper extends AbstractConditionViewHelper
      */
     public function initializeArguments(): void
     {
+        $this->registerArgument(
+            'form',
+            'TYPO3\\CMS\\Form\\Domain\\Runtime\\FormRuntime',
+            'Form to be validated',
+            true
+        );
 //        $this->registerArgument('then', 'mixed', 'Form to be rendered if Antibot validates the request.', false);
-        $this->registerArgument('else', 'mixed', 'Value to be returned if Antibot doesn\'t validate the request.',
-            false);
+        $this->registerArgument(
+            'else',
+            'mixed',
+            'Value to be returned if Antibot doesn\'t validate the request.',
+            false
+        );
     }
 
     /**
@@ -80,13 +93,38 @@ class ValidViewHelper extends AbstractConditionViewHelper
      * @param array|NULL $arguments
      *
      * @return boolean
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
      * @api
      */
     protected static function evaluateCondition($arguments = null)
     {
-        print_r(array_keys($arguments));
+        /** @var FormRuntime $formRuntime */
+        $formRuntime    = $arguments['form'];
+        $formDefinition = $formRuntime->getFormDefinition();
+        foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
+            if ($renderable instanceof Antibot) {
+                return $renderable->validate($GLOBALS['TYPO3_REQUEST']);
+            }
+        }
 
         return true;
+    }
+
+    /**
+     * @param array $arguments
+     * @param \Closure $renderChildrenClosure
+     * @param RenderingContextInterface $renderingContext
+     *
+     * @return mixed
+     */
+    public static function renderStatic(
+        array $arguments,
+        \Closure $renderChildrenClosure,
+        RenderingContextInterface $renderingContext
+    ) {
+        $result = parent::renderStatic($arguments, $renderChildrenClosure, $renderingContext);
+
+        return $result;
     }
 
     /**
@@ -99,7 +137,9 @@ class ValidViewHelper extends AbstractConditionViewHelper
     public function render()
     {
         try {
-            return $this->renderThenChild();
+            $thenChild = $this->renderThenChild();
+
+            return $thenChild;
         } catch (\Exception $e) {
             if ($e instanceof AntibotException) {
                 return $this->renderElseChild();

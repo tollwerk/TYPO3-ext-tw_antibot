@@ -38,6 +38,7 @@ namespace Tollwerk\TwAntibot\Utility;
 
 use Jkphl\Antibot\Ports\Antibot as AntibotCore;
 use Jkphl\Antibot\Ports\Validators\HmacValidator;
+use Jkphl\Antibot\Ports\Validators\HoneypotValidator;
 use Jkphl\Antibot\Ports\Validators\IpBlacklistValidator;
 use Jkphl\Antibot\Ports\Validators\IpWhitelistValidator;
 use Psr\Log\LoggerAwareTrait;
@@ -46,9 +47,12 @@ use Tollwerk\TwAntibot\Lookup\BlacklistLookupProxy;
 use Tollwerk\TwAntibot\Lookup\WhitelistLookupProxy;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\SingletonInterface;
+use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
+use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 
 /**
  * Antibot Hooks
@@ -97,6 +101,7 @@ class Antibot implements SingletonInterface
         $sessionPrefixHash = md5($this->session.':'.$prefix.':'.serialize($configuration));
         if (!array_key_exists($sessionPrefixHash, $this->antibot)) {
             $this->antibot[$sessionPrefixHash] = new AntibotCore($this->session, $prefix);
+            $this->antibot[$sessionPrefixHash]->setParameterScope('tx_form_formframework', $prefix);
             $this->antibot[$sessionPrefixHash]->setLogger($this->logger);
             $this->addValidators($this->antibot[$sessionPrefixHash], $configuration);
         }
@@ -105,7 +110,9 @@ class Antibot implements SingletonInterface
     }
 
     /**
-     * Finalize form setup
+     * Finalize Antibot setup
+     *
+     * During this step, the current request is validated and Antibot's subelements are added to the form.
      *
      * @param RenderableInterface $renderable
      *
@@ -118,7 +125,6 @@ class Antibot implements SingletonInterface
         // If this is an Antibot element
         if ($renderable instanceof \Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot) {
             $request = $GLOBALS['TYPO3_REQUEST'];
-            $renderable->validate($request);
             $renderable->armor($request);
         }
     }
@@ -155,8 +161,44 @@ class Antibot implements SingletonInterface
             }
         }
 
+        // Add honeypots
+        if (!empty($config['honeypots'])) {
+            $antibot->addValidator(new HoneypotValidator($config['honeypots']));
+        }
+
         $hmacValidator = new HmacValidator();
 
         $antibot->addValidator($hmacValidator);
+    }
+
+    /**
+     * Hook after the current page initialization
+     *
+     * In this step, the form is reset to the last displayed page if the Antibot validation fails
+     *
+     * @param FormRuntime $formRuntime                       Form runtime
+     * @param CompositeRenderableInterface|null $currentPage Current page (NULL when this is the final step)
+     * @param CompositeRenderableInterface|null $lastPage    Last displayed page (NULL when this is the first step)
+     * @param array $requestArguments                        Request arguments
+     *
+     * @return CompositeRenderableInterface|null             Current page
+     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
+     */
+    public function afterInitializeCurrentPage(
+        FormRuntime $formRuntime,
+        CompositeRenderableInterface $currentPage = null,
+        CompositeRenderableInterface $lastPage = null,
+        array $requestArguments = []
+    ) {
+        $valid          = true;
+        $formDefinition = $formRuntime->getFormDefinition();
+        foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
+            if ($renderable instanceof \Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot) {
+                $valid = $renderable->validate($GLOBALS['TYPO3_REQUEST']);
+                break;
+            }
+        }
+
+        return $valid ? $currentPage : $lastPage;
     }
 }
