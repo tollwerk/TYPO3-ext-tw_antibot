@@ -37,7 +37,19 @@
 namespace Tollwerk\TwAntibot\ViewHelpers\Antibot;
 
 use Jkphl\Antibot\Domain\Contract\AntibotException;
+use Jkphl\Antibot\Domain\Exceptions\ErrorException;
+use Jkphl\Antibot\Domain\Model\ValidationResult;
+use Jkphl\Antibot\Ports\Exceptions\InvalidArgumentException;
+use Tollwerk\TwAntibot\Domain\Model\Blacklist;
 use Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot;
+use Tollwerk\TwAntibot\Domain\Repository\BlacklistRepository;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
+use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
@@ -82,28 +94,57 @@ class ValidViewHelper extends AbstractConditionViewHelper
      * requires a different (or faster) decision then this method is the one
      * to override and implement.
      *
-     * Note: method signature does not type-hint that an array is desired,
-     * and as such, *appears* to accept any input type. There is no type hint
-     * here for legacy reasons - the signature is kept compatible with third
-     * party packages which depending on PHP version would error out if this
-     * signature was not compatible with that of existing and in-production
-     * subclasses that will be using this base class in the future. Let this
-     * be a warning if someone considers changing this method signature!
+     * @param array $arguments
+     * @param RenderingContextInterface $renderingContext
      *
-     * @param array|NULL $arguments
-     *
-     * @return boolean
-     * @throws \TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException
-     * @api
+     * @return bool
+     * @throws FormDefinitionConsistencyException
+     * @throws IllegalObjectTypeException
+     * @throws InvalidConfigurationTypeException
      */
-    protected static function evaluateCondition($arguments = null)
+    public static function verdict(array $arguments, RenderingContextInterface $renderingContext)
     {
         /** @var FormRuntime $formRuntime */
         $formRuntime    = $arguments['form'];
         $formDefinition = $formRuntime->getFormDefinition();
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
             if ($renderable instanceof Antibot) {
-                return $renderable->validate($GLOBALS['TYPO3_REQUEST']);
+                /**
+                 * @var ServerRequest $request
+                 * @var ValidationResult $validationResult
+                 */
+                $request          = $GLOBALS['TYPO3_REQUEST'];
+                $validationResult = null;
+                $valid            = $renderable->validate($request, $validationResult);
+                if (!$valid) {
+                    $renderingContext->getVariableProvider()->add('antibot', $validationResult);
+
+                    // Blacklist if this is the first time the IP address failed
+                    if (!$validationResult->isBlacklisted()) {
+                        $serverParams         = $request->getServerParams();
+                        $objectManager        = GeneralUtility::makeInstance(ObjectManager::class);
+                        $configurationManager = $objectManager->get(ConfigurationManager::class);
+                        $settings             = $configurationManager->getConfiguration(
+                            ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                            'TwAntibot'
+                        );
+                        $blacklistRepository  = $objectManager->get(BlacklistRepository::class);
+                        $blacklistEntry       = GeneralUtility::makeInstance(Blacklist::class);
+                        $blacklistEntry->setPid($settings['storagePid']);
+                        $blacklistEntry->setProperty(Blacklist::PROPERTY_IP);
+                        $blacklistEntry->setValue($serverParams['REMOTE_ADDR']);
+                        $blacklistEntry->setError(json_encode(array_map(function(ErrorException $exception) {
+                            return $exception->getMessage();
+                        }, $validationResult->getErrors())));
+                        $blacklistEntry->setData(json_encode(array_merge(
+                            (array)$request->getQueryParams(),
+                            (array)$request->getParsedBody()
+                        )));
+                        $blacklistRepository->add($blacklistEntry);
+                    }
+                }
+
+                return $valid;
             }
         }
 
@@ -137,9 +178,11 @@ class ValidViewHelper extends AbstractConditionViewHelper
     public function render()
     {
         try {
-            $thenChild = $this->renderThenChild();
+            if (!self::verdict($this->arguments, $this->renderingContext)) {
+                throw new InvalidArgumentException();
+            }
 
-            return $thenChild;
+            return $this->renderThenChild();
         } catch (\Exception $e) {
             if ($e instanceof AntibotException) {
                 return $this->renderElseChild();

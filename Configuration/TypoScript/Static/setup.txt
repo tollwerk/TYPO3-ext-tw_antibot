@@ -1,3 +1,23 @@
+plugin.tx_twantibot {
+    view {
+        templateRootPaths.0 = EXT:tw_antibot/Resources/Private/Templates/
+        templateRootPaths.1 = {$plugin.tx_twantibot.view.templateRootPath}
+        partialRootPaths.0 = EXT:tw_antibot/Resources/Private/Partials/
+        partialRootPaths.1 = {$plugin.tx_twantibot.view.partialRootPath}
+        layoutRootPaths.0 = EXT:tw_antibot/Resources/Private/Layouts/
+        layoutRootPaths.1 = {$plugin.tx_twantibot.view.layoutRootPath}
+    }
+
+    persistence {
+        storagePid = {$plugin.tx_twantibot.persistence.storagePid}
+    }
+
+    settings {
+        storagePid = {$plugin.tx_twantibot.persistence.storagePid}
+    }
+}
+
+
 plugin.tx_form {
     settings {
         yamlConfigurations {
@@ -13,3 +33,5 @@ module.tx_form {
         }
     }
 }
+
+tt_content.form_formframework.20 = USER_INT

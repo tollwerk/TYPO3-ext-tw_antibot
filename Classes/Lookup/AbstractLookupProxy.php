@@ -36,6 +36,7 @@
 
 namespace Tollwerk\TwAntibot\Lookup;
 
+use Jkphl\Antibot\Domain\Antibot;
 use Jkphl\Antibot\Ports\Contract\LookupStrategyInterface;
 use TYPO3\CMS\Core\Resource\AbstractRepository;
 
@@ -85,7 +86,8 @@ class AbstractLookupProxy implements LookupStrategyInterface
             $query->equals('value', $value),
         ];
         $query->matching($query->logicalAnd($constraints));
+        $count = $query->count();
 
-        return $query->count() > 0;
+        return $count > 0;
     }
 }

@@ -3,6 +3,25 @@
 	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
 		<header/>
 		<body>
+            <trans-unit id="file">
+				<source>Files &amp; directories</source>
+			</trans-unit>
+            <trans-unit id="file.templateRootPath">
+				<source>Path to template files (FE)</source>
+			</trans-unit>
+            <trans-unit id="file.partialRootPath">
+				<source>Path to template partials (FE)</source>
+			</trans-unit>
+            <trans-unit id="file.layoutRootPath">
+				<source>Path to template layouts (FE)</source>
+			</trans-unit>
+            <trans-unit id="common">
+				<source>Common settings</source>
+			</trans-unit>
+            <trans-unit id="common.storagePid">
+				<source>Blacklist entry storage PID</source>
+			</trans-unit>
+
 			<trans-unit id="tx_twantibot_domain_model_blacklist">
 				<source>Blacklist</source>
 			</trans-unit>

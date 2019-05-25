@@ -36,6 +36,7 @@
 
 namespace Tollwerk\TwAntibot\Domain\Model\FormElements;
 
+use Jkphl\Antibot\Domain\Model\ValidationResult;
 use Jkphl\Antibot\Infrastructure\Model\InputElement;
 use Jkphl\Antibot\Ports\Antibot as AntibotCore;
 use Tollwerk\TwAntibot\Domain\Model\AbstractList;
@@ -43,6 +44,7 @@ use Tollwerk\TwAntibot\Utility\Antibot as AntibotUtility;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException;
+use TYPO3\CMS\Form\Domain\Model\FormElements\Section;
 
 /**
  * Antibot Form Section
@@ -50,7 +52,7 @@ use TYPO3\CMS\Form\Domain\Model\Exception\FormDefinitionConsistencyException;
  * @package    Tollwerk\Antibot
  * @subpackage Tollwerk\TwAntibot\Domain\Model
  */
-class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
+class Antibot extends Section
 {
     /**
      * Antibot instance
@@ -67,12 +69,21 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
     protected $valid = null;
 
     /**
+     * Validation Result
+     *
+     * @var object
+     */
+    protected $validationResult;
+
+    /**
      * Default Antibot configuration
      */
     const DEFAULT_CONFIG = [
         'blacklist' => [],
         'whitelist' => [],
         'honeypots' => [],
+        'methods'   => false,
+        'times'     => false,
     ];
 
     /**
@@ -97,6 +108,24 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
 //        'time',
 //        'week'
     ];
+    /**
+     * Minimum submission time
+     *
+     * @var float
+     */
+    const MINIMUM_SUBMISSION = 3;
+    /**
+     * Minimum submission time for follow-up submissions
+     *
+     * @var float
+     */
+    const MINIMUM_FOLLOWUP_SUBMISSION = 1;
+    /**
+     * Maximum submission time
+     *
+     * @var float
+     */
+    const MAXIMUM_SUBMISSION = 3600;
 
     /**
      * Instantiate and return an associate Antibot instance
@@ -119,18 +148,20 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
     /**
      * Validate the current request
      *
-     * @param ServerRequest $request Current request
+     * @param ServerRequest $request             Current request
+     * @param ValidationResult $validationResult Validation result
      *
      * @return bool Validates
      * @throws FormDefinitionConsistencyException
      */
-    public function validate(ServerRequest $request): bool
+    public function validate(ServerRequest $request, ValidationResult &$validationResult = null): bool
     {
         // One time validation
         if ($this->valid === null) {
-            $validationResult = $this->getAntibot()->validate($request);
-            $this->valid      = !$validationResult->isFailed();
+            $this->validationResult = $this->getAntibot()->validate($request);
+            $this->valid            = !$this->validationResult->isFailed() && !$this->validationResult->isBlacklisted();
         }
+        $validationResult = clone $this->validationResult;
 
         return $this->valid;
     }
@@ -269,7 +300,10 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      */
     protected function configureMethodVector(array &$config): void
     {
-        // TODO
+        if (!empty($this->renderingOptions['methods'])) {
+            $methods           = GeneralUtility::trimExplode('-', strtoupper($this->renderingOptions['methods']), true);
+            $config['methods'] = array_combine(['previous', 'current'], array_pad($methods, 2, 'NONE'));
+        }
     }
 
     /**
@@ -279,6 +313,20 @@ class Antibot extends \TYPO3\CMS\Form\Domain\Model\FormElements\Section
      */
     protected function configureSubmissionTimes(array &$config): void
     {
-        // TODO
+        if (!empty($this->renderingOptions['times'])) {
+            $times = [
+                'maximum'  => self::MAXIMUM_SUBMISSION,
+                'minimum'  => self::MINIMUM_SUBMISSION,
+                'followup' => self::MINIMUM_FOLLOWUP_SUBMISSION,
+            ];
+            if (is_array($this->renderingOptions['times'])) {
+                foreach (array_keys($times) as $time) {
+                    if (array_keys($time, $this->renderingOptions['times'])) {
+                        $times[$time] = intval($this->renderingOptions['times'][$time]);
+                    }
+                }
+            }
+            $config['times'] = $times;
+        }
     }
 }

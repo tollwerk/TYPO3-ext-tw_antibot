@@ -155,6 +155,7 @@ class Antibot implements SingletonInterface
                     $antibot->addValidator(new IpBlacklistValidator($lookupProxy));
                     break;
                 case AbstractList::PROPERTY_EMAIL:
+                    // TODO
 //                    $lookupProxy = new BlacklistLookupProxy($blacklist);
 //                    $paramValidator = new ParameterBlacklistValidator($lookupProxy);
 //                    $antibot->addValidator($paramValidator);
@@ -166,8 +167,27 @@ class Antibot implements SingletonInterface
             $antibot->addValidator(new HoneypotValidator($config['honeypots']));
         }
 
+        // Instantiate the HMAC validator
         $hmacValidator = new HmacValidator();
 
+        // If the method vector should be considered
+        if (!empty($config['methods'])) {
+            $hmacValidator->setMethodVector(
+                $config['methods']['previous'],
+                $config['methods']['current']
+            );
+        }
+
+        // If the submission times should be considered
+        if (!empty($config['times'])) {
+            $hmacValidator->setSubmissionTimes(
+                $config['times']['maximum'],
+                $config['times']['minimum'],
+                $config['times']['followup']
+            );
+        }
+
+        // Add the HMAC validator
         $antibot->addValidator($hmacValidator);
     }
 
@@ -194,7 +214,14 @@ class Antibot implements SingletonInterface
         $formDefinition = $formRuntime->getFormDefinition();
         foreach ($formDefinition->getRenderablesRecursively() as $renderable) {
             if ($renderable instanceof \Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot) {
-                $valid = $renderable->validate($GLOBALS['TYPO3_REQUEST']);
+                $validationResult = null;
+                $valid            = $renderable->validate($GLOBALS['TYPO3_REQUEST'], $validationResult);// || $validationResult->isBlacklisted();
+//                DebugUtility::debug($valid);
+
+                // TODO: Hier ist das Verhalten noch völlig inkonsistent
+                // Es braucht den Hook offenbar unbedingt, um das Rendering auf dem aktuellen Formularschritt zu halten
+                // Allerdings muss beim ersten Aufruf "Gültig" angenommen werden, selbst wenn geblacklisted ist, damit das
+                // initiale Formularrendering durchgezogen wird ...
                 break;
             }
         }

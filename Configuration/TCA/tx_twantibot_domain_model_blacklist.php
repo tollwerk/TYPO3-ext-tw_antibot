@@ -2,7 +2,7 @@
 return [
     'ctrl'      => [
         'title'        => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist',
-        'label'        => 'property',
+        'label'        => 'value',
         'tstamp'       => 'tstamp',
         'crdate'       => 'crdate',
         'cruser_id'    => 'cruser_id',
@@ -17,7 +17,7 @@ return [
     ],
     'palettes'  => [
         'propertyvalue' => ['showitem' => 'property, value', 'canNotCollapse' => true],
-        'dataerror' => ['showitem' => 'data, error', 'canNotCollapse' => true],
+        'dataerror'     => ['showitem' => 'data, error', 'canNotCollapse' => true],
     ],
     'columns'   => [
         'property' => [

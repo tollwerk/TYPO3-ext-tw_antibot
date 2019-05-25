@@ -19,8 +19,6 @@ namespace Tollwerk\TwAntibot\Domain\Model;
  */
 class Blacklist extends AbstractList
 {
-
-
     /**
      * Submission data
      *
