@@ -10,8 +10,8 @@
   ],
   "require": {
     "php": ">=7.2",
-    "typo3/cms-core": ">=9.4",
-    "typo3/cms-form": ">=9.4",
+    "typo3/cms-core": "^10.0",
+    "typo3/cms-core": "^10.0",
     "jkphl/antibot": "@dev"
   },
   "autoload": {
