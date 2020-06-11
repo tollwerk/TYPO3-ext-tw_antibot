@@ -2,10 +2,11 @@
   "name": "tollwerk/tw-antibot",
   "type": "typo3-cms-extension",
   "description": "Death to Spambots! — CAPTCHA-less spam security for TYPO3 forms",
+  "homepage": "https://github.com/tollwerk/TYPO3-ext-tw_antibot",
   "authors": [
     {
       "name": "Joschi Kuphal",
-      "role": "Developer"
+      "email": "joschi@tollwerk.de"
     }
   ],
   "require": {
@@ -24,7 +25,7 @@
     }
   },
   "replace": {
-    "tw_antibot": "self.version",
+    "tollwerk/tw-antibot": "self.version",
     "typo3-ter/tw-antibot": "self.version"
   },
   "repositories": [
