@@ -38,5 +38,10 @@
       "url": "git@github.com:jkphl/antibot.git",
       "reference": "master"
     }
-  ]
+  ],
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "tw_antibot"
+    }
+  }
 }
