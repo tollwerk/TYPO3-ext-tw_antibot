@@ -12,3 +12,9 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1546083
 // runtime does not exist yet.
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'][1546083659]
     = \Tollwerk\TwAntibot\Hooks\FormHook::class;
+
+// A cache for what is meant to expire — content fingerprints above all. Bans are not in
+// here: they are decisions, they live in the database, and an editor revokes them.
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
+    = $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
+    ?? ['frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class];

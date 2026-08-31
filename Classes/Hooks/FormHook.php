@@ -20,6 +20,10 @@ use Jkphl\Antibot\Ports\Antibot;
 use Jkphl\Antibot\Ports\Validators\BanValidator;
 use Jkphl\Antibot\Ports\Validators\HmacValidator;
 use Jkphl\Antibot\Ports\Validators\HoneypotValidator;
+use Jkphl\Antibot\Ports\Validators\ParameterEqualityValidator;
+use Jkphl\Antibot\Ports\Validators\ParameterLinkValidator;
+use Jkphl\Antibot\Ports\Validators\ParameterPlausibilityValidator;
+use Jkphl\Antibot\Ports\Validators\ParameterSetValidator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -29,6 +33,7 @@ use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use Jkphl\Antibot\Infrastructure\Model\ParameterPath;
 use TYPO3\CMS\Extbase\Service\ExtensionService;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Form\Domain\Model\FormElements\Page;
@@ -77,10 +82,14 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      * @var array
      */
     const DEFAULT_CONFIGURATION = [
-        'honeypots' => ['email' => 'email', 'homepage' => 'url'],
-        'methods'   => null,
-        'times'     => null,
-        'ban'       => true,
+        'honeypots'    => ['email' => 'email', 'homepage' => 'url'],
+        'methods'      => null,
+        'times'        => null,
+        'ban'          => true,
+        'plausibility' => null,
+        'links'        => null,
+        'equality'     => null,
+        'parameterSet' => null,
     ];
     /**
      * Validation results, indexed by form identifier
@@ -317,10 +326,20 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return false;
         }
 
-        $body = (array)$request->getParsedBody();
-        $body = $body[$this->getPluginNamespace()] ?? null;
+        $body   = (array)$request->getParsedBody();
+        $scoped = $body[$this->getPluginNamespace()][$formDefinition->getIdentifier()] ?? null;
+        if (!is_array($scoped)) {
+            return false;
+        }
 
-        return is_array($body) && array_key_exists($formDefinition->getIdentifier(), $body);
+        // Only the first step can be judged. Element identifiers are unique within a
+        // form, so the armor exists once and lives on the first page — and the form
+        // template renders none but the current one, which leaves every later step
+        // without it. Judging those would refuse every multi-page form at step two.
+        //
+        // Nothing is lost by it: reaching a later step takes a form state that TYPO3
+        // signs, and that signature is only handed out to a first step that passed.
+        return intval($scoped['__currentPage'] ?? 0) === 0;
     }
 
     /**
@@ -406,11 +425,107 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             }
 
             $antibot->addValidator($this->createHmacValidator($configuration));
+            $this->addContentValidators($antibot, $identifier, $configuration);
 
             $this->instances[$identifier] = $antibot;
         }
 
         return $this->instances[$identifier];
+    }
+
+    /**
+     * Add the validators that judge what was typed into the form
+     *
+     * All of them are off unless a form asks for them: a heuristic that nobody chose is
+     * a heuristic nobody can answer for.
+     *
+     * @param Antibot $antibot       Antibot instance
+     * @param string $identifier     Form identifier
+     * @param array $configuration   Antibot configuration
+     */
+    protected function addContentValidators(Antibot $antibot, string $identifier, array $configuration): void
+    {
+        // Word and character counts per field
+        if (!empty($configuration['plausibility'])) {
+            $rules = [];
+            foreach ((array)$configuration['plausibility'] as $parameter => $parameterRules) {
+                $rules[strval(new ParameterPath($this->qualify($identifier, $parameter)))] = $parameterRules;
+            }
+            $antibot->addValidator(new ParameterPlausibilityValidator($rules, ParameterPlausibilityValidator::POST));
+        }
+
+        // How many hyperlinks a field may carry
+        if (!empty($configuration['links']['parameters'])) {
+            $antibot->addValidator(new ParameterLinkValidator(
+                $this->qualifyAll($identifier, (array)$configuration['links']['parameters']),
+                intval($configuration['links']['maximum'] ?? 1),
+                ParameterLinkValidator::POST
+            ));
+        }
+
+        // The same value repeated across unrelated fields
+        if (!empty($configuration['equality']['parameters'])) {
+            $antibot->addValidator(new ParameterEqualityValidator(
+                $this->qualifyAll($identifier, (array)$configuration['equality']['parameters']),
+                intval($configuration['equality']['tolerance'] ?? 1),
+                ParameterEqualityValidator::POST
+            ));
+        }
+
+        // Which field names a submission may carry
+        if (!empty($configuration['parameterSet']['expected'])) {
+            $setValidator = new ParameterSetValidator(
+                (array)$configuration['parameterSet']['expected'],
+                ParameterSetValidator::POST,
+                [$this->getPluginNamespace(), $identifier]
+            );
+            if (!empty($configuration['parameterSet']['tolerateUnexpected'])) {
+                $setValidator->tolerateUnexpected();
+            }
+            if (!empty($configuration['parameterSet']['requireComplete'])) {
+                $setValidator->requireComplete();
+            }
+            $antibot->addValidator($setValidator);
+        }
+    }
+
+    /**
+     * Qualify a field name with the nesting the framework submits it under
+     *
+     * A form is configured with the names its editor knows — "message", not
+     * "tx_twtollwerk_contact[contact][message]". The nesting is the framework's business
+     * and is added here, which also keeps a configuration portable between the form
+     * content element and a plugin of its own.
+     *
+     * @param string $identifier Form identifier
+     * @param string $parameter  Field name
+     *
+     * @return string[] Parameter path segments
+     */
+    protected function qualify(string $identifier, string $parameter): array
+    {
+        return array_merge(
+            [$this->getPluginNamespace(), $identifier],
+            (new ParameterPath($parameter))->getSegments()
+        );
+    }
+
+    /**
+     * Qualify a list of field names
+     *
+     * @param string $identifier  Form identifier
+     * @param array $parameters   Field names
+     *
+     * @return array[] Parameter paths
+     */
+    protected function qualifyAll(string $identifier, array $parameters): array
+    {
+        $qualified = [];
+        foreach ($parameters as $parameter) {
+            $qualified[] = $this->qualify($identifier, strval($parameter));
+        }
+
+        return $qualified;
     }
 
     /**
