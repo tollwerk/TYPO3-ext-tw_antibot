@@ -80,6 +80,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         'honeypots' => ['email' => 'email', 'homepage' => 'url'],
         'methods'   => null,
         'times'     => null,
+        'ban'       => true,
     ];
     /**
      * Validation results, indexed by form identifier
@@ -99,6 +100,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      * @var bool[]
      */
     protected $armed = [];
+    /**
+     * Ban validators, indexed by form identifier
+     *
+     * @var BanValidator[]
+     */
+    protected $banValidators = [];
 
     /**
      * Constructor
@@ -219,12 +226,81 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         // Not valid is not the same as refused. A submission that arrives without any
         // armor is reported as skipped — nothing was there to judge — and treating that
         // as a pass would let every machine through that simply leaves the fields out.
+        $reason = $this->describe($result);
         $this->logger->warning('Antibot refused a submission', [
-            'form'    => $renderable->getIdentifier(),
-            'skipped' => $result->isSkipped(),
-            'errors'  => array_map('strval', $result->getErrors()),
+            'form'   => $renderable->getIdentifier(),
+            'reason' => $reason,
         ]);
+
+        $configuration = $this->getConfiguration($renderable);
+        if (!empty($configuration['ban'])) {
+            $this->ban($renderable->getIdentifier(), $reason);
+        }
+
         $renderable->setRenderingOption('templateName', self::TEMPLATE_BLOCKED);
+    }
+
+    /**
+     * Put the client behind the refused submission on the blacklist
+     *
+     * The ban outlasts the request and has no end of its own: it stands until an editor
+     * removes the record. What was submitted goes in with it, so that the decision to
+     * lift it can be made by looking rather than by guessing.
+     *
+     * @param string $identifier Form identifier
+     * @param string $reason     Reason for the ban
+     */
+    protected function ban(string $identifier, string $reason): void
+    {
+        $request      = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        $banValidator = $this->banValidators[$identifier] ?? null;
+        if (($request === null) || ($banValidator === null)) {
+            return;
+        }
+
+        $subject = $banValidator->getSubjectKey($request);
+        if ($subject === null) {
+            return;
+        }
+
+        $body    = (array)$request->getParsedBody();
+        $payload = json_encode($body[$this->getPluginNamespace()] ?? $body, JSON_UNESCAPED_UNICODE);
+
+        if ($this->getStore()->ban($subject, $reason, strval($payload))) {
+            $this->logger->warning('Antibot banned a client', ['subject' => $subject, 'reason' => $reason]);
+        }
+    }
+
+    /**
+     * Put a validation result into words
+     *
+     * @param ValidationResultInterface $result Validation result
+     *
+     * @return string Reason
+     */
+    protected function describe(ValidationResultInterface $result): string
+    {
+        if ($result->isSkipped() && !$result->hasErrors()) {
+            return 'Submitted without an armor';
+        }
+
+        $reasons = [];
+        foreach ($result->getErrors() as $error) {
+            $class     = explode('\\', get_class($error));
+            $reasons[] = end($class) . ': ' . $error->getMessage();
+        }
+
+        return count($reasons) ? implode('; ', $reasons) : 'Refused without a stated reason';
+    }
+
+    /**
+     * Return the blacklist store
+     *
+     * @return BlacklistStore Blacklist store
+     */
+    protected function getStore(): BlacklistStore
+    {
+        return GeneralUtility::makeInstance(BlacklistStore::class);
     }
 
     /**
@@ -321,7 +397,9 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             $antibot->setSecret(strval($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] ?? ''));
             $antibot->setLogger($this->logger);
             $antibot->setParameterScope($this->getPluginNamespace(), $identifier);
-            $antibot->addValidator(new BanValidator(GeneralUtility::makeInstance(BlacklistStore::class)));
+            $banValidator                       = new BanValidator($this->getStore());
+            $this->banValidators[$identifier]   = $banValidator;
+            $antibot->addValidator($banValidator);
 
             if (!empty($configuration['honeypots'])) {
                 $antibot->addValidator(new HoneypotValidator((array)$configuration['honeypots']));

@@ -107,9 +107,28 @@ class BlacklistStore implements ExpiringStoreInterface
      */
     public function remember(string $key, int $lifetime): void
     {
+        $this->ban($key, '', '');
+    }
+
+    /**
+     * Ban a subject and record why
+     *
+     * The record carries the reason and what was submitted, so that whoever later
+     * decides whether to lift the ban can see what earned it. Without that, the entry
+     * would be an address and nothing else, and no one could tell a spambot from a
+     * false positive.
+     *
+     * @param string $key    Subject key
+     * @param string $reason Reason for the ban
+     * @param string $data   What was submitted
+     *
+     * @return bool A new ban was recorded
+     */
+    public function ban(string $key, string $reason, string $data = ''): bool
+    {
         $subject = $this->parse($key);
         if (($subject === null) || $this->has($key)) {
-            return;
+            return false;
         }
 
         $this->createQueryBuilder()->insert(self::TABLE)->values([
@@ -118,7 +137,11 @@ class BlacklistStore implements ExpiringStoreInterface
             'crdate'   => time(),
             'property' => $subject[0],
             'value'    => $subject[1],
+            'error'    => $reason,
+            'data'     => $data,
         ])->execute();
+
+        return true;
     }
 
     /**
