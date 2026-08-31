@@ -5,6 +5,13 @@
 # file is absent, so every other template and partial keeps coming from wherever the
 # surrounding project keeps it. Adding a path is safe; adding a widely used name to it
 # would not be.
+#
+# The index is deliberately low — below everything a project brings along (tw_geo 5,
+# tw_base 11, the project extension 20 and 30). What this extension ships is a fallback,
+# not a decision: a project that wants its own wording drops its own AntibotBlocked.html
+# into one of its own paths, and Fluid finds that one first. The same is true of the
+# block message itself, which is a label and can be replaced through the usual XLF
+# override.
 TYPO3:
   CMS:
     Form:
@@ -14,9 +21,9 @@ TYPO3:
             Form:
               renderingOptions:
                 templateRootPaths:
-                  1560: 'EXT:tw_antibot/Resources/Private/Templates/'
+                  1: 'EXT:tw_antibot/Resources/Private/Templates/'
                 partialRootPaths:
-                  1560: 'EXT:tw_antibot/Resources/Private/Partials/'
+                  1: 'EXT:tw_antibot/Resources/Private/Partials/'
 
             # One armor field. They are added while a protected form is being built,
             # never by an editor, and they carry neither label nor validator of their

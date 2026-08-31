@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" target-language="de" datatype="plaintext" original="messages" product-name="tw_antibot">
+		<header/>
+		<body>
+			<trans-unit id="blocked.message" approved="yes">
+				<source>This form has been blocked. If you reached this page in error, please get in touch with us by other means.</source>
+				<target>Dieses Formular wurde gesperrt. Sollten Sie zu Unrecht hier gelandet sein, nehmen Sie bitte auf anderem Weg Kontakt mit uns auf.</target>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

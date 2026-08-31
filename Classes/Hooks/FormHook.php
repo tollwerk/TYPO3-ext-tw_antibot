@@ -66,6 +66,22 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      */
     const TYPE_HIDDEN = 'hidden';
     /**
+     * Rendering option a form declares itself protected with
+     *
+     * @var string
+     */
+    const OPTION = 'antibot';
+    /**
+     * Configuration a form falls back to when it just says "yes"
+     *
+     * @var array
+     */
+    const DEFAULT_CONFIGURATION = [
+        'honeypots' => ['email' => 'email', 'homepage' => 'url'],
+        'methods'   => null,
+        'times'     => null,
+    ];
+    /**
      * Validation results, indexed by form identifier
      *
      * @var ValidationResultInterface[]
@@ -121,13 +137,19 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return;
         }
 
-        $identifier = $renderable->getRootForm()->getIdentifier();
-        if (isset($this->armed[$identifier])) {
+        $form = $renderable->getRootForm();
+        if (!$form instanceof FormDefinition) {
+            return;
+        }
+
+        $configuration = $this->getConfiguration($form);
+        $identifier    = $form->getIdentifier();
+        if (($configuration === null) || isset($this->armed[$identifier])) {
             return;
         }
         $this->armed[$identifier] = true;
 
-        foreach ($this->getAntibot($identifier)->armorInputs($request) as $input) {
+        foreach ($this->getAntibot($identifier, $configuration)->armorInputs($request) as $input) {
             $this->createArmorField($renderable, $input->getAttributes());
         }
     }
@@ -239,12 +261,13 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return $this->results[$identifier];
         }
 
-        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
-        if ($request === null) {
+        $configuration = $this->getConfiguration($formDefinition);
+        $request       = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        if (($configuration === null) || ($request === null)) {
             return $this->results[$identifier] = null;
         }
 
-        $result = $this->getAntibot($identifier)->validate($request);
+        $result = $this->getAntibot($identifier, $configuration)->validate($request);
 
         if ($result->isBlacklisted()) {
             $this->logger->warning(
@@ -257,16 +280,41 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
     }
 
     /**
+     * Return the Antibot configuration of a form
+     *
+     * A form declares itself protected through a rendering option, so the decision sits
+     * with the form and not with the installation. `antibot: true` takes the defaults;
+     * an array configures them. Anything else means the form is none of Antibot's
+     * business.
+     *
+     * @param FormDefinition $formDefinition Form definition
+     *
+     * @return array|null Configuration (NULL if the form is unprotected)
+     */
+    protected function getConfiguration(FormDefinition $formDefinition): ?array
+    {
+        $option = $formDefinition->getRenderingOptions()[self::OPTION] ?? null;
+        if (empty($option)) {
+            return null;
+        }
+
+        return is_array($option)
+            ? array_replace(self::DEFAULT_CONFIGURATION, $option)
+            : self::DEFAULT_CONFIGURATION;
+    }
+
+    /**
      * Return the Antibot instance guarding a form
      *
      * One instance per form and request: arming and validating have to agree on the
      * signature, and the signature is derived from the validators.
      *
-     * @param string $identifier Form identifier
+     * @param string $identifier    Form identifier
+     * @param array $configuration  Antibot configuration
      *
      * @return Antibot Antibot instance
      */
-    protected function getAntibot(string $identifier): Antibot
+    protected function getAntibot(string $identifier, array $configuration): Antibot
     {
         if (!array_key_exists($identifier, $this->instances)) {
             $antibot = new Antibot($this->getSessionIdentifier(), $identifier);
@@ -274,13 +322,47 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             $antibot->setLogger($this->logger);
             $antibot->setParameterScope($this->getPluginNamespace(), $identifier);
             $antibot->addValidator(new BanValidator(GeneralUtility::makeInstance(BlacklistStore::class)));
-            $antibot->addValidator(new HoneypotValidator(['email' => 'email', 'homepage' => 'url']));
-            $antibot->addValidator(new HmacValidator());
+
+            if (!empty($configuration['honeypots'])) {
+                $antibot->addValidator(new HoneypotValidator((array)$configuration['honeypots']));
+            }
+
+            $antibot->addValidator($this->createHmacValidator($configuration));
 
             $this->instances[$identifier] = $antibot;
         }
 
         return $this->instances[$identifier];
+    }
+
+    /**
+     * Assemble the HMAC validator from a form's configuration
+     *
+     * @param array $configuration Antibot configuration
+     *
+     * @return HmacValidator HMAC validator
+     */
+    protected function createHmacValidator(array $configuration): HmacValidator
+    {
+        $hmacValidator = new HmacValidator();
+
+        // The order of request methods a form is expected to travel, e.g. "GET-POST"
+        if (!empty($configuration['methods'])) {
+            $methods = GeneralUtility::trimExplode('-', strtoupper($configuration['methods']), true, 2);
+            $hmacValidator->setMethodVector($methods[0], $methods[1] ?? $methods[0]);
+        }
+
+        // How long a form may lie around, and how quickly it may come back
+        if (!empty($configuration['times']) && is_array($configuration['times'])) {
+            $times = $configuration['times'];
+            $hmacValidator->setSubmissionTimes(
+                floatval($times['maximum'] ?? HmacValidator::MAXIMUM_SUBMISSION),
+                floatval($times['minimum'] ?? HmacValidator::MINIMUM_SUBMISSION),
+                floatval($times['followup'] ?? HmacValidator::MINIMUM_FOLLOWUP_SUBMISSION)
+            );
+        }
+
+        return $hmacValidator;
     }
 
     /**

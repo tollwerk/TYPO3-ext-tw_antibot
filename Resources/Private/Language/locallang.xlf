@@ -3,6 +3,9 @@
 	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
 		<header/>
 		<body>
+			<trans-unit id="blocked.message">
+				<source>This form has been blocked. If you reached this page in error, please get in touch with us by other means.</source>
+			</trans-unit>
 			<trans-unit id="tx_twantibot_domain_model_blacklist">
 				<source>Blacklist</source>
 			</trans-unit>
