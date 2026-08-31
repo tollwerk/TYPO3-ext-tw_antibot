@@ -36,7 +36,7 @@
 
 namespace Tollwerk\TwAntibot\Domain\Model\FormElements;
 
-use Jkphl\Antibot\Domain\Model\ValidationResult;
+use Jkphl\Antibot\Domain\Contract\ValidationResultInterface;
 use Jkphl\Antibot\Infrastructure\Model\InputElement;
 use Jkphl\Antibot\Ports\Antibot as AntibotCore;
 use Tollwerk\TwAntibot\Domain\Model\AbstractList;
@@ -149,12 +149,12 @@ class Antibot extends Section
      * Validate the current request
      *
      * @param ServerRequest $request             Current request
-     * @param ValidationResult $validationResult Validation result
+     * @param ValidationResultInterface $validationResult Validation result
      *
      * @return bool Validates
      * @throws FormDefinitionConsistencyException
      */
-    public function validate(ServerRequest $request, ValidationResult &$validationResult = null): bool
+    public function validate(ServerRequest $request, ValidationResultInterface &$validationResult = null): bool
     {
         // One time validation
         if ($this->valid === null) {

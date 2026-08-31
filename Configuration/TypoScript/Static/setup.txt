@@ -16,22 +16,3 @@ plugin.tx_twantibot {
         storagePid = {$plugin.tx_twantibot.persistence.storagePid}
     }
 }
-
-
-plugin.tx_form {
-    settings {
-        yamlConfigurations {
-            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
-        }
-    }
-}
-
-module.tx_form {
-    settings {
-        yamlConfigurations {
-            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
-        }
-    }
-}
-
-tt_content.form_formframework.20 = USER_INT

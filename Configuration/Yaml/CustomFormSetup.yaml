@@ -1,24 +1,17 @@
+# Antibot adds one template path and changes nothing else.
+#
+# The path carries a single template, AntibotBlocked.html. Fluid checks the paths from
+# the highest index downwards and falls through to the next one when a file is absent,
+# so every other template — Form.html above all — keeps coming from wherever the
+# surrounding project keeps it. Adding a path is safe; adding a template to it would
+# not be.
 TYPO3:
   CMS:
     Form:
       prototypes:
         standard:
-          validatorsDefinition:
-            Antibot:
-              implementationClassName: 'Tollwerk\TwAntibot\Validation\AntibotValidator'
           formElementsDefinition:
             Form:
               renderingOptions:
                 templateRootPaths:
-                  777: 'EXT:tw_antibot/Resources/Private/Templates'
-                partialRootPaths:
-                  777: 'EXT:tw_antibot/Resources/Private/Partials'
-            Antibot:
-              __inheritances:
-                10: 'TYPO3.CMS.Form.mixins.formElementMixins.FormElementMixin'
-              implementationClassName: 'Tollwerk\TwAntibot\Domain\Model\FormElements\Antibot'
-              renderingOptions:
-                _isCompositeFormElement: true
-            AntibotField:
-              __inheritances:
-                10: 'TYPO3.CMS.Form.mixins.formElementMixins.TextMixin'
+                  1560: 'EXT:tw_antibot/Resources/Private/Templates/'
