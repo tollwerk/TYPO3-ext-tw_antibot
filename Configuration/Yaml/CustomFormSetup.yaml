@@ -1,10 +1,10 @@
-# Antibot adds one template path and changes nothing else.
+# Antibot adds two template paths and one form element type, and changes nothing else.
 #
-# The path carries a single template, AntibotBlocked.html. Fluid checks the paths from
-# the highest index downwards and falls through to the next one when a file is absent,
-# so every other template — Form.html above all — keeps coming from wherever the
-# surrounding project keeps it. Adding a path is safe; adding a template to it would
-# not be.
+# The paths carry one file each — AntibotBlocked.html and AntibotField.html. Fluid checks
+# the paths from the highest index downwards and falls through to the next one when a
+# file is absent, so every other template and partial keeps coming from wherever the
+# surrounding project keeps it. Adding a path is safe; adding a widely used name to it
+# would not be.
 TYPO3:
   CMS:
     Form:
@@ -15,3 +15,11 @@ TYPO3:
               renderingOptions:
                 templateRootPaths:
                   1560: 'EXT:tw_antibot/Resources/Private/Templates/'
+                partialRootPaths:
+                  1560: 'EXT:tw_antibot/Resources/Private/Partials/'
+
+            # One armor field. They are added while a protected form is being built,
+            # never by an editor, and they carry neither label nor validator of their
+            # own — what they are worth is decided by the library, not by the framework.
+            AntibotField:
+              implementationClassName: 'TYPO3\CMS\Form\Domain\Model\FormElements\GenericFormElement'

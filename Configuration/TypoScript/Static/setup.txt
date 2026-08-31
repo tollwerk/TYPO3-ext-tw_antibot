@@ -16,3 +16,29 @@ plugin.tx_twantibot {
         storagePid = {$plugin.tx_twantibot.persistence.storagePid}
     }
 }
+
+plugin.tx_form {
+    settings {
+        yamlConfigurations {
+            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
+        }
+    }
+}
+
+module.tx_form {
+    settings {
+        yamlConfigurations {
+            777 = EXT:tw_antibot/Configuration/Yaml/CustomFormSetup.yaml
+        }
+    }
+}
+
+# EXT:form declares only `perform` as non-cacheable, so the initial rendering of the
+# form content element is cached — and with it the armor of whoever requested the page
+# first. Session-bound field names and a timestamp would then be handed to everyone
+# else. USER_INT re-renders the form on every request and leaves the rest of the page in
+# the cache.
+#
+# Plugins with a controller of their own need this not at all: Extbase converts their
+# USER object at runtime as soon as the action is registered as non-cacheable.
+tt_content.form_formframework.20 = USER_INT
