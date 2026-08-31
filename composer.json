@@ -3,6 +3,7 @@
   "type": "typo3-cms-extension",
   "description": "Death to Spambots! — CAPTCHA-less spam security for TYPO3 forms",
   "homepage": "https://github.com/tollwerk/TYPO3-ext-tw_antibot",
+  "license": "GPL-2.0-or-later",
   "authors": [
     {
       "name": "Joschi Kuphal",
@@ -10,9 +11,10 @@
     }
   ],
   "require": {
-    "php": ">=7.2",
-    "typo3/cms-core": "^10.0",
-    "jkphl/antibot": "@dev"
+    "php": "^7.4",
+    "typo3/cms-core": "^10.4",
+    "typo3/cms-form": "^10.4",
+    "jkphl/antibot": "dev-master"
   },
   "autoload": {
     "psr-4": {
@@ -25,8 +27,7 @@
     }
   },
   "replace": {
-    "tollwerk/tw-antibot": "self.version",
-    "typo3-ter/tw-antibot": "self.version"
+    "typo3-ter/tw_antibot": "self.version"
   },
   "repositories": [
     {
@@ -35,8 +36,7 @@
     },
     {
       "type": "vcs",
-      "url": "git@github.com:jkphl/antibot.git",
-      "reference": "master"
+      "url": "git@code.tollwerk.net:joschi-kuphal/antibot.git"
     }
   ],
   "extra": {
