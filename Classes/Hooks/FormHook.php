@@ -43,6 +43,7 @@ use TYPO3\CMS\Form\Domain\Model\FormElements\Page;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RootRenderableInterface;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
  * Form Rendering Hook
@@ -91,6 +92,20 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      * @var string
      */
     const OPTION_CLASS = 'antibotClass';
+
+    /**
+     * Key the expiry date is registered under
+     *
+     * `config.additionalHeaders` is a numbered list, and the entries are applied in the
+     * order of their keys. Keys of their own keep the two apart from whatever a project
+     * has configured there.
+     */
+    const HEADER_KEY = '900.';
+
+    /**
+     * Key the expiry date is registered under
+     */
+    const HEADER_KEY_EXPIRES = '901.';
     /**
      * Configuration a form falls back to when it just says "yes"
      *
@@ -192,10 +207,54 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return;
         }
         $this->armed[$identifier] = true;
+        $this->keepOutOfCaches();
 
         foreach ($this->getAntibot($identifier, $configuration)->armorInputs($request) as $input) {
             $this->createArmorField($renderable, $input->getAttributes());
         }
+    }
+
+    /**
+     * Keep the response out of the caches that would freeze an armor
+     *
+     * An armor belongs to one session and carries the second the form was served. A
+     * response holding it therefore has to be built anew every time: a cached page hands
+     * the first visitor's armor to everyone after them, and keeps handing it out until
+     * it has aged past the submission window — from then on the form turns everybody
+     * away. A ban imposed in the meantime would go unseen for just as long.
+     *
+     * Declining the page cache settles both halves. TYPO3 answers a request it could not
+     * cache with `private, no-store`, so browsers, proxies and service workers keep their
+     * hands off the page as well.
+     *
+     * Where the form is rendered by an uncached object anyway this costs nothing: by then
+     * the page has long been written to the cache, and the header it earns is the one it
+     * would have carried regardless.
+     *
+     * The two headers are spelled out rather than left to TYPO3, which sends cache
+     * headers of its own only where `config.sendCacheHeaders` asks it to. The refusal
+     * must not depend on that.
+     *
+     * The expiry date is there for the web server rather than for the visitor. A server
+     * configured to give PHP output a default lifetime — Apache's `ExpiresDefault` is the
+     * common case — grants it to every response that does not name one itself, `no-store`
+     * or not, and the day-long `max-age` it writes lands on top of the refusal. A date in
+     * the past is the one answer such a rule leaves alone.
+     */
+    protected function keepOutOfCaches(): void
+    {
+        $controller = $GLOBALS['TSFE'] ?? null;
+        if (!$controller instanceof TypoScriptFrontendController) {
+            return;
+        }
+
+        $controller->set_no_cache('A form armored against bots must not be served from a cache', true);
+        $controller->config['config']['additionalHeaders.'][self::HEADER_KEY] = [
+            'header' => 'Cache-Control: private, no-store',
+        ];
+        $controller->config['config']['additionalHeaders.'][self::HEADER_KEY_EXPIRES] = [
+            'header' => 'Expires: Thu, 01 Jan 1970 00:00:00 GMT',
+        ];
     }
 
     /**
