@@ -432,7 +432,10 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return;
         }
 
-        $subject = $banValidator->getSubjectKey($request);
+        // With the instance, because it knows the client address the installation resolved.
+        // Without it the subject would be REMOTE_ADDR — behind a proxy the proxy itself,
+        // and a ban on that locks out everybody.
+        $subject = $banValidator->getSubjectKey($request, $this->instances[$identifier] ?? null);
         if ($subject === null) {
             return;
         }
@@ -672,6 +675,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         if (!array_key_exists($identifier, $this->instances)) {
             $antibot = new Antibot($this->getSessionIdentifier(), $identifier);
             $antibot->setSecret(strval($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] ?? ''));
+
+            // Behind a reverse proxy REMOTE_ADDR is the proxy, and the same for everybody:
+            // a ban imposed on it locks out every visitor at once. TYPO3 resolves the real
+            // address from the headers the installation says it may trust, and that answer
+            // is the one antibot judges by.
+            $antibot->setClientAddress(strval(GeneralUtility::getIndpEnv('REMOTE_ADDR')));
             $antibot->setLogger($this->logger);
             $antibot->setParameterScope($this->getPluginNamespace(), $identifier);
             $banValidator                     = new BanValidator($this->getStore());
