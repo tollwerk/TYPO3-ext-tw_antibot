@@ -3,13 +3,23 @@
 
     Shown in place of a form the client may not use.
 
-    Deliberately a dead end for the machine and a way forward for the person: whoever
-    ends up here through a false positive is told how to reach us anyway.
+    A dead end for the machine and a way forward for the person: whoever ends up here
+    through a false positive is told, without being blamed for anything, how to reach us
+    anyway. The address comes from plugin.tx_twantibot.settings.contact.email — where it
+    is missing, the paragraph offering it goes with it rather than leaving a dead link.
+
+    A project that wants its own wording drops an AntibotBlocked.html of its own into any
+    of its template paths; they all sit above this one.
 
 --></f:comment>
 <div class="Antibot-blocked" role="alert">
-    <f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.message">
-        Dieses Formular wurde für Sie gesperrt.
-    </f:translate>
+    <p><strong><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.headline"/></strong></p>
+    <p><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.explanation"/></p>
+    <f:if condition="{form.renderingOptions.antibotContact}">
+        <f:variable name="antibotContactLink"><f:link.email email="{form.renderingOptions.antibotContact}"/></f:variable>
+        <p><f:format.raw><f:translate
+                key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.contact"
+                arguments="{0: antibotContactLink}"/></f:format.raw></p>
+    </f:if>
 </div>
 </html>

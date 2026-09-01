@@ -80,6 +80,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      */
     const OPTION = 'antibot';
     /**
+     * Rendering option the block template reads the contact address from
+     *
+     * @var string
+     */
+    const OPTION_CONTACT = 'antibotContact';
+    /**
      * Configuration a form falls back to when it just says "yes"
      *
      * @var array
@@ -288,7 +294,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
 
         // A banned client never gets a form, submission or not
         if ($result->isBlacklisted()) {
-            $renderable->setRenderingOption('templateName', self::TEMPLATE_BLOCKED);
+            $this->block($renderable);
 
             return;
         }
@@ -313,7 +319,25 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             $this->ban($renderable->getIdentifier(), $reason);
         }
 
-        $renderable->setRenderingOption('templateName', self::TEMPLATE_BLOCKED);
+        $this->block($renderable);
+    }
+
+    /**
+     * Show the notice in place of a form
+     *
+     * The contact address travels as a rendering option because that is what the block
+     * template can reach — the renderer hands it the form and nothing else.
+     *
+     * @param FormDefinition $formDefinition Form definition
+     */
+    protected function block(FormDefinition $formDefinition): void
+    {
+        $this->getInstallationDefaults();
+        $formDefinition->setRenderingOption(
+            self::OPTION_CONTACT,
+            strval($this->settings['contact']['email'] ?? '')
+        );
+        $formDefinition->setRenderingOption('templateName', self::TEMPLATE_BLOCKED);
     }
 
     /**

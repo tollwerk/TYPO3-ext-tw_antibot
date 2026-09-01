@@ -40,6 +40,9 @@
 			<trans-unit id="file.layoutRootPath">
 				<source>Layout root path</source>
 			</trans-unit>
+			<trans-unit id="contact.email">
+				<source>E-mail address offered to a client whose form is blocked</source>
+			</trans-unit>
 			<trans-unit id="banning">
 				<source>Banning</source>
 			</trans-unit>

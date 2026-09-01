@@ -18,6 +18,9 @@ plugin.tx_twantibot {
         # Installation-wide defaults. A form overrides any of them field by field
         # through its `antibot` rendering option; what it does not mention comes from
         # here, so that the same decision does not have to be repeated per form.
+        contact {
+            email = {$plugin.tx_twantibot.settings.contact.email}
+        }
         banning {
             enable = {$plugin.tx_twantibot.settings.banning.enable}
             period = {$plugin.tx_twantibot.settings.banning.period}
