@@ -19,6 +19,7 @@ use Jkphl\Antibot\Domain\Contract\ValidationResultInterface;
 use Jkphl\Antibot\Ports\Antibot;
 use Jkphl\Antibot\Ports\Validators\BanValidator;
 use Jkphl\Antibot\Ports\Validators\HmacValidator;
+use Jkphl\Antibot\Ports\Validators\DuplicateValidator;
 use Jkphl\Antibot\Ports\Validators\HoneypotValidator;
 use Jkphl\Antibot\Ports\Validators\ParameterEqualityValidator;
 use Jkphl\Antibot\Ports\Validators\ParameterLinkValidator;
@@ -28,6 +29,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Tollwerk\TwAntibot\Store\BlacklistStore;
+use Tollwerk\TwAntibot\Store\CacheStore;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -36,6 +38,7 @@ use TYPO3\CMS\Extbase\Object\ObjectManager;
 use Jkphl\Antibot\Infrastructure\Model\ParameterPath;
 use TYPO3\CMS\Extbase\Service\ExtensionService;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
+use TYPO3\CMS\Form\Domain\Model\Renderable\CompositeRenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\FormElements\Page;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RenderableInterface;
 use TYPO3\CMS\Form\Domain\Model\Renderable\RootRenderableInterface;
@@ -90,6 +93,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         'links'        => null,
         'equality'     => null,
         'parameterSet' => null,
+        'duplicates'   => null,
     ];
     /**
      * Validation results, indexed by form identifier
@@ -115,6 +119,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      * @var BanValidator[]
      */
     protected $banValidators = [];
+    /**
+     * Duplicate validators and their lifetimes, indexed by form identifier
+     *
+     * @var array[]
+     */
+    protected $duplicates = [];
 
     /**
      * Constructor
@@ -168,6 +178,57 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         foreach ($this->getAntibot($identifier, $configuration)->armorInputs($request) as $input) {
             $this->createArmorField($renderable, $input->getAttributes());
         }
+    }
+
+    /**
+     * Note the content of a submission that has run its course
+     *
+     * Recognizing repeated content takes two halves: the check, which sits among the
+     * validators, and the note taken once a submission has been accepted. This is the
+     * second half, and this hook is where it fits.
+     *
+     * A current page of NULL means the runtime is past the last one: everything mapped,
+     * everything validated, the finishers about to run. A finisher of our own would
+     * have been the obvious place, but it can only be appended — and the notification
+     * finisher of a form redirects and cancels the chain, so anything behind it never
+     * runs. This hook runs before all of them.
+     *
+     * @param FormRuntime $formRuntime                       Form runtime
+     * @param CompositeRenderableInterface|null $currentPage Current page
+     * @param CompositeRenderableInterface|null $lastPage    Last displayed page
+     * @param array $requestArguments                        Request arguments
+     *
+     * @return CompositeRenderableInterface|null Current page, untouched
+     */
+    public function afterInitializeCurrentPage(
+        FormRuntime $formRuntime,
+        CompositeRenderableInterface $currentPage = null,
+        CompositeRenderableInterface $lastPage = null,
+        array $requestArguments = []
+    ) {
+        // Only the moment the form has run its course is of interest here
+        if ($currentPage !== null) {
+            return $currentPage;
+        }
+
+        $formDefinition = $formRuntime->getFormDefinition();
+        $result         = $this->validate($formDefinition);
+        if ($result === null) {
+            return $currentPage;
+        }
+
+        // A submission that completes the form never renders it again — it goes
+        // straight to the finishers, which send the mail. Refusing at rendering time
+        // would therefore refuse nothing at all: exactly the submission a machine makes
+        // would pass. Sending the runtime back to the last page instead keeps the
+        // finishers from running, and the notice takes over from there.
+        if ($result->isBlacklisted() || (!$result->isValid() && $this->isSubmission($formDefinition))) {
+            return $lastPage ?? $formDefinition->getPageByIndex(0);
+        }
+
+        $this->rememberSubmission($formDefinition->getIdentifier());
+
+        return $currentPage;
     }
 
     /**
@@ -339,7 +400,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         //
         // Nothing is lost by it: reaching a later step takes a form state that TYPO3
         // signs, and that signature is only handed out to a first step that passed.
-        return intval($scoped['__currentPage'] ?? 0) === 0;
+        //
+        // __currentPage names the page to be shown *next*, not the one submitted. The
+        // first page therefore comes back as 1 — as does a single page form, where 1 is
+        // past the end and sends the submission to the finishers. A missing value is
+        // treated the same way, so that a bare POST is judged rather than waved through.
+        return intval($scoped['__currentPage'] ?? 1) === 1;
     }
 
     /**
@@ -487,6 +553,49 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             }
             $antibot->addValidator($setValidator);
         }
+
+        // Content that has been submitted before
+        if (!empty($configuration['duplicates']['parameters'])) {
+            $duplicateValidator = new DuplicateValidator(
+                GeneralUtility::makeInstance(CacheStore::class),
+                $this->qualifyAll($identifier, (array)$configuration['duplicates']['parameters']),
+                DuplicateValidator::POST
+            );
+            $this->duplicates[$identifier] = [
+                $duplicateValidator,
+                max(60, intval($configuration['duplicates']['lifetime'] ?? 86400)),
+            ];
+            $antibot->addValidator($duplicateValidator);
+        }
+    }
+
+    /**
+     * Note down the content of a submission that has been accepted
+     *
+     * Called by the finisher this extension adds to a form that asks for duplicate
+     * detection — the one moment at which a submission is known to have made it through
+     * everything.
+     *
+     * @param string $identifier Form identifier
+     */
+    public function rememberSubmission(string $identifier): void
+    {
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        list($validator, $lifetime) = $this->duplicates[$identifier] ?? [null, 0];
+        if (($request === null) || ($validator === null)) {
+            return;
+        }
+
+        $fingerprint = $validator->getFingerprint($request);
+        if ($fingerprint === null) {
+            return;
+        }
+
+        GeneralUtility::makeInstance(CacheStore::class)->remember($fingerprint, $lifetime);
+        $this->logger->info('Antibot noted the content of an accepted submission', [
+            'form'     => $identifier,
+            'lifetime' => $lifetime,
+        ]);
     }
 
     /**

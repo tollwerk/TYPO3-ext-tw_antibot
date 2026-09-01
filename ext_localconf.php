@@ -18,3 +18,8 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'][1
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
     = $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
     ?? ['frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class];
+
+// The moment a submission has run its course — everything mapped, everything validated,
+// the finishers about to run. Antibot notes down there what a form asked it to remember.
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1546083660]
+    = \Tollwerk\TwAntibot\Hooks\FormHook::class;
