@@ -14,7 +14,7 @@
     "php": "^7.4",
     "typo3/cms-core": "^10.4",
     "typo3/cms-form": "^10.4",
-    "jkphl/antibot": "dev-master"
+    "jkphl/antibot": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -29,16 +29,6 @@
   "replace": {
     "typo3-ter/tw_antibot": "self.version"
   },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://composer.typo3.org/"
-    },
-    {
-      "type": "vcs",
-      "url": "git@code.tollwerk.net:joschi-kuphal/antibot.git"
-    }
-  ],
   "extra": {
     "typo3/cms": {
       "extension-key": "tw_antibot"
