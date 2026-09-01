@@ -376,7 +376,27 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      */
     protected function getStore(): BlacklistStore
     {
-        return GeneralUtility::makeInstance(BlacklistStore::class, $this->getStoragePid());
+        return GeneralUtility::makeInstance(
+            BlacklistStore::class,
+            $this->getStoragePid(),
+            $this->getBanPeriod()
+        );
+    }
+
+    /**
+     * Return the number of seconds a new ban lasts
+     *
+     * Zero means it lasts until someone takes it back. A month is the default, as it was
+     * in the 6.x version: long enough to be a deterrent, short enough that a false
+     * positive does not become a life sentence nobody remembers to lift.
+     *
+     * @return int Seconds
+     */
+    protected function getBanPeriod(): int
+    {
+        $this->getInstallationDefaults();
+
+        return max(0, intval($this->settings['banning']['period'] ?? 0));
     }
 
     /**

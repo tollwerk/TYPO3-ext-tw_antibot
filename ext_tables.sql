@@ -7,6 +7,7 @@ CREATE TABLE tx_twantibot_domain_model_blacklist
     value    varchar(255) DEFAULT ''  NOT NULL,
     data     text,
     error    text,
+    endtime  int(11)      DEFAULT '0'  NOT NULL,
     UNIQUE KEY `entry` (`value`, `property`)
 );
 

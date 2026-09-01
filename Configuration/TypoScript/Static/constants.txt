@@ -24,6 +24,8 @@ plugin.tx_twantibot {
         banning {
             # cat=plugin.tx_twantibot/banning/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:banning.enable
             enable = 1
+            # cat=plugin.tx_twantibot/banning/b; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:banning.period
+            period = 2592000
         }
 
         time {

@@ -58,15 +58,63 @@ class BlacklistStore implements ExpiringStoreInterface
      * @var int
      */
     protected $storagePid;
+    /**
+     * Seconds a new ban lasts (0 = until someone lifts it)
+     *
+     * @var int
+     */
+    protected $period;
+    /**
+     * Whether expired records have already been removed in this request
+     *
+     * @var bool
+     */
+    protected static $collected = false;
 
     /**
      * Constructor
      *
      * @param int $storagePid Storage page for new records
+     * @param int $period     Seconds a new ban lasts (0 = until someone lifts it)
      */
-    public function __construct(int $storagePid = 0)
+    public function __construct(int $storagePid = 0, int $period = 0)
     {
         $this->storagePid = $storagePid;
+        $this->period     = max(0, $period);
+
+        $this->collectGarbage();
+    }
+
+    /**
+     * Remove records whose ban has run out
+     *
+     * Filtering them out of the queries would be enough to lift the ban, but not enough
+     * to be done with them: the record carries the whole submission — a name, an address,
+     * whatever someone wrote. Once the ban is over there is no reason left to keep it,
+     * and a retention period that quietly never ends is not a retention period.
+     *
+     * Runs once per request rather than on a schedule, so that the promise holds on an
+     * installation where nobody set a scheduler task up.
+     *
+     * @return int Number of records removed
+     */
+    public function collectGarbage(): int
+    {
+        if (self::$collected) {
+            return 0;
+        }
+        self::$collected = true;
+
+        $query = $this->createQueryBuilder();
+
+        return intval(
+            $query->delete(self::TABLE)
+                ->where(
+                    $query->expr()->gt('endtime', $query->createNamedParameter(0, \PDO::PARAM_INT)),
+                    $query->expr()->lt('endtime', $query->createNamedParameter(time(), \PDO::PARAM_INT))
+                )
+                ->execute()
+        );
     }
 
     /**
@@ -88,7 +136,13 @@ class BlacklistStore implements ExpiringStoreInterface
             ->from(self::TABLE)
             ->where(
                 $query->expr()->eq('property', $query->createNamedParameter($subject[0], \PDO::PARAM_INT)),
-                $query->expr()->eq('value', $query->createNamedParameter($subject[1]))
+                $query->expr()->eq('value', $query->createNamedParameter($subject[1])),
+                // A ban whose end time has passed is no ban any more. Zero means it has
+                // none and stands until someone takes it back.
+                $query->expr()->orX(
+                    $query->expr()->eq('endtime', $query->createNamedParameter(0, \PDO::PARAM_INT)),
+                    $query->expr()->gt('endtime', $query->createNamedParameter(time(), \PDO::PARAM_INT))
+                )
             )
             ->execute()
             ->fetchColumn(0);
@@ -127,19 +181,51 @@ class BlacklistStore implements ExpiringStoreInterface
     public function ban(string $key, string $reason, string $data = ''): bool
     {
         $subject = $this->parse($key);
-        if (($subject === null) || $this->has($key)) {
+        if ($subject === null) {
             return false;
         }
 
-        $this->createQueryBuilder()->insert(self::TABLE)->values([
-            'pid'      => $this->storagePid,
+        // An expired record for the same subject is taken over rather than duplicated;
+        // the folder should hold one entry per subject, not a history of one.
+        $query = $this->createQueryBuilder();
+        $existing = $query->select('uid')
+            ->from(self::TABLE)
+            ->where(
+                $query->expr()->eq('property', $query->createNamedParameter($subject[0], \PDO::PARAM_INT)),
+                $query->expr()->eq('value', $query->createNamedParameter($subject[1]))
+            )
+            ->execute()
+            ->fetchColumn(0);
+
+        $values = [
             'tstamp'   => time(),
-            'crdate'   => time(),
             'property' => $subject[0],
             'value'    => $subject[1],
             'error'    => $reason,
             'data'     => $data,
-        ])->execute();
+            'endtime'  => $this->period ? (time() + $this->period) : 0,
+        ];
+
+        if ($existing !== false) {
+            if ($this->has($key)) {
+                return false;
+            }
+
+            $update = $this->createQueryBuilder();
+            $update->update(self::TABLE)
+                ->where($update->expr()->eq('uid', $update->createNamedParameter(intval($existing), \PDO::PARAM_INT)));
+            foreach ($values as $column => $value) {
+                $update->set($column, $value);
+            }
+            $update->execute();
+
+            return true;
+        }
+
+        $this->createQueryBuilder()
+            ->insert(self::TABLE)
+            ->values($values + ['pid' => $this->storagePid, 'crdate' => time()])
+            ->execute();
 
         return true;
     }

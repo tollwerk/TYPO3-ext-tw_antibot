@@ -20,6 +20,7 @@ plugin.tx_twantibot {
         # here, so that the same decision does not have to be repeated per form.
         banning {
             enable = {$plugin.tx_twantibot.settings.banning.enable}
+            period = {$plugin.tx_twantibot.settings.banning.period}
         }
         time {
             minimum = {$plugin.tx_twantibot.settings.time.minimum}

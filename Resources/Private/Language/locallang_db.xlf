@@ -46,6 +46,9 @@
 			<trans-unit id="banning.enable">
 				<source>Ban a client after a refused submission</source>
 			</trans-unit>
+			<trans-unit id="banning.period">
+				<source>Seconds a ban lasts (0 = until someone lifts it)</source>
+			</trans-unit>
 			<trans-unit id="time">
 				<source>Submission times</source>
 			</trans-unit>
