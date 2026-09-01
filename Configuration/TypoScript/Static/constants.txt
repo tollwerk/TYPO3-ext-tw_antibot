@@ -1,5 +1,9 @@
 # customsubcategory=common=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:common
 # customsubcategory=file=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:file
+# customsubcategory=banning=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:banning
+# customsubcategory=time=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:time
+# customsubcategory=order=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:order
+# customsubcategory=content=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:content
 
 plugin.tx_twantibot {
     view {
@@ -14,5 +18,31 @@ plugin.tx_twantibot {
     persistence {
         # cat=plugin.tx_twantibot/common/a; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:common.storagePid
         storagePid =
+    }
+
+    settings {
+        banning {
+            # cat=plugin.tx_twantibot/banning/a; type=boolean; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:banning.enable
+            enable = 1
+        }
+
+        time {
+            # cat=plugin.tx_twantibot/time/a; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:time.minimum
+            minimum = 3
+            # cat=plugin.tx_twantibot/time/b; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:time.maximum
+            maximum = 3600
+            # cat=plugin.tx_twantibot/time/c; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:time.followup
+            followup = 1
+        }
+
+        order {
+            # cat=plugin.tx_twantibot/order/a; type=string; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:order.method
+            method = GET-POST
+        }
+
+        content {
+            # cat=plugin.tx_twantibot/content/a; type=int+; label=LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:content.duplicateLifetime
+            duplicateLifetime = 86400
+        }
     }
 }

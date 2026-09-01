@@ -125,6 +125,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      * @var array[]
      */
     protected $duplicates = [];
+    /**
+     * Settings of this extension, as the installation configured them
+     *
+     * @var array|null
+     */
+    protected $settings = null;
 
     /**
      * Constructor
@@ -370,7 +376,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      */
     protected function getStore(): BlacklistStore
     {
-        return GeneralUtility::makeInstance(BlacklistStore::class);
+        return GeneralUtility::makeInstance(BlacklistStore::class, $this->getStoragePid());
     }
 
     /**
@@ -459,9 +465,77 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             return null;
         }
 
-        return is_array($option)
-            ? array_replace(self::DEFAULT_CONFIGURATION, $option)
-            : self::DEFAULT_CONFIGURATION;
+        $configuration = array_replace(self::DEFAULT_CONFIGURATION, $this->getInstallationDefaults());
+
+        return is_array($option) ? array_replace($configuration, $option) : $configuration;
+    }
+
+    /**
+     * Return the defaults the installation sets through TypoScript
+     *
+     * Three levels, each overriding the one before: what this extension ships, what the
+     * installation sets in its constants, and what a form asks for. The middle one keeps
+     * a decision that holds for every form — how long a form stays valid, whether a
+     * refusal bans — from having to be repeated in each of them.
+     *
+     * @return array Installation defaults
+     */
+    protected function getInstallationDefaults(): array
+    {
+        if ($this->settings === null) {
+            $this->settings = (array)GeneralUtility::makeInstance(ObjectManager::class)
+                ->get(ConfigurationManagerInterface::class)
+                ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'TwAntibot');
+        }
+
+        $defaults = [];
+
+        if (isset($this->settings['banning']['enable'])) {
+            $defaults['ban'] = (bool)intval($this->settings['banning']['enable']);
+        }
+
+        if (!empty($this->settings['time']['maximum'])) {
+            $defaults['times'] = [
+                'minimum'  => intval($this->settings['time']['minimum'] ?? 0),
+                'maximum'  => intval($this->settings['time']['maximum']),
+                'followup' => intval($this->settings['time']['followup'] ?? 0),
+            ];
+        }
+
+        if (!empty($this->settings['order']['method'])) {
+            $defaults['methods'] = strval($this->settings['order']['method']);
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Return the storage page new blacklist records are written to
+     *
+     * @return int Storage page
+     */
+    protected function getStoragePid(): int
+    {
+        $this->getInstallationDefaults();
+
+        return intval($this->settings['storagePid'] ?? 0);
+    }
+
+    /**
+     * Return the number of seconds a submitted text is remembered
+     *
+     * @param array $configuration Antibot configuration
+     *
+     * @return int Lifetime in seconds
+     */
+    protected function getDuplicateLifetime(array $configuration): int
+    {
+        $this->getInstallationDefaults();
+        $lifetime = $configuration['duplicates']['lifetime']
+            ?? $this->settings['content']['duplicateLifetime']
+            ?? 86400;
+
+        return max(60, intval($lifetime));
     }
 
     /**
@@ -482,7 +556,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             $antibot->setSecret(strval($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] ?? ''));
             $antibot->setLogger($this->logger);
             $antibot->setParameterScope($this->getPluginNamespace(), $identifier);
-            $banValidator                       = new BanValidator($this->getStore());
+            $banValidator                     = new BanValidator($this->getStore());
             $this->banValidators[$identifier]   = $banValidator;
             $antibot->addValidator($banValidator);
 
@@ -561,10 +635,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
                 $this->qualifyAll($identifier, (array)$configuration['duplicates']['parameters']),
                 DuplicateValidator::POST
             );
-            $this->duplicates[$identifier] = [
-                $duplicateValidator,
-                max(60, intval($configuration['duplicates']['lifetime'] ?? 86400)),
-            ];
+            $this->duplicates[$identifier] = [$duplicateValidator, $this->getDuplicateLifetime($configuration)];
             $antibot->addValidator($duplicateValidator);
         }
     }

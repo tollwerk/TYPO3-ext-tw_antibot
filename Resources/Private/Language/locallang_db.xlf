@@ -22,6 +22,54 @@
 				<source>Blacklist entry storage PID</source>
 			</trans-unit>
 
+			<trans-unit id="common">
+				<source>General</source>
+			</trans-unit>
+			<trans-unit id="common.storagePid">
+				<source>Storage folder for blacklist records</source>
+			</trans-unit>
+			<trans-unit id="file">
+				<source>Templates</source>
+			</trans-unit>
+			<trans-unit id="file.templateRootPath">
+				<source>Template root path</source>
+			</trans-unit>
+			<trans-unit id="file.partialRootPath">
+				<source>Partial root path</source>
+			</trans-unit>
+			<trans-unit id="file.layoutRootPath">
+				<source>Layout root path</source>
+			</trans-unit>
+			<trans-unit id="banning">
+				<source>Banning</source>
+			</trans-unit>
+			<trans-unit id="banning.enable">
+				<source>Ban a client after a refused submission</source>
+			</trans-unit>
+			<trans-unit id="time">
+				<source>Submission times</source>
+			</trans-unit>
+			<trans-unit id="time.minimum">
+				<source>Minimum seconds before a submission</source>
+			</trans-unit>
+			<trans-unit id="time.maximum">
+				<source>Maximum seconds a form stays valid</source>
+			</trans-unit>
+			<trans-unit id="time.followup">
+				<source>Minimum seconds for a follow-up submission</source>
+			</trans-unit>
+			<trans-unit id="order">
+				<source>Request method order</source>
+			</trans-unit>
+			<trans-unit id="order.method">
+				<source>Expected order, e.g. GET-POST</source>
+			</trans-unit>
+			<trans-unit id="content">
+				<source>Content</source>
+			</trans-unit>
+			<trans-unit id="content.duplicateLifetime">
+				<source>Seconds a submitted text is remembered</source>
+			</trans-unit>
 			<trans-unit id="tx_twantibot_domain_model_blacklist">
 				<source>Blacklist</source>
 			</trans-unit>

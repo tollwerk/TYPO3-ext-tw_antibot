@@ -14,6 +14,24 @@ plugin.tx_twantibot {
 
     settings {
         storagePid = {$plugin.tx_twantibot.persistence.storagePid}
+
+        # Installation-wide defaults. A form overrides any of them field by field
+        # through its `antibot` rendering option; what it does not mention comes from
+        # here, so that the same decision does not have to be repeated per form.
+        banning {
+            enable = {$plugin.tx_twantibot.settings.banning.enable}
+        }
+        time {
+            minimum = {$plugin.tx_twantibot.settings.time.minimum}
+            maximum = {$plugin.tx_twantibot.settings.time.maximum}
+            followup = {$plugin.tx_twantibot.settings.time.followup}
+        }
+        order {
+            method = {$plugin.tx_twantibot.settings.order.method}
+        }
+        content {
+            duplicateLifetime = {$plugin.tx_twantibot.settings.content.duplicateLifetime}
+        }
     }
 }
 
