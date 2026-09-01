@@ -86,6 +86,12 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
      */
     const OPTION_CONTACT = 'antibotContact';
     /**
+     * Rendering option the block template reads its classes from
+     *
+     * @var string
+     */
+    const OPTION_CLASS = 'antibotClass';
+    /**
      * Configuration a form falls back to when it just says "yes"
      *
      * @var array
@@ -337,6 +343,15 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             self::OPTION_CONTACT,
             strval($this->settings['contact']['email'] ?? '')
         );
+
+        // Where the installation names no classes, the notice takes those of the form:
+        // it then stands in the same place in the same layout, whatever that layout is.
+        $classes = trim(strval($this->settings['classAttribute'] ?? ''));
+        $formDefinition->setRenderingOption(
+            self::OPTION_CLASS,
+            strlen($classes) ? $classes : strval($formDefinition->getRenderingOptions()['elementClassAttribute'] ?? '')
+        );
+
         $formDefinition->setRenderingOption('templateName', self::TEMPLATE_BLOCKED);
     }
 

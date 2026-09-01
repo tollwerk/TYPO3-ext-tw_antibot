@@ -8,15 +8,24 @@
     anyway. The address comes from plugin.tx_twantibot.settings.contact.email — where it
     is missing, the paragraph offering it goes with it rather than leaving a dead link.
 
+    The address is linked through typolink rather than f:link.email, so that whatever a
+    project does to its links — an icon, a title telling people what will open — happens
+    here too, and the notice reads like the rest of the site rather than like a stranger.
+
+    The notice takes the classes the form itself would have carried. It stands in the same
+    place in the same layout — without this extension knowing a thing about the project's
+    grid, and without a line of CSS of its own.
+
     A project that wants its own wording drops an AntibotBlocked.html of its own into any
     of its template paths; they all sit above this one.
 
 --></f:comment>
-<div class="Antibot-blocked" role="alert">
+<div class="{form.renderingOptions.antibotClass} Antibot-blocked" role="alert">
     <p><strong><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.headline"/></strong></p>
     <p><f:translate key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.explanation"/></p>
     <f:if condition="{form.renderingOptions.antibotContact}">
-        <f:variable name="antibotContactLink"><f:link.email email="{form.renderingOptions.antibotContact}"/></f:variable>
+        <f:variable name="antibotContactLink"><f:link.typolink
+                parameter="{form.renderingOptions.antibotContact}">{form.renderingOptions.antibotContact}</f:link.typolink></f:variable>
         <p><f:format.raw><f:translate
                 key="LLL:EXT:tw_antibot/Resources/Private/Language/locallang.xlf:blocked.contact"
                 arguments="{0: antibotContactLink}"/></f:format.raw></p>

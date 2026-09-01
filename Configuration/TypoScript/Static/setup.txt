@@ -21,6 +21,12 @@ plugin.tx_twantibot {
         contact {
             email = {$plugin.tx_twantibot.settings.contact.email}
         }
+
+        # The classes the notice is given. Empty means it takes the ones the form itself
+        # would have carried, which puts it in the same place in the same layout — but a
+        # form's classes are a form's, so a project that has a plainer container for a
+        # block of text names it here.
+        classAttribute = {$plugin.tx_twantibot.settings.classAttribute}
         banning {
             enable = {$plugin.tx_twantibot.settings.banning.enable}
             period = {$plugin.tx_twantibot.settings.banning.period}
