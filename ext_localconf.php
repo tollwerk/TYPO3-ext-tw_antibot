@@ -23,3 +23,11 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot
 // the finishers about to run. Antibot notes down there what a form asked it to remember.
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1546083660]
     = \Tollwerk\TwAntibot\Hooks\FormHook::class;
+
+// A ban record is read, not written: whoever opens one wants to see what arrived, and
+// that is a table of fields rather than the JSON it is stored as.
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1546083661] = [
+    'nodeName' => 'antibotSubmission',
+    'priority' => 40,
+    'class'    => \Tollwerk\TwAntibot\Form\Element\SubmissionElement::class,
+];

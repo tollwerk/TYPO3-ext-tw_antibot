@@ -74,10 +74,8 @@ return [
             'exclude' => false,
             'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist.data',
             'config'  => [
-                'type' => 'text',
-                'cols' => 40,
-                'rows' => 15,
-                'eval' => 'trim'
+                'type'       => 'user',
+                'renderType' => 'antibotSubmission',
             ]
         ],
         'error'    => [

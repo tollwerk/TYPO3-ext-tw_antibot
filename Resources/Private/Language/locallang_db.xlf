@@ -88,6 +88,24 @@
 			<trans-unit id="tx_twantibot_domain_model_blacklist.value">
 				<source>Value</source>
 			</trans-unit>
+			<trans-unit id="submission.submitted">
+				<source>What was submitted</source>
+			</trans-unit>
+			<trans-unit id="submission.carried">
+				<source>Carried along by the form</source>
+			</trans-unit>
+			<trans-unit id="submission.empty">
+				<source>(empty)</source>
+			</trans-unit>
+			<trans-unit id="submission.blank">
+				<source>(left blank)</source>
+			</trans-unit>
+			<trans-unit id="submission.none">
+				<source>Nothing was recorded.</source>
+			</trans-unit>
+			<trans-unit id="submission.unreadable">
+				<source>Stored as it arrived, and not a readable submission:</source>
+			</trans-unit>
 			<trans-unit id="tx_twantibot_domain_model_blacklist.data">
 				<source>Data</source>
 			</trans-unit>
