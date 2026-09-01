@@ -41,7 +41,7 @@
 				<source>Layout root path</source>
 			</trans-unit>
 			<trans-unit id="common.classAttribute">
-				<source>Classes for the notice (empty: those of the form itself)</source>
+				<source>Notice classes: Empty means the notice keeps the classes of the form itself</source>
 			</trans-unit>
 			<trans-unit id="contact.email">
 				<source>E-mail address offered to a client whose form is blocked</source>
