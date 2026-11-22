@@ -11,9 +11,6 @@ return [
         'searchFields'    => 'value,note',
         'iconfile'        => 'EXT:tw_antibot/Resources/Public/Icons/whitelist.png'
     ],
-    'interface' => [
-        'showRecordFieldList' => 'property, value, note',
-    ],
     'types'     => [
         '1' => ['showitem' => '--palette--;;propertyvalue, note'],
     ],

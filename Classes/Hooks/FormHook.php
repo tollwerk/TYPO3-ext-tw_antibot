@@ -25,11 +25,13 @@ use Jkphl\Antibot\Ports\Validators\ParameterEqualityValidator;
 use Jkphl\Antibot\Ports\Validators\ParameterLinkValidator;
 use Jkphl\Antibot\Ports\Validators\ParameterPlausibilityValidator;
 use Jkphl\Antibot\Ports\Validators\ParameterSetValidator;
+use Jkphl\Antibot\Ports\Validators\ParameterStopwordValidator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 use Tollwerk\TwAntibot\Store\BlacklistStore;
 use Tollwerk\TwAntibot\Store\CacheStore;
+use Tollwerk\TwAntibot\Store\StopwordList;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -121,6 +123,7 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
         'equality'     => null,
         'parameterSet' => null,
         'duplicates'   => null,
+        'stopwords'    => null,
     ];
     /**
      * Validation results, indexed by form identifier
@@ -765,6 +768,31 @@ class FormHook implements SingletonInterface, LoggerAwareInterface
             $this->duplicates[$identifier] = [$duplicateValidator, $this->getDuplicateLifetime($configuration)];
             $antibot->addValidator($duplicateValidator);
         }
+
+        $this->addStopwordValidator($antibot, $identifier, $configuration);
+    }
+
+    /**
+     * Add the validator that refuses terms no welcome submission contains
+     *
+     * The terms are the stopword records maintained in the backend. The form only says
+     * which of its fields they apply to.
+     *
+     * @param Antibot $antibot       Antibot instance
+     * @param string $identifier     Form identifier
+     * @param array $configuration   Antibot configuration
+     */
+    protected function addStopwordValidator(Antibot $antibot, string $identifier, array $configuration): void
+    {
+        if (empty($configuration['stopwords']['parameters'])) {
+            return;
+        }
+
+        $antibot->addValidator(new ParameterStopwordValidator(
+            GeneralUtility::makeInstance(StopwordList::class),
+            $this->qualifyAll($identifier, (array)$configuration['stopwords']['parameters']),
+            ParameterStopwordValidator::POST
+        ));
     }
 
     /**

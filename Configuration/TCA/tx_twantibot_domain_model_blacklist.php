@@ -13,9 +13,6 @@ return [
         'enablecolumns' => ['endtime' => 'endtime'],
         'iconfile'     => 'EXT:tw_antibot/Resources/Public/Icons/blacklist.png'
     ],
-    'interface' => [
-        'showRecordFieldList' => 'hidden, property, value, data, error',
-    ],
     'types'     => [
         '1' => [
             'showitem' => '--palette--;;propertyvalue, --palette--;;dataerror,'

@@ -67,7 +67,7 @@ Then, in this order:
    carried, which is right until a grid layout puts a form in a narrower column than a block
    of text.
 
-The two database tables are created by the usual schema update.
+The three database tables are created by the usual schema update.
 
 ## Protecting a form
 
@@ -93,6 +93,8 @@ renderingOptions:
       parameters: [name, subject, message]
     duplicates:
       parameters: [subject, message]
+    stopwords:
+      parameters: [name, subject, message]
 ```
 
 A form built in PHP asks the same way:
@@ -112,6 +114,7 @@ $form->setRenderingOption('antibot', [
 | `equality` | Refuses submissions in which several unrelated fields carry one and the same value |
 | `parameterSet` | Compares the submitted field names against the announced ones |
 | `duplicates` | Refuses content that has been submitted before. Remembered for `content.duplicateLifetime`, and only for submissions that were accepted |
+| `stopwords` | Refuses submissions whose named fields carry one of the stopwords maintained in the backend. See [Stopwords](#stopwords) |
 | `methods` | The order of request methods a form is served and submitted under, e.g. `GET-POST` |
 | `times` | `minimum`, `maximum` and `followup` seconds. Defaults come from the constants |
 | `ban` | Whether a refused submission earns a ban. Default: yes |
@@ -129,6 +132,27 @@ submission and days later.
 Override `Resources/Private/Templates/AntibotBlocked.html` through
 `plugin.tx_twantibot.view.templateRootPath` to word it differently. The address from
 `settings.contact.email` reaches the template as a rendering option.
+
+## Stopwords
+
+Some campaigns give themselves away by a word: a product, a currency, a phrase every
+message of theirs repeats. A stopword is a record of its own — create it with the list
+module wherever you like, the storage folder being the natural place. Every stopword holds
+for the whole installation, in every form that names fields for it through `stopwords`.
+
+A stopword is a word or a phrase. It matches whole words only and ignores casing, Unicode
+included, so `sex` leaves "Sussex" alone. The words of a phrase may be separated by any
+whitespace. A `*` stands for any number of further letters: `casino*` also catches
+"casinos" and "Casinobonus".
+
+There is no threshold — a single hit refuses the submission, and with banning switched on
+it bans the sender. Keep the list sharp: a term an honest person might type keeps that
+person out. A stopword that is switched off takes no part in the check, which makes it
+possible to try out whether a term causes trouble without losing it.
+
+Editing the list takes effect with the next submission. It does not invalidate the forms
+already handed out — only adding `stopwords` to a form, or removing it, does, like every
+change to a form's checks.
 
 ## Ban records
 

@@ -21,5 +21,7 @@ call_user_func(
             'EXT:tw_antibot/Resources/Private/Language/locallang_csh_tx_twantibot_domain_model_whitelist.xlf'
         );
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_whitelist');
+
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_twantibot_domain_model_stopword');
     }
 );

@@ -21,3 +21,12 @@ CREATE TABLE tx_twantibot_domain_model_whitelist
     note     text,
     UNIQUE KEY `entry` (`value`, `property`)
 );
+
+#
+# Table structure for table 'tx_twantibot_domain_model_stopword'
+#
+CREATE TABLE tx_twantibot_domain_model_stopword
+(
+    term varchar(255) DEFAULT '' NOT NULL,
+    note text
+);

@@ -124,6 +124,18 @@
 			<trans-unit id="tx_twantibot_domain_model_whitelist.note">
 				<source>Note</source>
 			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_stopword">
+				<source>Stopword</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_stopword.term">
+				<source>Term</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_stopword.term.description">
+				<source>A word or a phrase. It matches whole words only and ignores casing, so "sex" leaves "Sussex" alone. A * stands for any number of further letters: "casino*" also catches "casinos". A single hit refuses the submission and, unless banning is switched off, bans the sender.</source>
+			</trans-unit>
+			<trans-unit id="tx_twantibot_domain_model_stopword.note">
+				<source>Note</source>
+			</trans-unit>
 			<trans-unit id="tx_twantibot_domain_model_list.property.ip">
 				<source>IP Address</source>
 			</trans-unit>
