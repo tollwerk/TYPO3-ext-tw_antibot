@@ -1,0 +1,10 @@
+/**
+ * Notice in place of a closed form
+ */
+.AntibotNotice > :first-child {
+    margin-block-start: 0;
+}
+
+.AntibotNotice > :last-child {
+    margin-block-end: 0;
+}

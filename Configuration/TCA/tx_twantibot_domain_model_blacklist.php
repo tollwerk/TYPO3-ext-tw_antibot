@@ -1,89 +1,70 @@
 <?php
+
+/**
+ * Bans: a client address or a value of a field, with the reason and the submission
+ *
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
+ */
+
+declare(strict_types=1);
+
+use Tollwerk\TwAntibot\Store\BanStore;
+
+$labels = 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist';
+
 return [
-    'ctrl'      => [
-        'title'        => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist',
-        'label'        => 'value',
-        'tstamp'       => 'tstamp',
-        'crdate'       => 'crdate',
-        'cruser_id'    => 'cruser_id',
-        'searchFields' => 'value,data,error',
-        // A ban lifts itself once its end time has passed: TYPO3 hides the record from
-        // every query that respects the enable fields, and the store asks the same
-        // question of its own. An end time of zero stands for a ban that does not lift.
+    'ctrl' => [
+        'title' => $labels,
+        'label' => 'value',
+        'tstamp' => 'tstamp',
+        'crdate' => 'crdate',
+        'default_sortby' => 'crdate DESC',
+        // A ban ends at its end time and lasts until someone deletes it if there is none
         'enablecolumns' => ['endtime' => 'endtime'],
-        'iconfile'     => 'EXT:tw_antibot/Resources/Public/Icons/blacklist.png'
+        'typeicon_classes' => ['default' => 'tw-antibot-ban'],
     ],
-    'types'     => [
-        '1' => [
-            'showitem' => '--palette--;;propertyvalue, --palette--;;dataerror,'
-                . '--div--;LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.access,'
-                . '--palette--;;access',
+    'types' => [
+        '0' => [
+            'showitem' => '--palette--;;subject, data, error,'
+                . '--div--;core.form.tabs:access, endtime',
         ],
     ],
-    'palettes'  => [
-        'propertyvalue' => ['showitem' => 'property, value', 'canNotCollapse' => true],
-        'dataerror'     => ['showitem' => 'data, error', 'canNotCollapse' => true],
-        'access'        => ['showitem' => 'endtime', 'canNotCollapse' => true],
+    'palettes' => [
+        'subject' => ['showitem' => 'property, value'],
     ],
-    'columns'   => [
-        'endtime'  => [
-            'exclude' => true,
-            'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
-            'config'  => [
-                'type'       => 'input',
-                'renderType' => 'inputDateTime',
-                'eval'       => 'datetime,int',
-                'default'    => 0,
-                'range'      => ['upper' => mktime(0, 0, 0, 1, 1, 2038)],
-            ],
+    'columns' => [
+        'endtime' => [
+            'label' => 'core.db.general:endtime',
+            'config' => ['type' => 'datetime', 'default' => 0, 'searchable' => false],
         ],
         'property' => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist.property',
-            'config'  => [
-                'type'       => 'select',
+            'label' => $labels . '.property',
+            'config' => [
+                'type' => 'select',
                 'renderType' => 'selectSingle',
-                'items'      => [
-                    [
-                        'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_list.property.ip',
-                        \Tollwerk\TwAntibot\Domain\Model\AbstractList::PROPERTY_IP
-                    ],
-                    [
-                        'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_list.property.email',
-                        \Tollwerk\TwAntibot\Domain\Model\AbstractList::PROPERTY_EMAIL
-                    ],
+                'items' => [
+                    ['label' => $labels . '.property.address', 'value' => BanStore::ADDRESS],
+                    ['label' => $labels . '.property.value', 'value' => BanStore::VALUE],
                 ],
-                'size'       => 1,
-                'maxitems'   => 1,
-                'eval'       => 'required'
+                'default' => BanStore::ADDRESS,
             ],
         ],
-        'value'    => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist.value',
-            'config'  => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim,required'
-            ],
+        'value' => [
+            'label' => $labels . '.value',
+            'config' => ['type' => 'input', 'size' => 30, 'max' => 255, 'required' => true, 'eval' => 'trim'],
         ],
-        'data'     => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist.data',
-            'config'  => [
-                'type'       => 'user',
-                'renderType' => 'antibotSubmission',
-            ]
+        'data' => [
+            'label' => $labels . '.data',
+            'config' => ['type' => 'user', 'renderType' => 'antibotSubmission'],
         ],
-        'error'    => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_blacklist.error',
-            'config'  => [
-                'type' => 'text',
-                'cols' => 40,
-                'rows' => 4,
-                'eval' => 'trim'
-            ]
+        'error' => [
+            'label' => $labels . '.error',
+            'config' => ['type' => 'text', 'cols' => 40, 'rows' => 3, 'readOnly' => true],
         ],
     ],
 ];

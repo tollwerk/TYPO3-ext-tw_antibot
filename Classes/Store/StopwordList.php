@@ -1,92 +1,91 @@
 <?php
 
 /**
- * tollwerk
+ * Stopwords that editors maintain as records
  *
- * @category   Tollwerk
- * @package    Tollwerk\TwAntibot
- * @subpackage Tollwerk\TwAntibot\Store
- * @author     Joschi Kuphal <joschi@tollwerk.de>
- * @copyright  Copyright © 2026 Joschi Kuphal <joschi@tollwerk.de>
- * @license    http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
  */
 
 declare(strict_types=1);
 
 namespace Tollwerk\TwAntibot\Store;
 
+use Doctrine\DBAL\Exception as DBALException;
 use Jkphl\Antibot\Ports\Contract\StopwordListInterface;
+use Override;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Stopword List
+ * Stopwords that editors maintain as records
  *
- * Backs the library's stopword check with the stopword records of this extension. The
- * records hold for the whole installation, wherever they are stored; a record that is
- * switched off is not part of the list.
+ * A stopword holds for the whole installation, in every form that names fields for it. A disabled or deleted stopword
+ * takes no part. The records are read once per request and only when a submission has a field to check.
  *
- * The library asks for the terms only once a submission has a field to check, and it
- * asks once per validation — the table is not read on every page that carries a form.
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
  */
-class StopwordList implements StopwordListInterface
+final class StopwordList implements StopwordListInterface
 {
     /**
-     * Table holding the stopword records
+     * Table of the stopwords
      *
      * @var string
      */
-    const TABLE = 'tx_twantibot_domain_model_stopword';
+    public const string TABLE = 'tx_twantibot_domain_model_stopword';
+
     /**
      * Stopwords, once read
      *
-     * @var string[]|null
+     * @var list<string>|null
      */
-    protected $stopwords = null;
+    private ?array $stopwords = null;
 
     /**
-     * Return the stopwords
+     * Constructor
      *
-     * @return string[] Stopwords
+     * @param ConnectionPool $connectionPool Connections to the database
      */
+    public function __construct(private readonly ConnectionPool $connectionPool) {}
+
+    /**
+     * Stopwords that are enabled
+     *
+     * @return list<string>
+     *
+     * @throws DBALException If the database fails
+     */
+    #[Override]
     public function getStopwords(): array
     {
-        if ($this->stopwords === null) {
-            $this->stopwords = $this->fetchStopwords();
-        }
-
-        return $this->stopwords;
+        return $this->stopwords ??= $this->read();
     }
 
     /**
-     * Read the stopwords from the database
+     * Read the stopwords
      *
-     * @return string[] Stopwords
+     * @return list<string>
+     *
+     * @throws DBALException If the database fails
      */
-    protected function fetchStopwords(): array
+    private function read(): array
     {
-        $query = $this->createQueryBuilder();
+        $query = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
         $terms = $query->select('term')
             ->from(self::TABLE)
             ->where($query->expr()->neq('term', $query->createNamedParameter('')))
-            ->execute()
-            ->fetchAll(\PDO::FETCH_COLUMN);
+            ->executeQuery()
+            ->fetchFirstColumn();
+        $terms = array_map(static fn(mixed $term): string => \is_string($term) ? trim($term) : '', $terms);
 
-        return array_values(array_unique(array_filter(array_map('trim', array_map('strval', $terms)), 'strlen')));
-    }
-
-    /**
-     * Create a query builder for the stopword table
-     *
-     * @return QueryBuilder Query builder
-     */
-    protected function createQueryBuilder(): QueryBuilder
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
-        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
-
-        return $queryBuilder;
+        return array_values(array_unique(array_filter($terms, static fn(string $term): bool => '' !== $term)));
     }
 }

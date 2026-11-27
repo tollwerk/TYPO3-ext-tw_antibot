@@ -1,0 +1,62 @@
+categories:
+  twAntibot:
+    label: 'Spam protection'
+  twAntibot.time:
+    label: 'Times'
+    parent: twAntibot
+
+settings:
+  twAntibot.storage:
+    label: 'Folder for bans'
+    description: 'Folder in which a ban is recorded with the submission that caused it'
+    category: twAntibot
+    type: page
+    default: 0
+  twAntibot.contact:
+    label: 'Contact address'
+    description: 'Email address offered to a visitor whose form is closed; empty for the contact address for mails'
+    category: twAntibot
+    type: string
+    default: ''
+  twAntibot.ban:
+    label: 'Ban after a refusal'
+    description: 'Whether a refused submission bans the visitor, until the ban ends or someone deletes it; a form may decide otherwise'
+    category: twAntibot
+    type: bool
+    default: true
+  twAntibot.banPeriod:
+    label: 'Length of a ban'
+    description: 'Seconds a ban lasts; 0 until someone deletes it'
+    category: twAntibot
+    type: int
+    default: 2592000
+  twAntibot.methods:
+    label: 'Order of request methods'
+    description: 'Methods a form is first loaded and then sent with, such as GET-POST; empty for any'
+    category: twAntibot
+    type: string
+    default: 'GET-POST'
+  twAntibot.duplicateLifetime:
+    label: 'Memory for content'
+    description: 'Seconds the content of an accepted submission is remembered, in forms that refuse repeated content'
+    category: twAntibot
+    type: int
+    default: 86400
+  twAntibot.time.minimum:
+    label: 'Shortest time'
+    description: 'Seconds a form must be open before it may be sent'
+    category: twAntibot.time
+    type: int
+    default: 3
+  twAntibot.time.maximum:
+    label: 'Longest time'
+    description: 'Seconds a form stays valid'
+    category: twAntibot.time
+    type: int
+    default: 3600
+  twAntibot.time.followup:
+    label: 'Time for a second attempt'
+    description: 'Seconds a form must be open again before it may be sent after an error'
+    category: twAntibot.time
+    type: int
+    default: 1

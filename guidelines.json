@@ -1,0 +1,6 @@
+{
+  "profiles": [
+    "typo3",
+    "frontend"
+  ]
+}

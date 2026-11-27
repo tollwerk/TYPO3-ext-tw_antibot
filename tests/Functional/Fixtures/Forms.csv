@@ -1,0 +1,6 @@
+"pages"
+,"uid","pid","title","slug","doktype","is_siteroot"
+,1,0,"Contact","/",1,1
+,2,1,"Steps","/steps",1,0
+,3,1,"Plain","/plain",1,0
+,4,1,"Bans","/bans",254,0

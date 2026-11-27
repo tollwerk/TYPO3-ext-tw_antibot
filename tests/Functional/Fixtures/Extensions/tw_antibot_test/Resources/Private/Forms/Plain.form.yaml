@@ -1,0 +1,19 @@
+# Form that does not ask for protection
+identifier: plain
+type: Form
+label: Plain
+prototypeName: standard
+renderingOptions:
+  submitButtonLabel: Send
+finishers:
+  - identifier: Confirmation
+    options:
+      message: 'Thank you anyway'
+renderables:
+  - identifier: page-1
+    type: Page
+    label: Plain
+    renderables:
+      - identifier: message
+        type: Textarea
+        label: Message

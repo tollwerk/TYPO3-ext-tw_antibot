@@ -1,44 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
-		<header/>
-		<body>
-			<trans-unit id="blocked.headline">
-				<source>This form is currently unavailable to you.</source>
-			</trans-unit>
-			<trans-unit id="blocked.explanation">
-				<source>We take a few precautions to keep spam out of our forms — and one of them reacted to you. If you have just sent something, it did not reach us. That need not be down to you; it may just as well be a mistake on our side.</source>
-			</trans-unit>
-			<trans-unit id="blocked.contact">
-				<source>Please write to us at %s in any case and simply tell us what you need. If you think this block is unwarranted, do mention it — then we will look into it.</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist">
-				<source>Blacklist</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.property">
-				<source>Property</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.value">
-				<source>Value</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.data">
-				<source>Data</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.error">
-				<source>Error</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist">
-				<source>Whitelist</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.property">
-				<source>Property</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.value">
-				<source>Value</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.note">
-				<source>Note</source>
-			</trans-unit>
-		</body>
-	</file>
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:tw_antibot/Resources/Private/Language/locallang.xlf" product-name="tw_antibot">
+        <header/>
+        <body>
+            <trans-unit id="notice.heading" resname="notice.heading">
+                <source>This form is currently unavailable to you.</source>
+            </trans-unit>
+            <trans-unit id="notice.explanation" resname="notice.explanation">
+                <source>We take a few precautions to keep spam out of our forms, and one of them reacted to you. If you have just sent something, it did not reach us. That need not be down to you; it may just as well be a mistake on our side.</source>
+            </trans-unit>
+            <trans-unit id="notice.contact" resname="notice.contact">
+                <source>Please write to us at %s in any case and simply tell us what you need. If you think this block is unwarranted, do mention it, and we will look into it.</source>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

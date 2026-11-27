@@ -1,0 +1,4 @@
+name: tollwerk/tw-antibot
+label: 'Spam protection'
+dependencies:
+  - tollwerk/tw-base

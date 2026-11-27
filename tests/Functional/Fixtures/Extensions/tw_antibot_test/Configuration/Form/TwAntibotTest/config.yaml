@@ -1,0 +1,8 @@
+# Forms of the tests, loaded from this extension
+name: tollwerk/tw-antibot-test
+label: 'Forms of the tests of tw-antibot'
+priority: 60
+
+persistenceManager:
+  allowedExtensionPaths:
+    10: 'EXT:tw_antibot_test/Resources/Private/Forms/'

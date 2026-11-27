@@ -1,37 +1,84 @@
 {
-  "name": "tollwerk/tw-antibot",
-  "type": "typo3-cms-extension",
-  "description": "Death to Spambots! — CAPTCHA-less spam security for TYPO3 forms",
-  "homepage": "https://github.com/tollwerk/TYPO3-ext-tw_antibot",
-  "license": "GPL-2.0-or-later",
-  "authors": [
-    {
-      "name": "Joschi Kuphal",
-      "email": "joschi@tollwerk.de"
+    "name": "tollwerk/tw-antibot",
+    "description": "Spam protection for TYPO3 forms without a task for the person who fills them in: hidden fields, signed timing, honeypots and content checks, bans and stopwords",
+    "license": "GPL-2.0-or-later",
+    "type": "typo3-cms-extension",
+    "require": {
+        "php": "^8.5",
+        "jkphl/antibot": "^2.2.1",
+        "psr/http-message": "^2.0",
+        "psr/log": "^3.0",
+        "tollwerk/tw-base": "^14.0",
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-core": "^14.3",
+        "typo3/cms-fluid": "^14.3",
+        "typo3/cms-frontend": "^14.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13",
+        "saschaegerer/phpstan-typo3": "*",
+        "ssch/typo3-rector": "*",
+        "tollwerk/guidelines": "dev-main",
+        "typo3/cms-form": "^14.3",
+        "typo3/testing-framework": "^9.7"
+    },
+    "replace": {
+        "typo3-ter/tw_antibot": "self.version"
+    },
+    "suggest": {
+        "typo3/cms-form": "Protects the forms of the form framework through a rendering option"
+    },
+    "repositories": [
+        {
+            "name": "tollwerk-tw-base",
+            "type": "vcs",
+            "url": "git@code.tollwerk.net:tollwerk/typo3/extensions/tw-base.git"
+        },
+        {
+            "name": "tollwerk-guidelines",
+            "type": "vcs",
+            "url": "git@code.tollwerk.net:tollwerk/guidelines.git"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Tollwerk\\TwAntibot\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tollwerk\\TwAntibot\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true,
+            "infection/extension-installer": true,
+            "phpstan/extension-installer": true,
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        },
+        "platform": {
+            "php": "8.5.0"
+        },
+        "process-timeout": 0,
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "14.x-dev"
+        },
+        "typo3/cms": {
+            "extension-key": "tw_antibot"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": "test ! -x vendor/bin/guidelines || vendor/bin/guidelines install",
+        "post-update-cmd": "test ! -x vendor/bin/guidelines || vendor/bin/guidelines install",
+        "check": "guidelines gate",
+        "fix": "guidelines fix"
     }
-  ],
-  "require": {
-    "php": "^7.4",
-    "typo3/cms-core": "^10.4",
-    "typo3/cms-form": "^10.4",
-    "jkphl/antibot": "^2.2"
-  },
-  "autoload": {
-    "psr-4": {
-      "Tollwerk\\TwAntibot\\": "Classes"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tollwerk\\TwAntibot\\Tests\\": "Tests"
-    }
-  },
-  "replace": {
-    "typo3-ter/tw_antibot": "self.version"
-  },
-  "extra": {
-    "typo3/cms": {
-      "extension-key": "tw_antibot"
-    }
-  }
 }

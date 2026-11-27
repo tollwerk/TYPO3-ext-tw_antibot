@@ -1,0 +1,15 @@
+{
+    "name": "tollwerk/tw-antibot-test",
+    "description": "Forms for the functional tests of tw-antibot",
+    "license": "GPL-2.0-or-later",
+    "type": "typo3-cms-extension",
+    "require": {
+        "tollwerk/tw-antibot": "*",
+        "typo3/cms-form": "*"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "tw_antibot_test"
+        }
+    }
+}

@@ -1,0 +1,24 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Tollwerk\TwAntibot\:
+    resource: '../Classes/*'
+    exclude:
+      # The adapter for EXT:form, registered in Services.php if EXT:form is installed
+      - '../Classes/Form/*'
+      # Created for each form and request by the GuardFactory
+      - '../Classes/Protection/Guard.php'
+      - '../Classes/Protection/Options.php'
+      - '../Classes/Protection/Settings.php'
+      - '../Classes/Protection/Verdict.php'
+      - '../Classes/Store/BanStore.php'
+      # Created by the FormEngine for each field
+      - '../Classes/Backend/SubmissionElement.php'
+
+  cache.tw_antibot:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
+    arguments: ['tw_antibot']

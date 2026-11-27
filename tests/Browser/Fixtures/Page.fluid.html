@@ -1,0 +1,32 @@
+<f:comment>
+    Page with a protected form or, if it is closed, the notice, for the browser tests; BrowserPagesTest renders it to
+    var/browser
+    @param array fields Protective fields
+    @param string contact Address of the notice; the form is shown if empty
+    @param string resources Stylesheets of the components
+</f:comment><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact</title>
+    {resources -> f:format.raw()}
+</head>
+<body>
+<main>
+    <h1>Contact</h1>
+    <f:if condition="{contact}">
+        <f:then>
+            <twc:antibot.notice contact="{contact}" class="Contact" />
+        </f:then>
+        <f:else>
+            <form id="contact" action="/tests/Browser/Fixtures/sent.html" method="get">
+                <p><label for="contact-name">Name</label> <input id="contact-name" name="name" autocomplete="name"></p>
+                <twc:antibot.fields fields="{fields}" />
+                <p><button type="submit">Send</button></p>
+            </form>
+        </f:else>
+    </f:if>
+</main>
+</body>
+</html>

@@ -1,32 +1,9 @@
-#
-# Table structure for table 'tx_twantibot_domain_model_blacklist'
-#
+# The columns TYPO3 does not create from the TCA, and one record per subject
 CREATE TABLE tx_twantibot_domain_model_blacklist
 (
     property int(11)      DEFAULT '0' NOT NULL,
     value    varchar(255) DEFAULT ''  NOT NULL,
-    data     text,
+    data     mediumtext,
     error    text,
-    endtime  int(11)      DEFAULT '0'  NOT NULL,
-    UNIQUE KEY `entry` (`value`, `property`)
-);
-
-#
-# Table structure for table 'tx_twantibot_domain_model_whitelist'
-#
-CREATE TABLE tx_twantibot_domain_model_whitelist
-(
-    property int(11)      DEFAULT '0' NOT NULL,
-    value    varchar(255) DEFAULT ''  NOT NULL,
-    note     text,
-    UNIQUE KEY `entry` (`value`, `property`)
-);
-
-#
-# Table structure for table 'tx_twantibot_domain_model_stopword'
-#
-CREATE TABLE tx_twantibot_domain_model_stopword
-(
-    term varchar(255) DEFAULT '' NOT NULL,
-    note text
+    UNIQUE KEY entry (value, property)
 );

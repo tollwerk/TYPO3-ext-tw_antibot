@@ -1,147 +1,59 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2018-12-29T09:30:23Z" product-name="tw_antibot">
-		<header/>
-		<body>
-            <trans-unit id="file">
-				<source>Files &amp; directories</source>
-			</trans-unit>
-            <trans-unit id="file.templateRootPath">
-				<source>Path to template files (FE)</source>
-			</trans-unit>
-            <trans-unit id="file.partialRootPath">
-				<source>Path to template partials (FE)</source>
-			</trans-unit>
-            <trans-unit id="file.layoutRootPath">
-				<source>Path to template layouts (FE)</source>
-			</trans-unit>
-            <trans-unit id="common">
-				<source>Common settings</source>
-			</trans-unit>
-            <trans-unit id="common.storagePid">
-				<source>Blacklist entry storage PID</source>
-			</trans-unit>
-
-			<trans-unit id="common">
-				<source>General</source>
-			</trans-unit>
-			<trans-unit id="common.storagePid">
-				<source>Storage folder for blacklist records</source>
-			</trans-unit>
-			<trans-unit id="file">
-				<source>Templates</source>
-			</trans-unit>
-			<trans-unit id="file.templateRootPath">
-				<source>Template root path</source>
-			</trans-unit>
-			<trans-unit id="file.partialRootPath">
-				<source>Partial root path</source>
-			</trans-unit>
-			<trans-unit id="file.layoutRootPath">
-				<source>Layout root path</source>
-			</trans-unit>
-			<trans-unit id="common.classAttribute">
-				<source>Notice classes: Empty means the notice keeps the classes of the form itself</source>
-			</trans-unit>
-			<trans-unit id="contact.email">
-				<source>E-mail address offered to a client whose form is blocked</source>
-			</trans-unit>
-			<trans-unit id="banning">
-				<source>Banning</source>
-			</trans-unit>
-			<trans-unit id="banning.enable">
-				<source>Ban a client after a refused submission</source>
-			</trans-unit>
-			<trans-unit id="banning.period">
-				<source>Seconds a ban lasts (0 = until someone lifts it)</source>
-			</trans-unit>
-			<trans-unit id="time">
-				<source>Submission times</source>
-			</trans-unit>
-			<trans-unit id="time.minimum">
-				<source>Minimum seconds before a submission</source>
-			</trans-unit>
-			<trans-unit id="time.maximum">
-				<source>Maximum seconds a form stays valid</source>
-			</trans-unit>
-			<trans-unit id="time.followup">
-				<source>Minimum seconds for a follow-up submission</source>
-			</trans-unit>
-			<trans-unit id="order">
-				<source>Request method order</source>
-			</trans-unit>
-			<trans-unit id="order.method">
-				<source>Expected order, e.g. GET-POST</source>
-			</trans-unit>
-			<trans-unit id="content">
-				<source>Content</source>
-			</trans-unit>
-			<trans-unit id="content.duplicateLifetime">
-				<source>Seconds a submitted text is remembered</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist">
-				<source>Blacklist</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.property">
-				<source>Property</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.value">
-				<source>Value</source>
-			</trans-unit>
-			<trans-unit id="submission.submitted">
-				<source>What was submitted</source>
-			</trans-unit>
-			<trans-unit id="submission.carried">
-				<source>Carried along by the form</source>
-			</trans-unit>
-			<trans-unit id="submission.empty">
-				<source>(empty)</source>
-			</trans-unit>
-			<trans-unit id="submission.blank">
-				<source>(left blank)</source>
-			</trans-unit>
-			<trans-unit id="submission.none">
-				<source>Nothing was recorded.</source>
-			</trans-unit>
-			<trans-unit id="submission.unreadable">
-				<source>Stored as it arrived, and not a readable submission:</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.data">
-				<source>Data</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_blacklist.error">
-				<source>Error</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist">
-				<source>Whitelist</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.property">
-				<source>Property</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.value">
-				<source>Value</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_whitelist.note">
-				<source>Note</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_stopword">
-				<source>Stopword</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_stopword.term">
-				<source>Term</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_stopword.term.description">
-				<source>A word or a phrase. It matches whole words only and ignores casing, so "sex" leaves "Sussex" alone. A * stands for any number of further letters: "casino*" also catches "casinos". A single hit refuses the submission and, unless banning is switched off, bans the sender.</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_stopword.note">
-				<source>Note</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_list.property.ip">
-				<source>IP Address</source>
-			</trans-unit>
-			<trans-unit id="tx_twantibot_domain_model_list.property.email">
-				<source>Email Address</source>
-			</trans-unit>
-		</body>
-	</file>
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf" product-name="tw_antibot">
+        <header/>
+        <body>
+            <trans-unit id="tx_twantibot_domain_model_blacklist" resname="tx_twantibot_domain_model_blacklist">
+                <source>Ban</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property" resname="tx_twantibot_domain_model_blacklist.property">
+                <source>Kind</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property.address" resname="tx_twantibot_domain_model_blacklist.property.address">
+                <source>Address of the client</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property.value" resname="tx_twantibot_domain_model_blacklist.property.value">
+                <source>Value of a field</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.value" resname="tx_twantibot_domain_model_blacklist.value">
+                <source>Banned value</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.data" resname="tx_twantibot_domain_model_blacklist.data">
+                <source>Submission</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.error" resname="tx_twantibot_domain_model_blacklist.error">
+                <source>Reason</source>
+            </trans-unit>
+            <trans-unit id="submission.submitted" resname="submission.submitted">
+                <source>What was submitted</source>
+            </trans-unit>
+            <trans-unit id="submission.carried" resname="submission.carried">
+                <source>Carried along by the form</source>
+            </trans-unit>
+            <trans-unit id="submission.empty" resname="submission.empty">
+                <source>(empty)</source>
+            </trans-unit>
+            <trans-unit id="submission.blank" resname="submission.blank">
+                <source>(left blank)</source>
+            </trans-unit>
+            <trans-unit id="submission.none" resname="submission.none">
+                <source>Nothing was recorded.</source>
+            </trans-unit>
+            <trans-unit id="submission.unreadable" resname="submission.unreadable">
+                <source>Stored as it arrived, and not a readable submission:</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword" resname="tx_twantibot_domain_model_stopword">
+                <source>Stopword</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.term" resname="tx_twantibot_domain_model_stopword.term">
+                <source>Term</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.term.description" resname="tx_twantibot_domain_model_stopword.term.description">
+                <source>A word or a phrase. It matches whole words only and ignores casing, so "sex" leaves "Sussex" alone. A * stands for any number of further letters: "casino*" also catches "casinos". A single hit refuses the submission.</source>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.note" resname="tx_twantibot_domain_model_stopword.note">
+                <source>Note</source>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

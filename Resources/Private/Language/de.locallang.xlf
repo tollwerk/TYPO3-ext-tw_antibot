@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
-	<file source-language="en" target-language="de" datatype="plaintext" original="messages" product-name="tw_antibot">
-		<header/>
-		<body>
-			<trans-unit id="blocked.headline" approved="yes">
-				<source>This form is currently unavailable to you.</source>
-				<target>Dieses Formular steht Ihnen im Moment nicht zur Verfügung.</target>
-			</trans-unit>
-			<trans-unit id="blocked.explanation" approved="yes">
-				<source>We take a few precautions to keep spam out of our forms — and one of them reacted to you. If you have just sent something, it did not reach us. That need not be down to you; it may just as well be a mistake on our side.</source>
-				<target>Damit uns über unsere Formulare kein Spam erreicht, treffen wir einige Vorkehrungen — und eine davon hat bei Ihnen angeschlagen. Falls Sie gerade etwas abgeschickt haben, ist es deshalb nicht bei uns angekommen. Das muss nicht an Ihnen liegen, es kann ebenso gut ein Fehler auf unserer Seite sein.</target>
-			</trans-unit>
-			<trans-unit id="blocked.contact" approved="yes">
-				<source>Please write to us at %s in any case and simply tell us what you need. If you think this block is unwarranted, do mention it — then we will look into it.</source>
-				<target>Bitte schreiben Sie uns in jedem Fall eine E-Mail an %s und schildern Sie uns dort einfach Ihr Anliegen. Wenn Sie den Eindruck haben, dass die Sperre nicht gerechtfertigt ist, erwähnen Sie das bitte gleich mit — dann sehen wir uns das an.</target>
-			</trans-unit>
-		</body>
-	</file>
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:tw_antibot/Resources/Private/Language/locallang.xlf" product-name="tw_antibot">
+        <header/>
+        <body>
+            <trans-unit id="notice.heading" resname="notice.heading" approved="yes">
+                <source>This form is currently unavailable to you.</source>
+                <target>Dieses Formular steht Ihnen im Moment nicht zur Verfügung.</target>
+            </trans-unit>
+            <trans-unit id="notice.explanation" resname="notice.explanation" approved="yes">
+                <source>We take a few precautions to keep spam out of our forms, and one of them reacted to you. If you have just sent something, it did not reach us. That need not be down to you; it may just as well be a mistake on our side.</source>
+                <target>Damit uns über unsere Formulare kein Spam erreicht, treffen wir einige Vorkehrungen, und eine davon hat bei Ihnen angeschlagen. Falls Sie gerade etwas abgeschickt haben, ist es deshalb nicht bei uns angekommen. Das muss nicht an Ihnen liegen, es kann ebenso gut ein Fehler auf unserer Seite sein.</target>
+            </trans-unit>
+            <trans-unit id="notice.contact" resname="notice.contact" approved="yes">
+                <source>Please write to us at %s in any case and simply tell us what you need. If you think this block is unwarranted, do mention it, and we will look into it.</source>
+                <target>Bitte schreiben Sie uns in jedem Fall eine E-Mail an %s und schildern Sie uns dort einfach Ihr Anliegen. Wenn Sie den Eindruck haben, dass die Sperre nicht gerechtfertigt ist, erwähnen Sie das bitte gleich mit, dann sehen wir uns das an.</target>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

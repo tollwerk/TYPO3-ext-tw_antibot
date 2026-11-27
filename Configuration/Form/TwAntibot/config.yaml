@@ -1,0 +1,23 @@
+# Adapter of tw-antibot for EXT:form: two template paths and the element for the protective fields.
+#
+# Each path carries names that exist nowhere else, AntibotBlocked and AntibotFields, so every other template keeps
+# coming from where the project keeps it. The index lies below that of EXT:form: a project that words the notice
+# differently puts an AntibotBlocked of its own into one of its paths, and Fluid finds that first.
+name: tollwerk/tw-antibot
+label: 'tw-antibot: spam protection'
+priority: 50
+
+prototypes:
+  standard:
+    formElementsDefinition:
+      Form:
+        renderingOptions:
+          templateRootPaths:
+            1: 'EXT:tw_antibot/Resources/Private/Form/Templates/'
+          partialRootPaths:
+            1: 'EXT:tw_antibot/Resources/Private/Form/Partials/'
+
+      # The protective fields, added while a protected form is rendered and never by an editor. They have no label
+      # and no validator: what they are worth is decided by jkphl/antibot, not by the form framework.
+      AntibotFields:
+        implementationClassName: 'TYPO3\CMS\Form\Domain\Model\FormElements\GenericFormElement'

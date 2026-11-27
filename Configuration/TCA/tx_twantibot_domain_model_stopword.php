@@ -1,63 +1,57 @@
 <?php
+
+/**
+ * Stopwords: words or phrases that refuse a submission whose checked fields contain them
+ *
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
+ */
+
+declare(strict_types=1);
+
+$labels = 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_stopword';
+
 return [
-    'ctrl'      => [
-        'title'           => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_stopword',
-        'label'           => 'term',
-        'label_alt'       => 'note',
+    'ctrl' => [
+        'title' => $labels,
+        'label' => 'term',
+        'label_alt' => 'note',
         'label_alt_force' => true,
-        'tstamp'          => 'tstamp',
-        'crdate'          => 'crdate',
-        'cruser_id'       => 'cruser_id',
-        'default_sortby'  => 'term',
-        'searchFields'    => 'term,note',
-        // A term that is switched off takes no part in the check. That makes it possible
-        // to try out whether a term causes trouble without losing it.
-        'enablecolumns'   => ['disabled' => 'hidden'],
-        'iconfile'        => 'EXT:tw_antibot/Resources/Public/Icons/stopword.svg'
+        'tstamp' => 'tstamp',
+        'crdate' => 'crdate',
+        'delete' => 'deleted',
+        'default_sortby' => 'term',
+        // A disabled stopword takes no part, so that an editor can try out whether a term causes trouble
+        'enablecolumns' => ['disabled' => 'hidden'],
+        'typeicon_classes' => ['default' => 'tw-antibot-stopword'],
     ],
-    'types'     => [
-        '1' => [
+    'types' => [
+        '0' => [
             'showitem' => 'term, note,'
-                . '--div--;LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.access,'
-                . 'hidden',
+                . '--div--;core.form.tabs:access, hidden',
         ],
     ],
-    'columns'   => [
+    'columns' => [
         'hidden' => [
-            'exclude' => true,
-            'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.enabled',
-            'config'  => [
-                'type'       => 'check',
+            'label' => 'core.db.general:enabled',
+            'config' => [
+                'type' => 'check',
                 'renderType' => 'checkboxToggle',
-                'items'      => [
-                    [
-                        0                    => '',
-                        1                    => '',
-                        'invertStateDisplay' => true,
-                    ],
-                ],
+                'items' => [['label' => '', 'invertStateDisplay' => true]],
             ],
         ],
-        'term'   => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_stopword.term',
-            'description' => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_stopword.term.description',
-            'config'  => [
-                'type' => 'input',
-                'size' => 30,
-                'max'  => 255,
-                'eval' => 'trim,required,unique'
-            ],
+        'term' => [
+            'label' => $labels . '.term',
+            'description' => $labels . '.term.description',
+            'config' => ['type' => 'input', 'size' => 30, 'max' => 255, 'required' => true, 'eval' => 'trim,unique'],
         ],
-        'note'   => [
-            'exclude' => false,
-            'label'   => 'LLL:EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf:tx_twantibot_domain_model_stopword.note',
-            'config'  => [
-                'type' => 'text',
-                'cols' => 40,
-                'rows' => 4,
-                'eval' => 'trim'
-            ]
+        'note' => [
+            'label' => $labels . '.note',
+            'config' => ['type' => 'text', 'cols' => 40, 'rows' => 3, 'eval' => 'trim'],
         ],
     ],
 ];

@@ -1,14 +1,14 @@
 <?php
 
 /**
- * tollwerk
+ * Fingerprints of accepted submissions in a cache, for as long as they are remembered
  *
- * @category   Tollwerk
- * @package    Tollwerk\TwAntibot
- * @subpackage Tollwerk\TwAntibot\Store
- * @author     Joschi Kuphal <joschi@tollwerk.de>
- * @copyright  Copyright © 2026 Joschi Kuphal <joschi@tollwerk.de>
- * @license    http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
  */
 
 declare(strict_types=1);
@@ -16,101 +16,99 @@ declare(strict_types=1);
 namespace Tollwerk\TwAntibot\Store;
 
 use Jkphl\Antibot\Ports\Contract\ExpiringStoreInterface;
-use TYPO3\CMS\Core\Cache\CacheManager;
+use Override;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Cache Store
+ * Fingerprints of accepted submissions in a cache, for as long as they are remembered
  *
- * Remembers what is meant to be forgotten again — content fingerprints above all.
- * Unlike a ban, which is a decision and belongs in the database where an editor can see
- * and revoke it, a fingerprint is an observation with a shelf life.
+ * What is meant to expire lives in the cache "tw_antibot"; bans are decisions and live in the database.
+ *
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
  */
-class CacheStore implements ExpiringStoreInterface
+final readonly class CacheStore implements ExpiringStoreInterface
 {
     /**
-     * Cache identifier
-     *
-     * @var string
-     */
-    const CACHE = 'tw_antibot';
-    /**
-     * Cache frontend
-     *
-     * @var FrontendInterface
-     */
-    protected $cache;
-
-    /**
      * Constructor
+     *
+     * @param FrontendInterface $cache Cache "tw_antibot"
      */
-    public function __construct()
-    {
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(self::CACHE);
-    }
+    public function __construct(#[Autowire(service: 'cache.tw_antibot')] private FrontendInterface $cache) {}
 
     /**
-     * Test whether a key is currently present
+     * Whether a key is remembered
      *
      * @param string $key Key
      *
-     * @return bool Key is present
+     * @return boolean
      */
+    #[Override]
     public function has(string $key): bool
     {
         return $this->cache->has($this->identifier($key));
     }
 
     /**
-     * Remember a key for a given lifetime
+     * Remember a key
      *
-     * @param string $key   Key
-     * @param int $lifetime Lifetime in seconds
+     * @param string  $key      Key
+     * @param integer $lifetime Seconds; not at all if 0
+     *
+     * @return void
      */
+    #[Override]
     public function remember(string $key, int $lifetime): void
     {
-        if ($lifetime > 0) {
-            $this->cache->set($this->identifier($key), time() + $lifetime, [], $lifetime);
+        if ($lifetime <= 0) {
+            return;
         }
+
+        $this->cache->set($this->identifier($key), time() + $lifetime, [], $lifetime);
     }
 
     /**
-     * Return the expiration timestamp of a key
+     * When a key is forgotten
      *
      * @param string $key Key
      *
-     * @return int|null Expiration timestamp (NULL if the key is not present)
+     * @return integer|null Time; null if the key is not remembered
      */
+    #[Override]
     public function expiresAt(string $key): ?int
     {
         $expiration = $this->cache->get($this->identifier($key));
 
-        return ($expiration === false) ? null : intval($expiration);
+        return \is_int($expiration) ? $expiration : null;
     }
 
     /**
-     * Drop a key ahead of its expiration
+     * Forget a key
      *
      * @param string $key Key
+     *
+     * @return void
      */
+    #[Override]
     public function forget(string $key): void
     {
         $this->cache->remove($this->identifier($key));
     }
 
     /**
-     * Turn a subject key into a cache entry identifier
-     *
-     * Cache identifiers may carry only a narrow set of characters; the keys the library
-     * hands out carry colons, dots and whatever a form field contained.
+     * Identifier in the cache, which allows fewer characters than a key
      *
      * @param string $key Key
      *
-     * @return string Cache entry identifier
+     * @return string
      */
-    protected function identifier(string $key): string
+    private function identifier(string $key): string
     {
-        return sha1($key);
+        return hash('sha256', $key);
     }
 }

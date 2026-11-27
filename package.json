@@ -1,0 +1,16 @@
+{
+    "name": "@tollwerk/tw-antibot",
+    "version": "14.0.0",
+    "private": true,
+    "description": "CSS of tw-antibot: the protective fields and the notice for a closed form",
+    "license": "GPL-2.0-or-later",
+    "type": "module",
+    "scripts": {
+        "test:browser": "playwright test"
+    },
+    "devDependencies": {
+        "@axe-core/playwright": "4.14.1",
+        "@playwright/test": "1.65.1",
+        "@tollwerk/guidelines": "git+ssh://git@code.tollwerk.net/tollwerk/guidelines.git#c78bee2"
+    }
+}

@@ -1,0 +1,31 @@
+# Protected form with two steps
+identifier: steps
+type: Form
+label: Steps
+prototypeName: standard
+renderingOptions:
+  submitButtonLabel: Send
+  antibot: true
+finishers:
+  - identifier: Confirmation
+    options:
+      message: 'Thank you for both steps'
+renderables:
+  - identifier: page-1
+    type: Page
+    label: Name
+    renderingOptions:
+      nextButtonLabel: Next
+    renderables:
+      - identifier: name
+        type: Text
+        label: Name
+  - identifier: page-2
+    type: Page
+    label: Message
+    renderingOptions:
+      previousButtonLabel: Back
+    renderables:
+      - identifier: message
+        type: Textarea
+        label: Message

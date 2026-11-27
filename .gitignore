@@ -1,0 +1,11 @@
+/vendor/
+/node_modules/
+/var/
+/public/
+/.idea/
+/CLAUDE.md
+/.claude/
+/.phpunit.cache/
+/coverage/
+/.php-cs-fixer.cache
+/.rector.cache/

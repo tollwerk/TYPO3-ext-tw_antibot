@@ -1,0 +1,21 @@
+# Pipeline of a TYPO3 project, built from the components of the tollwerk guidelines.
+# The jobs run "guidelines gate", which runs the same checks locally.
+# "guidelines install" pins the components to the version of the guidelines the project uses.
+#
+# A check the project defines in guidelines.json runs in a job of the same name
+# with the image and script of guidelines.json:
+#
+# example:
+#   extends: .guidelines-project
+#   image: python:3.13-slim
+#   script:
+#     - python3 tools/check.py
+
+stages:
+  - lint
+  - test
+
+include:
+  - component: $CI_SERVER_FQDN/tollwerk/guidelines/base@c78bee23d3089011d70bed5bd0854033631d7c43
+  - component: $CI_SERVER_FQDN/tollwerk/guidelines/php@c78bee23d3089011d70bed5bd0854033631d7c43
+  - component: $CI_SERVER_FQDN/tollwerk/guidelines/node@c78bee23d3089011d70bed5bd0854033631d7c43

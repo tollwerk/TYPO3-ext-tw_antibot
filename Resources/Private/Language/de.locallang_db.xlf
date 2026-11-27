@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="de" datatype="plaintext" original="EXT:tw_antibot/Resources/Private/Language/locallang_db.xlf" product-name="tw_antibot">
+        <header/>
+        <body>
+            <trans-unit id="tx_twantibot_domain_model_blacklist" resname="tx_twantibot_domain_model_blacklist" approved="yes">
+                <source>Ban</source>
+                <target>Sperre</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property" resname="tx_twantibot_domain_model_blacklist.property" approved="yes">
+                <source>Kind</source>
+                <target>Art</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property.address" resname="tx_twantibot_domain_model_blacklist.property.address" approved="yes">
+                <source>Address of the client</source>
+                <target>Adresse des Clients</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.property.value" resname="tx_twantibot_domain_model_blacklist.property.value" approved="yes">
+                <source>Value of a field</source>
+                <target>Wert eines Felds</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.value" resname="tx_twantibot_domain_model_blacklist.value" approved="yes">
+                <source>Banned value</source>
+                <target>Gesperrter Wert</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.data" resname="tx_twantibot_domain_model_blacklist.data" approved="yes">
+                <source>Submission</source>
+                <target>Einsendung</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_blacklist.error" resname="tx_twantibot_domain_model_blacklist.error" approved="yes">
+                <source>Reason</source>
+                <target>Grund</target>
+            </trans-unit>
+            <trans-unit id="submission.submitted" resname="submission.submitted" approved="yes">
+                <source>What was submitted</source>
+                <target>Was eingesendet wurde</target>
+            </trans-unit>
+            <trans-unit id="submission.carried" resname="submission.carried" approved="yes">
+                <source>Carried along by the form</source>
+                <target>Was das Formular mitgeschickt hat</target>
+            </trans-unit>
+            <trans-unit id="submission.empty" resname="submission.empty" approved="yes">
+                <source>(empty)</source>
+                <target>(leer)</target>
+            </trans-unit>
+            <trans-unit id="submission.blank" resname="submission.blank" approved="yes">
+                <source>(left blank)</source>
+                <target>(nicht ausgefüllt)</target>
+            </trans-unit>
+            <trans-unit id="submission.none" resname="submission.none" approved="yes">
+                <source>Nothing was recorded.</source>
+                <target>Es wurde nichts aufgezeichnet.</target>
+            </trans-unit>
+            <trans-unit id="submission.unreadable" resname="submission.unreadable" approved="yes">
+                <source>Stored as it arrived, and not a readable submission:</source>
+                <target>So gespeichert, wie es ankam, und keine lesbare Einsendung:</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword" resname="tx_twantibot_domain_model_stopword" approved="yes">
+                <source>Stopword</source>
+                <target>Stopword</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.term" resname="tx_twantibot_domain_model_stopword.term" approved="yes">
+                <source>Term</source>
+                <target>Begriff</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.term.description" resname="tx_twantibot_domain_model_stopword.term.description" approved="yes">
+                <source>A word or a phrase. It matches whole words only and ignores casing, so "sex" leaves "Sussex" alone. A * stands for any number of further letters: "casino*" also catches "casinos". A single hit refuses the submission.</source>
+                <target>Ein Wort oder eine Wendung. Es trifft nur ganze Wörter und unterscheidet nicht zwischen Groß- und Kleinschreibung, „sex“ lässt also „Sussex“ in Ruhe. Ein * steht für beliebig viele weitere Buchstaben: „casino*“ trifft auch „Casinos“. Ein einziger Treffer weist die Einsendung ab.</target>
+            </trans-unit>
+            <trans-unit id="tx_twantibot_domain_model_stopword.note" resname="tx_twantibot_domain_model_stopword.note" approved="yes">
+                <source>Note</source>
+                <target>Notiz</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

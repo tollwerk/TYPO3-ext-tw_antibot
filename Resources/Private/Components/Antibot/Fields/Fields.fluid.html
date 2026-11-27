@@ -1,0 +1,3 @@
+<f:argument name="fields" type="array" description="Protective fields from the view of the guard, each with &quot;name&quot;, &quot;value&quot; and &quot;type&quot;" />
+<f:for each="{fields}" as="field"><f:if condition="{field.type} == 'hidden'"><input type="hidden" name="{field.name}" value="{field.value}" /></f:if></f:for>
+<div class="AntibotFields" hidden><f:for each="{fields}" as="field"><f:if condition="{field.type} != 'hidden'"><input class="AntibotFields__trap" type="{field.type}" name="{field.name}" value="{field.value}" tabindex="-1" autocomplete="off" /></f:if></f:for></div>

@@ -1,0 +1,9 @@
+/**
+ * Honeypots of a form, which no person sees and no assistive technology announces
+ *
+ * The attribute hidden hides them already; this rule keeps them hidden where the styles of a site set "display" for
+ * every div.
+ */
+.AntibotFields {
+    display: none !important;
+}

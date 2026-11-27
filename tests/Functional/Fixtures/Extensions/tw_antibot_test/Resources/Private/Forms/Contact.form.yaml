@@ -1,0 +1,27 @@
+# Protected form that refuses repeated messages
+identifier: contact
+type: Form
+label: Contact
+prototypeName: standard
+renderingOptions:
+  submitButtonLabel: Send
+  antibot:
+    duplicates:
+      parameters: [message]
+finishers:
+  - identifier: Confirmation
+    options:
+      message: 'Thank you for your message'
+renderables:
+  - identifier: page-1
+    type: Page
+    label: Contact
+    renderables:
+      - identifier: name
+        type: Text
+        label: Name
+        validators:
+          - identifier: NotEmpty
+      - identifier: message
+        type: Textarea
+        label: Message

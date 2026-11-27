@@ -1,0 +1,8 @@
+includes:
+  - vendor/tollwerk/guidelines/config/phpstan.neon
+
+parameters:
+  paths:
+    - Classes
+    - Configuration
+    - tests

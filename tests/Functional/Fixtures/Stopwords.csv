@@ -1,0 +1,7 @@
+"tx_twantibot_domain_model_stopword"
+,"uid","pid","term","note","hidden","deleted"
+,1,0,"casino*","Campaign of November",0,0
+,2,0," casino* ","Twice",0,0
+,3,0,"hello","Tried out",1,0
+,4,0,"world","Removed",0,1
+,5,0,"","Empty",0,0

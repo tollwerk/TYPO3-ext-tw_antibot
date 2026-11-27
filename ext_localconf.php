@@ -1,33 +1,31 @@
 <?php
 
-defined('TYPO3_MODE') || die('Access denied.');
+/**
+ * Cache for fingerprints and the element that shows a banned submission
+ *
+ * @category  Tollwerk
+ * @package   Tollwerk\TwAntibot
+ * @author    Joschi Kuphal <joschi@tollwerk.de>
+ * @copyright 2026 tollwerk GmbH
+ * @license   https://spdx.org/licenses/GPL-2.0-or-later.html GPL-2.0-or-later
+ * @link      https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot
+ */
 
-// Every route a form can take to the frontend ends in FluidFormRenderer::render(),
-// which calls this hook before it resolves the template name. That makes it the one
-// place where a form can be wrapped, whichever way it was embedded.
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['beforeRendering'][1546083658]
-    = \Tollwerk\TwAntibot\Hooks\FormHook::class;
+declare(strict_types=1);
 
-// The armor is added while the form is being built: the definition is complete and the
-// runtime does not exist yet.
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterBuildingFinished'][1546083659]
-    = \Tollwerk\TwAntibot\Hooks\FormHook::class;
+use Tollwerk\TwAntibot\Backend\SubmissionElement;
+use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 
-// A cache for what is meant to expire — content fingerprints above all. Bans are not in
-// here: they are decisions, they live in the database, and an editor revokes them.
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
-    = $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot']
-    ?? ['frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class];
+defined('TYPO3') || die();
 
-// The moment a submission has run its course — everything mapped, everything validated,
-// the finishers about to run. Antibot notes down there what a form asked it to remember.
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/form']['afterInitializeCurrentPage'][1546083660]
-    = \Tollwerk\TwAntibot\Hooks\FormHook::class;
+// What is meant to expire: the fingerprints of accepted submissions. Bans are decisions and live in the database
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tw_antibot'] ??= [
+    'frontend' => VariableFrontend::class,
+];
 
-// A ban record is read, not written: whoever opens one wants to see what arrived, and
-// that is a table of fields rather than the JSON it is stored as.
+// The submission of a ban as tables of fields
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1546083661] = [
     'nodeName' => 'antibotSubmission',
     'priority' => 40,
-    'class'    => \Tollwerk\TwAntibot\Form\Element\SubmissionElement::class,
+    'class' => SubmissionElement::class,
 ];

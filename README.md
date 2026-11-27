@@ -1,91 +1,56 @@
-# tollwerk/tw-antibot
+# tw_antibot
 
-> Death to spambots! CAPTCHA-less spam protection for TYPO3 forms
+Spamschutz ohne CAPTCHA für TYPO3 14. Die Extension entscheidet **auf dem Server**, ob eine Einsendung von einem Menschen oder einer Maschine kommt. Sie verlangt von niemandem einen Beweis: kein Rätsel, keine Bilder mit Ampeln, keine Rechenarbeit im Hintergrund. Jede Abfrage dieser Art lädt das Spamproblem des Betreibers bei den Menschen ab, für die das Formular da ist, und keine ist vollständig barrierefrei. Was die Prüfungen durchlassen, trägt der Betreiber, nicht die Person vor dem Formular.
 
-This extension decides **on the server** whether a form submission came from a person or a
-machine. It never asks the visitor to prove anything: no puzzle, no image grid, no "click
-all the traffic lights", no proof-of-work in the background.
+Die Prüfungen macht [jkphl/antibot](https://packagist.org/packages/jkphl/antibot), das TYPO3 nicht kennt. `tw_antibot` verbindet es mit TYPO3: Schutzfelder als Komponente, Sperren als Datensätze, Stopwords im Backend und ein Adapter für EXT:form.
 
-That is not a convenience — it is the point. Every challenge-response scheme moves the cost
-of the operator's spam problem onto the people the form is meant to serve, and none of them
-is fully accessible. Whatever the heuristics let through is a debt for the site operator to
-carry, not the visitor.
-
-It is a TYPO3 integration of [jkphl/antibot](https://packagist.org/packages/jkphl/antibot),
-which does the actual judging and knows nothing about TYPO3.
-
-> **Development happens at
-> [code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot](https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot).**
-> The GitHub repository is a mirror kept in step automatically — it is the public face and
-> the source Packagist reads, but pull requests and issues opened against it may be
-> answered from the other side.
-
-## How it works
-
-Three things happen around a form of the TYPO3 Form Framework, and none of them is visible
-to the person filling it in.
-
-**The form is armored while it is being built.** Hidden fields are added whose names nobody
-can guess: they are derived from the visitor's session, the form, an installation secret and
-the exact set of checks in force. An armor scraped from one form is worthless in another
-session, in another form, or after the configuration has changed. One of the fields carries
-the second the form was served, inside a signed token.
-
-**A submission is judged before the finishers run.** That moment matters more than it looks:
-a submission that completes a form never renders it again — it goes straight to the
-finishers that send the mail. Refusing at rendering time would therefore refuse everything
-except the submission a machine makes.
-
-**A refused submission is answered with a notice in place of the form.** The client is
-banned, the whole submission is recorded, and every later call gets the notice until an
-administrator deletes the record.
+> Entwickelt wird auf [code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot](https://code.tollwerk.net/tollwerk/typo3/extensions/tw-antibot). Das Repository auf GitHub ist ein Spiegel, aus dem Packagist liest.
 
 ## Installation
 
-```bash
+```sh
 composer require tollwerk/tw-antibot
 ```
 
-Then, in this order:
+`tw_antibot` setzt `tw_base` voraus, für die Komponenten. Danach:
 
-1. **Activate the extension.** In a Composer installation it is active as soon as it is
-   installed; a classic installation needs it switched on in the extension manager.
-2. **Include the static TypoScript** `EXT:tw_antibot/Configuration/TypoScript/Static` in the
-   root template.
-3. **Create a storage folder** for the ban records and note its page UID.
-4. **Set the constants:**
+1. **Das Site-Set** `tollwerk/tw-antibot` als Abhängigkeit der Site eintragen.
+2. **Einen Ordner** für die Sperren anlegen und in der Einstellung `twAntibot.storage` wählen.
+3. **Die Tabellen** mit dem Schema-Update anlegen.
 
-   ```
-   plugin.tx_twantibot.persistence.storagePid = 42
-   plugin.tx_twantibot.settings.contact.email = info@example.com
-   plugin.tx_twantibot.settings.classAttribute =
-   ```
+## Ablauf
 
-   Without `storagePid` the records land on the root page. Without `contact.email` the
-   notice simply leaves out the paragraph offering an address. `classAttribute` decides what
-   the notice is wrapped in — empty means it keeps the classes the form itself would have
-   carried, which is right until a grid layout puts a form in a narrower column than a block
-   of text.
+Um ein geschütztes Formular passiert dreierlei, und nichts davon sieht die Person, die es ausfüllt.
 
-The three database tables are created by the usual schema update.
+- **Das Formular bekommt Schutzfelder.** Ein verborgenes Feld trägt eine Signatur, ein zweites die Sekunde, in der das Formular ausgeliefert wurde; dazu kommen Honeypots, die kein Browser ausfüllt. Die Namen der Felder hängen von der Session der Person ab, vom Formular, vom Schlüssel der Installation und von den Prüfungen des Formulars. Felder aus einem Formular sind in einer anderen Session, einem anderen Formular und nach einer Änderung der Prüfungen wertlos.
+- **Eine Einsendung wird beurteilt, bevor das Formular sie verarbeitet.** Eine Einsendung ohne Schutzfelder gilt als abgelehnt: Es gab nichts zu prüfen, und sie durchzulassen ließe jede Maschine durch, die die Felder weglässt.
+- **Eine abgelehnte Einsendung bekommt einen Hinweis an Stelle des Formulars.** Will das Formular es so, wird die Adresse des Clients gesperrt, die Einsendung aufgezeichnet, und jeder weitere Aufruf zeigt den Hinweis, bis die Sperre endet oder jemand den Datensatz löscht.
 
-## Protecting a form
+Es zählt nur eine Session, die die Person mitbringt. Für einen anonymen Besuch beginnt TYPO3 in jedem Request eine neue; ohne Session hängen die Namen vom Rest ab, und die Prüfungen von Zeit, Honeypots und Signatur gelten weiter.
 
-Nothing is protected until a form asks for it, and every check is switched on by itself: a
-heuristic that nobody chose is a heuristic nobody can answer for.
+## Einstellungen der Site
 
-A form built in YAML asks through a rendering option:
+| Einstellung | Vorgabe | Bedeutung |
+| --- | --- | --- |
+| `twAntibot.storage` | `0` | Ordner für die Sperren |
+| `twAntibot.contact` | leer | Mailadresse im Hinweis; leer für `twBase.mail.contact`, ohne beide fehlt der Absatz dazu |
+| `twAntibot.ban` | `true` | ob eine Ablehnung den Client sperrt |
+| `twAntibot.banPeriod` | `2592000` | Sekunden, die eine Sperre dauert; `0` bis jemand sie aufhebt |
+| `twAntibot.methods` | `GET-POST` | Methoden, mit denen ein Formular geladen und gesendet wird; leer für jede |
+| `twAntibot.duplicateLifetime` | `86400` | Sekunden, die der Inhalt einer angenommenen Einsendung im Gedächtnis bleibt |
+| `twAntibot.time.minimum` | `3` | Sekunden, die ein Formular offen sein muss, bevor es gesendet werden darf |
+| `twAntibot.time.maximum` | `3600` | Sekunden, die ein Formular gültig bleibt |
+| `twAntibot.time.followup` | `1` | Sekunden bis zum nächsten Senden nach einem Fehler |
+
+## Ein Formular von EXT:form schützen
+
+Kein Formular ist geschützt, bis es danach fragt, und jede Prüfung des Inhalts wird einzeln eingeschaltet: Eine Heuristik, die niemand gewählt hat, kann niemand verantworten. Ein Formular fragt mit der Rendering-Option `antibot`; `true` gibt ihm die Honeypots und die Einstellungen der Site.
 
 ```yaml
 renderingOptions:
   antibot:
-    honeypots:
-      email: email
-      homepage: url
     plausibility:
-      message:
-        minWords: 5
-        maxLength: 5000
+      message: { minWords: 5, maxLength: 5000 }
     links:
       parameters: [message]
       maximum: 1
@@ -97,89 +62,79 @@ renderingOptions:
       parameters: [name, subject, message]
 ```
 
-A form built in PHP asks the same way:
+| Schlüssel | Wirkung |
+| --- | --- |
+| `honeypots` | Felder, die kein Browser ausfüllt, als Name und Typ; Vorgabe `email: email` und `homepage: url`, `false` für keine |
+| `plausibility` | Zahl der Wörter und Zeichen je Feld: `minWords`, `maxWords`, `minLength`, `maxLength` |
+| `links` | höchstens `maximum` Links in den Feldern `parameters`; nicht dort, wo Menschen zu Recht verlinken |
+| `equality` | lehnt ab, wenn mehr als `tolerance` der Felder `parameters` denselben Wert tragen; Vorgabe 1 |
+| `parameterSet` | vergleicht die gesendeten Felder mit `expected`, mit `tolerateUnexpected` und `requireComplete` |
+| `duplicates` | lehnt Inhalt der Felder `parameters` ab, der schon einmal angenommen wurde, für `lifetime` Sekunden |
+| `stopwords` | lehnt ab, wenn die Felder `parameters` ein Stopword enthalten |
+| `methods`, `times`, `ban` | wie die Einstellungen der Site, für dieses Formular |
+
+Der Adapter hört auf zwei Events von EXT:form. Beim Rendern der ersten Seite fügt er das Element `AntibotFields` mit den Schutzfeldern hinzu; bei einer Sperre oder einer Ablehnung rendert er statt des Formulars die Vorlage `AntibotBlocked`. Bevor EXT:form die erste Seite eines Formulars verarbeitet, beurteilt er die Einsendung und schickt eine abgelehnte auf ihre Seite zurück, ohne dass ein Finisher läuft. Die späteren Seiten eines Formulars mit mehreren Schritten tragen keine Schutzfelder. Wer den Hinweis anders formulieren will, legt eine eigene `AntibotBlocked.fluid.html` in einen Pfad mit höherem Index.
+
+## Aus eigenem Code
+
+Ein Controller holt sich mit `GuardFactory::create()` den Wächter eines Formulars, für den ganzen Request derselbe:
 
 ```php
-$form->setRenderingOption('antibot', [
-    'honeypots' => ['email' => 'email', 'homepage' => 'url'],
-    'equality'  => ['parameters' => ['name', 'subject', 'message']],
-]);
+$guard = $this->guards->create($request, 'registration', ['ban' => false], ['tx_twaccounts_registration']);
+$closed = $guard->isBanned() || ('POST' === $request->getMethod() && $guard->judge()->isClosed());
+
+$this->view->assignMultiple(['closed' => $closed, 'antibot' => $guard->view()]);
 ```
 
-| Key | What it does |
-|---|---|
-| `honeypots` | Fields no browser fills in, given as name → type. A honeypot passes only when it comes back exactly as handed out |
-| `plausibility` | Word and character counts per field: `minWords`, `maxWords`, `minLength`, `maxLength` |
-| `links` | Caps hyperlinks in the named fields. Leave it out where people legitimately link — a comment about an article, for instance |
-| `equality` | Refuses submissions in which several unrelated fields carry one and the same value |
-| `parameterSet` | Compares the submitted field names against the announced ones |
-| `duplicates` | Refuses content that has been submitted before. Remembered for `content.duplicateLifetime`, and only for submissions that were accepted |
-| `stopwords` | Refuses submissions whose named fields carry one of the stopwords maintained in the backend. See [Stopwords](#stopwords) |
-| `methods` | The order of request methods a form is served and submitted under, e.g. `GET-POST` |
-| `times` | `minimum`, `maximum` and `followup` seconds. Defaults come from the constants |
-| `ban` | Whether a refused submission earns a ban. Default: yes |
+```html
+<f:if condition="{closed}">
+    <f:then><twc:antibot.notice contact="{antibot.contact}" /></f:then>
+    <f:else>
+        <f:form action="register">
+            <twc:antibot.fields fields="{antibot.fields}" />
+            …
+        </f:form>
+    </f:else>
+</f:if>
+```
 
-Whatever a form does not mention comes from the installation-wide settings, and whatever
-those do not mention comes from the defaults in the code.
+- **`create()`** nimmt den Request, den Namen des Formulars, die Optionen wie bei EXT:form und den Scope, unter dem das Formular seine Felder sendet.
+- **`judge()`** beurteilt die Einsendung einmal und liefert `Verdict::Accepted`, `Verdict::Refused` oder `Verdict::Banned`; `isClosed()` ist wahr für die beiden letzten. `isBanned()` sagt auch ohne Einsendung, ob der Client gesperrt ist.
+- **`remember()`** merkt sich den Inhalt einer Einsendung, die das Formular am Ende angenommen hat, für `duplicates`; `forget()` vergisst ihn wieder, etwa wenn die Einsendung danach an einer anderen Prüfung scheitert.
+- **`view()`** liefert die Argumente der Komponenten: die Schutzfelder und die Kontaktadresse.
 
-## The notice
+Inhalt, der schon einmal kam, wird abgelehnt, aber nicht gesperrt: Er kann von einem Menschen stammen, der zweimal auf Senden gedrückt hat.
 
-The refusal is worded once, for everybody, and says neither what was detected nor who is to
-blame — a person who ran into a false positive reads the same sentences as a spambot's
-operator, and both must be able to act on them. It reads sensibly right after a bounced
-submission and days later.
+## Komponenten
 
-Override `Resources/Private/Templates/AntibotBlocked.html` through
-`plugin.tx_twantibot.view.templateRootPath` to word it differently. The address from
-`settings.contact.email` reaches the template as a rendering option.
+`tw_antibot` meldet seine Komponenten unter `Tollwerk\Components` mit der **Priorität 30** an. Zu jeder gehören Beispiele, die Functional-Tests rendern und prüfen.
+
+| Komponente | Zweck |
+| --- | --- |
+| `twc:antibot.fields` | die verborgenen Felder und die Honeypots in einem Container mit `hidden`, außerhalb der Fokusreihenfolge und ohne Autofill |
+| `twc:antibot.notice` | der Hinweis mit `role="alert"` an Stelle des Formulars, mit der Kontaktadresse als Link |
+
+Der Hinweis ist für alle gleich formuliert und sagt weder, was angeschlagen hat, noch wer schuld ist. Wer fälschlich hängen bleibt, liest dieselben Sätze wie der Betreiber eines Bots, und beide müssen danach handeln können. `class` gibt ihm weitere Klassen, im Adapter die des Formulars, dessen Platz er einnimmt.
 
 ## Stopwords
 
-Some campaigns give themselves away by a word: a product, a currency, a phrase every
-message of theirs repeats. A stopword is a record of its own — create it with the list
-module wherever you like, the storage folder being the natural place. Every stopword holds
-for the whole installation, in every form that names fields for it through `stopwords`.
+Manche Kampagnen verraten sich durch ein Wort. Ein Stopword ist ein eigener Datensatz, an beliebiger Stelle angelegt, und gilt in der ganzen Installation für jedes Formular, das mit `stopwords` Felder dafür nennt. Es trifft nur ganze Wörter, ohne Rücksicht auf Groß- und Kleinschreibung; `*` steht für weitere Buchstaben, `casino*` trifft also auch „Casinos“. Ein einzelner Treffer genügt. Ein ausgeschaltetes Stopword prüft nicht mit; so lässt sich ausprobieren, ob ein Begriff Ärger macht, ohne ihn zu verlieren.
 
-A stopword is a word or a phrase. It matches whole words only and ignores casing, Unicode
-included, so `sex` leaves "Sussex" alone. The words of a phrase may be separated by any
-whitespace. A `*` stands for any number of further letters: `casino*` also catches
-"casinos" and "Casinobonus".
+## Sperren
 
-There is no threshold — a single hit refuses the submission, and with banning switched on
-it bans the sender. Keep the list sharp: a term an honest person might type keeps that
-person out. A stopword that is switched off takes no part in the check, which makes it
-possible to try out whether a term causes trouble without losing it.
+Eine Sperre ist ein Datensatz im Ordner der Site und enthält die ganze Einsendung. Wer ihn öffnet, sieht in zwei Tabellen, was eingegeben wurde und was das Formular mitgeschickt hat, und kann beurteilen, ob es Spam war oder ein Mensch, den der Schutz nicht hätte treffen dürfen. Der Datensatz lässt sich nicht überschreiben.
 
-Editing the list takes effect with the next submission. It does not invalidate the forms
-already handed out — only adding `stopwords` to a form, or removing it, does, like every
-change to a form's checks.
-
-## Ban records
-
-A ban is a record in the storage folder, and it holds the complete submission — all form
-fields, the antibot fields including the one that triggered, and the form state. That makes
-the case judgeable: whoever opens the record sees at a glance whether this was spam or
-somebody the protection should not have caught. The record is shown as a table of fields,
-not as the JSON it is stored as, and it cannot be typed over.
-
-Bans expire after `settings.banning.period` seconds (one month by default). An expired
-record is **deleted**, not merely hidden — a note about somebody's submission has no reason
-to outlive the ban it justified. `period = 0` means "until somebody lifts it". Deleting the
-record in the backend lifts the ban immediately.
+Eine Sperre endet nach `twAntibot.banPeriod`. Ihr Datensatz wird dann **gelöscht**, nicht verborgen: Eine Notiz über die Einsendung eines Menschen hat keinen Grund, ihre Sperre zu überdauern. Wer den Datensatz im Backend löscht, hebt die Sperre sofort auf. Die Adresse des Clients ist die, die TYPO3 hinter den Proxys auflöst, denen es vertraut; sonst träfe eine Sperre alle hinter demselben Proxy.
 
 ## Caching
 
-A page carrying an armored form is not cached — neither by TYPO3 nor by browsers, proxies or
-service workers. It cannot be: the armor belongs to one session and carries the second it
-was served, so a cached page would hand the first visitor's armor to everyone after them and
-keep handing it out until it had aged past the submission window. All other pages keep their
-caching untouched.
+Eine Seite mit Schutzfeldern kommt aus keinem Cache, weder aus dem von TYPO3 noch aus dem eines Browsers oder Proxys: Sie trägt `Cache-Control: private, no-store` und ein abgelaufenes `Expires`. Die Felder gehören einer Person und tragen ihre Zeit; aus einem Cache bekäme jeder die Felder des ersten Besuchs. Alle anderen Seiten behalten ihr Caching.
 
-## Requirements
+## Tests
 
-PHP 7.4 or later, TYPO3 10.4, EXT:form.
+- **PHPUnit:** Optionen und Einstellungen, die Middleware, die Sperren und Stopwords auf SQLite, der Wächter mit echten Requests, der Adapter mit Formularen von EXT:form im Frontend und jedes Beispiel jeder Komponente.
+- **Browser:** `npm run test:browser` rendert mit `BrowserPagesTest` ein Formular mit Schutzfeldern und den Hinweis nach `var/browser` und prüft beides mit Playwright in Chromium und Firefox, mit und ohne JavaScript, und mit axe: Die Honeypots sind unsichtbar und nicht erreichbar, die Schutzfelder reisen mit dem Formular, der Hinweis wird angekündigt.
 
-## License
+## Lizenz
 
-Copyright © 2026 [Joschi Kuphal](https://jkphl.is) / joschi@tollwerk.de. Licensed under the
-terms of the [GPL v2 or later](LICENSE).
+GPL-2.0-or-later, siehe [LICENSE.md](LICENSE.md).

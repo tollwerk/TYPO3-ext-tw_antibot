@@ -1,0 +1,7 @@
+<f:argument name="contact" type="string" optional="1" default="" description="Email address the visitor may write to; the paragraph about it is left out if empty" />
+<f:argument name="class" type="string" optional="1" default="" description="Further classes, such as those of the form whose place the notice takes" />
+<div class="AntibotNotice{f:if(condition: class, then: ' {class}')}" role="alert">
+    <p class="AntibotNotice__heading"><strong><f:translate key="tw_antibot.messages:notice.heading" /></strong></p>
+    <p><f:translate key="tw_antibot.messages:notice.explanation" /></p>
+    <f:if condition="{contact}"><f:variable name="link"><a href="mailto:{contact}">{contact}</a></f:variable><p><f:format.raw><f:translate key="tw_antibot.messages:notice.contact" arguments="{0: link}" /></f:format.raw></p></f:if>
+</div>

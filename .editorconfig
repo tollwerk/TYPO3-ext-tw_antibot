@@ -1,25 +1,15 @@
-# editorconfig.org
 root = true
 
 [*]
-end_of_line = lf
-indent_style = space
-indent_size = 4
 charset = utf-8
-trim_trailing_whitespace = true
+end_of_line = lf
 insert_final_newline = true
-
-[.htaccess]
+trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.json]
-indent_style = space
+[*.{yml,yaml,json,jsonc,json5,neon}]
 indent_size = 2
 
 [*.md]
-trim_trailing_whitespace = false
-
-[test/fixtures/*]
-insert_final_newline = false
 trim_trailing_whitespace = false
