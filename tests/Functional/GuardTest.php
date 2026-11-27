@@ -38,9 +38,11 @@ use TYPO3\CMS\Core\Context\DateTimeAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Session\UserSession;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteSettings;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\CMS\Frontend\Cache\CacheInstruction;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
@@ -101,6 +103,13 @@ final class GuardTest extends FunctionalTestCase
      * @var integer
      */
     private int $now = 1795000000;
+
+    /**
+     * Seconds a visitor waits before sending a form
+     *
+     * @var integer
+     */
+    private int $wait = 5;
 
     /**
      * The fields are a hidden field and two honeypots under the names of the form, and their page stays out of caches
@@ -287,6 +296,50 @@ final class GuardTest extends FunctionalTestCase
     }
 
     /**
+     * A form without the check of times takes a submission at once, which a form with it refuses
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws DBALException If the database fails
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aFormMayLeaveOutTheTimes(): void
+    {
+        $this->wait = 0;
+
+        self::assertSame(Verdict::Refused, $this->submit(['message' => 'Hi'], ['ban' => false])->judge());
+        $untimed = $this->submit(['message' => 'Hi'], ['ban' => false, 'times' => false]);
+        self::assertSame(Verdict::Accepted, $untimed->judge());
+    }
+
+    /**
+     * The names of the fields depend on the session the visitor brings, unless the form leaves the session out
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aFormMayLeaveOutTheSession(): void
+    {
+        $user = self::createStub(FrontendUserAuthentication::class);
+        $user->method('getSession')->willReturn(UserSession::createFromRecord('session-of-ada', ['ses_id' => 'x']));
+        $visitor = self::request('GET')->withAttribute('frontend.user', $user);
+
+        $anonymous = self::request('GET');
+        self::assertNotSame($this->names($anonymous, self::OPTIONS), $this->names($visitor, self::OPTIONS));
+        $options = [...self::OPTIONS, 'session' => false];
+        self::assertSame($this->names($anonymous, $options), $this->names($visitor, $options));
+    }
+
+    /**
      * Content the form accepted is refused when it comes again, until the form forgets it
      *
      * @return void
@@ -323,6 +376,24 @@ final class GuardTest extends FunctionalTestCase
     }
 
     /**
+     * Names of the protective fields of the form "contact" in a request of its own
+     *
+     * @param ServerRequest        $request Request
+     * @param array<string, mixed> $options Checks of the form
+     *
+     * @return list<string>
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws InvalidArgumentException If a class cannot be instantiated
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    private function names(ServerRequest $request, array $options): array
+    {
+        return array_column($this->guard($request, $options)->fields(), 'name');
+    }
+
+    /**
      * Visit the form and send it with its fields
      *
      * @param array<string, string> $values    Values of the form
@@ -349,7 +420,7 @@ final class GuardTest extends FunctionalTestCase
         }
 
         parse_str($query, $body);
-        $this->now += 5;
+        $this->now += $this->wait;
 
         return $this->guard($this->request('POST', $body), $options);
     }

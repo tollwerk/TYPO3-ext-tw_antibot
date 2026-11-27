@@ -71,7 +71,8 @@ renderingOptions:
 | `parameterSet` | vergleicht die gesendeten Felder mit `expected`, mit `tolerateUnexpected` und `requireComplete` |
 | `duplicates` | lehnt Inhalt der Felder `parameters` ab, der schon einmal angenommen wurde, für `lifetime` Sekunden |
 | `stopwords` | lehnt ab, wenn die Felder `parameters` ein Stopword enthalten |
-| `methods`, `times`, `ban` | wie die Einstellungen der Site, für dieses Formular |
+| `methods`, `times`, `ban` | wie die Einstellungen der Site, für dieses Formular; `times: false` prüft keine Zeiten |
+| `session` | `false` lässt die Session aus den Namen der Felder, für ein Formular, das beurteilt wird, bevor TYPO3 die Session kennt, etwa eine Anmeldung in einer Middleware |
 
 Der Adapter hört auf zwei Events von EXT:form. Beim Rendern der ersten Seite fügt er das Element `AntibotFields` mit den Schutzfeldern hinzu; bei einer Sperre oder einer Ablehnung rendert er statt des Formulars die Vorlage `AntibotBlocked`. Bevor EXT:form die erste Seite eines Formulars verarbeitet, beurteilt er die Einsendung und schickt eine abgelehnte auf ihre Seite zurück, ohne dass ein Finisher läuft. Die späteren Seiten eines Formulars mit mehreren Schritten tragen keine Schutzfelder. Wer den Hinweis anders formulieren will, legt eine eigene `AntibotBlocked.fluid.html` in einen Pfad mit höherem Index.
 

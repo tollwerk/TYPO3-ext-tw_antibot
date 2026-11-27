@@ -61,6 +61,8 @@ final class OptionsTest extends UnitTestCase
         self::assertSame(2.0, $options->followup);
         self::assertSame('POST', $options->methods);
         self::assertSame(120, $options->duplicateLifetime);
+        self::assertTrue($options->timing);
+        self::assertTrue($options->session);
     }
 
     /**
@@ -100,6 +102,21 @@ final class OptionsTest extends UnitTestCase
         self::assertSame(60.0, $options->maximum);
         self::assertSame(1.0, $options->followup);
         self::assertFalse($options->ban);
+    }
+
+    /**
+     * A form may do without the check of times and without the session in the names of its fields
+     *
+     * @return void
+     */
+    #[Test]
+    public function aFormMayLeaveOutTimesAndSession(): void
+    {
+        $options = Options::fromArray(['times' => false, 'session' => false], new Settings());
+
+        self::assertFalse($options->timing);
+        self::assertFalse($options->session);
+        self::assertTrue(Options::fromArray(['times' => ['minimum' => 5]], new Settings())->timing);
     }
 
     /**

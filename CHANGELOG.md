@@ -11,6 +11,7 @@ Alle nennenswerten Änderungen an der Extension. Das Format folgt [Keep a Change
 - Das Site-Set `tollwerk/tw-antibot` mit den Einstellungen für Ordner, Kontaktadresse, Sperren, Methoden und Zeiten.
 - Ein Adapter für EXT:form über die Events `AfterCurrentPageIsResolvedEvent` und `BeforeRenderableIsRenderedEvent`.
 - Seiten mit Schutzfeldern tragen `Cache-Control: private, no-store`.
+- Die Optionen `times: false`, die keine Zeiten prüft, und `session: false`, die die Session aus den Namen der Felder lässt.
 
 ### Geändert
 

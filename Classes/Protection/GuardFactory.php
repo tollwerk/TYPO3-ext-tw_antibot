@@ -50,7 +50,8 @@ use TYPO3\CMS\Frontend\Cache\CacheInstruction;
  *
  * Only a session the visitor brings counts. TYPO3 starts a new one for an anonymous visitor in every request, and
  * fields handed out under it would be looked for under a name that no longer exists. Without a session the names
- * depend on the rest alone; the checks of timing, honeypots and the signature still hold.
+ * depend on the rest alone; the checks of timing, honeypots and the signature still hold. A form that is judged before
+ * TYPO3 knows the session, such as a sign-in in a middleware, leaves the session out with the option "session: false".
  *
  * @category  Tollwerk
  * @package   Tollwerk\TwAntibot
@@ -115,7 +116,7 @@ final class GuardFactory
         $clock = new ContextClock($this->context);
         $banStore = new BanStore($this->connectionPool, $settings->storage, $settings->banPeriod, $clock->now());
 
-        $antibot = new Antibot($this->session($request), $form);
+        $antibot = new Antibot($options->session ? $this->session($request) : '', $form);
         $antibot->setClock($clock);
         $antibot->setSecret($this->secret());
         $antibot->setClientAddress($this->address($request));
@@ -273,7 +274,9 @@ final class GuardFactory
             $hmac->setMethodVector($methods[0], $methods[1] ?? $methods[0]);
         }
 
-        $hmac->setSubmissionTimes($options->maximum, $options->minimum, $options->followup);
+        if ($options->timing) {
+            $hmac->setSubmissionTimes($options->maximum, $options->minimum, $options->followup);
+        }
 
         return $hmac;
     }

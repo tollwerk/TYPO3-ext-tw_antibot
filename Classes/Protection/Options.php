@@ -78,6 +78,8 @@ final readonly class Options
      * @param float                 $maximum            Seconds a form stays valid
      * @param float                 $followup           Seconds before a form may come back again
      * @param boolean               $ban                Whether a refused submission bans the client
+     * @param boolean               $timing             Whether the times are checked
+     * @param boolean               $session            Whether the names of the fields depend on the session
      */
     public function __construct(
         public array $honeypots = self::HONEYPOTS,
@@ -97,6 +99,8 @@ final readonly class Options
         public float $maximum = 3600,
         public float $followup = 1,
         public bool $ban = true,
+        public bool $timing = true,
+        public bool $session = true,
     ) {}
 
     /**
@@ -135,6 +139,8 @@ final readonly class Options
             maximum: self::number($times['maximum'] ?? null, $settings->maximum),
             followup: self::number($times['followup'] ?? null, $settings->followup),
             ban: (bool) ($options['ban'] ?? $settings->ban),
+            timing: false !== ($options['times'] ?? null),
+            session: false !== ($options['session'] ?? null),
         );
     }
 
