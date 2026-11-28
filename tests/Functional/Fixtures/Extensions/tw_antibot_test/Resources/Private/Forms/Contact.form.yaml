@@ -1,4 +1,4 @@
-# Protected form that refuses repeated messages
+# Protected form that refuses repeated messages, with a password that a ban leaves out
 identifier: contact
 type: Form
 label: Contact
@@ -25,3 +25,6 @@ renderables:
       - identifier: message
         type: Textarea
         label: Message
+      - identifier: code
+        type: Password
+        label: Code

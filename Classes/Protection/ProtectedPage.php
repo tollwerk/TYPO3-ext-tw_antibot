@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Whether the page of the request carries protective fields
+ * Whether the page of the request shows a protected form or its notice
  *
  * @category  Tollwerk
  * @package   Tollwerk\TwAntibot
@@ -16,9 +16,10 @@ declare(strict_types=1);
 namespace Tollwerk\TwAntibot\Protection;
 
 /**
- * Whether the page of the request carries protective fields
+ * Whether the page of the request shows a protected form or its notice
  *
- * A guard marks the page when it hands out fields; the middleware KeepProtectedPagesPrivate reads the mark.
+ * A guard marks the page when the page shows its form or its notice; the listener KeepProtectedPagesOutOfCache and the
+ * middleware KeepProtectedPagesPrivate read the mark.
  *
  * @category  Tollwerk
  * @package   Tollwerk\TwAntibot
@@ -30,14 +31,14 @@ namespace Tollwerk\TwAntibot\Protection;
 final class ProtectedPage
 {
     /**
-     * Whether the page carries protective fields
+     * Whether the page shows a protected form or its notice
      *
      * @var boolean
      */
     private bool $protected = false;
 
     /**
-     * Mark the page as carrying protective fields
+     * Mark the page as showing a protected form or its notice
      *
      * @return void
      */
@@ -47,7 +48,7 @@ final class ProtectedPage
     }
 
     /**
-     * Whether the page carries protective fields
+     * Whether the page shows a protected form or its notice
      *
      * @return boolean
      */

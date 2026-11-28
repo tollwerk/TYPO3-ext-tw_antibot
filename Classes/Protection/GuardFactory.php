@@ -71,6 +71,13 @@ final class GuardFactory
     private array $guards = [];
 
     /**
+     * Options each guard was created with, by form
+     *
+     * @var array<string, array<array-key, mixed>>
+     */
+    private array $options = [];
+
+    /**
      * Constructor
      *
      * @param ConnectionPool  $connectionPool Connections to the database, for the bans
@@ -107,8 +114,17 @@ final class GuardFactory
     {
         $key = $form . '|' . implode('|', $scope);
         if (isset($this->guards[$key])) {
+            // The checks are set up once; options that differ would be ignored without a word
+            if (($this->options[$key] ?? null) !== $options) {
+                $this->logger->warning('A form asked for its guard again with other options, which do not apply', [
+                    'form' => $form,
+                ]);
+            }
+
             return $this->guards[$key];
         }
+
+        $this->options[$key] = $options;
 
         $site = $request->getAttribute('site');
         $settings = Settings::fromSite($site instanceof Site ? $site : null);
@@ -120,7 +136,7 @@ final class GuardFactory
         $antibot->setClock($clock);
         $antibot->setSecret($this->secret());
         $antibot->setClientAddress($this->address($request));
-        $antibot->setLogger($this->logger);
+        $antibot->setLogger(new LibraryLogger($this->logger));
         if ([] !== $scope) {
             $antibot->setParameterScope(...$scope);
         }

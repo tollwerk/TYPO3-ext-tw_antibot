@@ -20,9 +20,9 @@ use Doctrine\DBAL\Exception as DBALException;
 use InvalidArgumentException;
 use Jkphl\Antibot\Domain\Exceptions\RuntimeException;
 use Jkphl\Antibot\Ports\Exceptions\InvalidArgumentException as AntibotArgumentException;
-use LogicException;
 use Override;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Tollwerk\TwAntibot\Protection\Guard;
 use Tollwerk\TwAntibot\Protection\GuardFactory;
@@ -31,6 +31,7 @@ use Tollwerk\TwAntibot\Protection\Verdict;
 use Tollwerk\TwAntibot\Store\BanStore;
 use Tollwerk\TwAntibot\Store\CacheStore;
 use Tollwerk\TwAntibot\Store\StopwordList;
+use Tollwerk\TwAntibot\Tests\Support\CollectingLogger;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Context\Context;
@@ -169,7 +170,7 @@ final class GuardTest extends FunctionalTestCase
     }
 
     /**
-     * A submission without the fields is refused, and its client is banned with the submission until the ban ends
+     * A submission without the fields is refused, but bans nobody: another site may have sent it from a browser
      *
      * @return void
      *
@@ -177,32 +178,153 @@ final class GuardTest extends FunctionalTestCase
      * @throws DBALException If the database fails
      * @throws InvalidArgumentException If the request is invalid
      * @throws NoSuchCacheException If the cache is missing
-     * @throws LogicException If a ban has no submission
      * @throws RuntimeException If the checks are set up twice
      */
     #[Test]
-    public function aSubmissionWithoutTheFieldsBansTheClient(): void
+    public function aSubmissionWithoutTheFieldsIsRefused(): void
     {
         $request = $this->request('POST', ['tx_test' => ['message' => 'Cheap pills', 'from' => 'spam@example.org']]);
         $guard = $this->guard($request, self::OPTIONS);
 
+        self::assertTrue($guard->isSubmitted());
         self::assertSame(Verdict::Refused, $guard->judge());
         self::assertTrue($guard->judge()->isClosed());
+        self::assertSame([], $this->bans());
+    }
+
+    /**
+     * A refused submission bans its client until the ban ends; the record holds what the form sent, without secrets
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws DBALException If the database fails
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aBanRecordsTheSubmissionWithoutSecrets(): void
+    {
+        $options = [...self::OPTIONS, 'secrets' => ['password', 'login[pin]']];
+        $guard = $this->submit(
+            ['message' => 'Cheap pills', 'password' => 'hunter2', 'login[pin]' => '1234', 'login[name]' => 'ada'],
+            $options,
+            ['homepage' => 'https://spam.example.org/'],
+        );
+
+        self::assertSame(Verdict::Refused, $guard->judge());
         $bans = $this->bans();
         self::assertCount(1, $bans);
         self::assertSame(self::CLIENT, $bans[0]['value'] ?? null);
         self::assertSame(BanStore::ADDRESS, $bans[0]['property'] ?? null);
         self::assertSame(3, $bans[0]['pid'] ?? null, 'The ban lies in the folder of the site');
-        self::assertSame('Sent without the protective fields', $bans[0]['error'] ?? null);
-        self::assertSame(
-            ['message' => 'Cheap pills', 'from' => 'spam@example.org'],
-            json_decode(\is_string($bans[0]['data'] ?? null) ? $bans[0]['data'] : '', true),
-        );
+        $data = json_decode(\is_string($bans[0]['data'] ?? null) ? $bans[0]['data'] : '', true);
+        self::assertIsArray($data);
+        self::assertSame('Cheap pills', $data['message'] ?? null);
+        self::assertSame(['name' => 'ada'], $data['login'] ?? null);
+        self::assertArrayNotHasKey('password', $data);
+        self::assertArrayNotHasKey('tx_test', $data, 'The record holds the values under the scope of the form');
 
-        $visit = $this->guard($this->request('GET'), self::OPTIONS);
+        $visit = $this->guard($this->request('GET'), $options);
         self::assertTrue($visit->isBanned());
         self::assertSame(Verdict::Banned, $visit->judge());
-        self::assertTrue(Verdict::Banned->isClosed());
+    }
+
+    /**
+     * A submission from a page of another site is refused even with the fields, but bans nobody
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws DBALException If the database fails
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aSubmissionFromAnotherSiteIsRefused(): void
+    {
+        foreach ([
+            ['Sec-Fetch-Site' => 'cross-site'],
+            ['Origin' => 'https://evil.example'],
+            ['Origin' => 'null'],
+        ] as $headers) {
+            $guard = $this->submit(['message' => 'Hello'], self::OPTIONS, [], $headers);
+            self::assertSame(Verdict::Refused, $guard->judge(), (string) json_encode($headers));
+        }
+
+        self::assertSame([], $this->bans());
+        $same = ['Origin' => 'http://localhost', 'Sec-Fetch-Site' => 'same-origin'];
+        self::assertSame(Verdict::Accepted, $this->submit(['message' => 'Hello'], self::OPTIONS, [], $same)->judge());
+    }
+
+    /**
+     * A request sends the form if it carries the scope of the form, in its body or its query
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aRequestSendsTheFormWithItsScope(): void
+    {
+        self::assertFalse($this->guard($this->request('GET'), self::OPTIONS)->isSubmitted());
+        $other = $this->request('POST', ['tx_other' => ['q' => 'x']]);
+        self::assertFalse($this->guard($other, self::OPTIONS)->isSubmitted());
+        $own = $this->request('POST', ['tx_test' => ['q' => 'x']]);
+        self::assertTrue($this->guard($own, self::OPTIONS)->isSubmitted());
+        $query = $this->request('GET')->withQueryParams(['tx_test' => ['q' => 'x']]);
+        self::assertTrue($this->guard($query, self::OPTIONS)->isSubmitted());
+    }
+
+    /**
+     * A page that shows only the notice stays out of caches as well
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function theNoticeKeepsItsPageOutOfCaches(): void
+    {
+        $request = $this->request('GET');
+        $this->guard($request, self::OPTIONS)->keepPagePrivate();
+
+        $instruction = $request->getAttribute('frontend.cache.instruction');
+        self::assertInstanceOf(CacheInstruction::class, $instruction);
+        self::assertFalse($instruction->isCachingAllowed());
+        self::assertTrue($this->page?->isProtected());
+    }
+
+    /**
+     * A form that asks for its guard again gets the same one; other options do not apply and are logged
+     *
+     * @return void
+     *
+     * @throws AntibotArgumentException If a field has an invalid name
+     * @throws InvalidArgumentException If the request is invalid
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws RuntimeException If the checks are set up twice
+     */
+    #[Test]
+    public function aGuardIsCreatedOncePerForm(): void
+    {
+        $logger = new CollectingLogger();
+        $factory = $this->factory($logger);
+        $request = $this->request('GET');
+        $guard = $factory->create($request, 'contact', self::OPTIONS, ['tx_test']);
+
+        self::assertSame($guard, $factory->create($request, 'contact', self::OPTIONS, ['tx_test']));
+        self::assertSame([], $logger->records);
+        self::assertSame($guard, $factory->create($request, 'contact', ['ban' => false], ['tx_test']));
+        self::assertSame(['warning'], array_column($logger->records, 'level'));
     }
 
     /**
@@ -396,9 +518,10 @@ final class GuardTest extends FunctionalTestCase
     /**
      * Visit the form and send it with its fields
      *
-     * @param array<string, string> $values    Values of the form
+     * @param array<string, string> $values    Values of the form, by name within the form
      * @param array<string, mixed>  $options   Checks of the form
      * @param array<string, string> $honeypots Values of the honeypots
+     * @param array<string, string> $headers   Headers of the submission, as a browser would send them
      *
      * @return Guard Guard of the submission
      *
@@ -407,7 +530,7 @@ final class GuardTest extends FunctionalTestCase
      * @throws NoSuchCacheException If the cache is missing
      * @throws RuntimeException If the checks are set up twice
      */
-    private function submit(array $values, array $options, array $honeypots = []): Guard
+    private function submit(array $values, array $options, array $honeypots = [], array $headers = []): Guard
     {
         $query = '';
         foreach ($this->guard($this->request('GET'), $options)->fields() as $field) {
@@ -416,13 +539,19 @@ final class GuardTest extends FunctionalTestCase
         }
 
         foreach ($values as $name => $value) {
-            $query .= '&' . rawurlencode('tx_test[' . $name . ']') . '=' . rawurlencode($value);
+            $query .= '&' . rawurlencode('tx_test[' . preg_replace('/\[/', '][', $name, 1) . ']') . '='
+                . rawurlencode($value);
         }
 
         parse_str($query, $body);
         $this->now += $this->wait;
 
-        return $this->guard($this->request('POST', $body), $options);
+        $request = $this->request('POST', $body);
+        foreach ($headers as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+
+        return $this->guard($request, $options);
     }
 
     /**
@@ -440,20 +569,34 @@ final class GuardTest extends FunctionalTestCase
      */
     private function guard(ServerRequest $request, array $options): Guard
     {
+        return $this->factory(new NullLogger())->create($request, 'contact', $options, ['tx_test']);
+    }
+
+    /**
+     * Factory of the guards of a request of its own
+     *
+     * @param LoggerInterface $logger Logger
+     *
+     * @return GuardFactory
+     *
+     * @throws NoSuchCacheException If the cache is missing
+     * @throws InvalidArgumentException If a class cannot be instantiated
+     */
+    private function factory(LoggerInterface $logger): GuardFactory
+    {
         $this->page = new ProtectedPage();
         GeneralUtility::makeInstance(Context::class)
             ->setAspect('date', new DateTimeAspect(new DateTimeImmutable()->setTimestamp($this->now)));
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        $factory = new GuardFactory(
+
+        return new GuardFactory(
             $connectionPool,
             new CacheStore(GeneralUtility::makeInstance(CacheManager::class)->getCache('tw_antibot')),
             new StopwordList($connectionPool),
             GeneralUtility::makeInstance(Context::class),
             $this->page,
-            new NullLogger(),
+            $logger,
         );
-
-        return $factory->create($request, 'contact', $options, ['tx_test']);
     }
 
     /**

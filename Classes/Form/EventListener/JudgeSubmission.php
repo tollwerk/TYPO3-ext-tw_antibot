@@ -26,6 +26,9 @@ use TYPO3\CMS\Form\Exception as FormException;
 /**
  * Judges the submission of a protected form of EXT:form before its finishers run
  *
+ * Only a submission the form goes on to process is judged: the cached action of a plugin shows the form without
+ * looking at the request, and a judgement there would refuse, and ban, a request the form never handles.
+ *
  * A submission that completes a form is not rendered again: it goes straight to the finishers, which send the mail.
  * A refused submission therefore goes back to the step it came from, which keeps the finishers from running; the
  * rendering then shows the notice. A banned client gets the same, submission or not.
@@ -72,7 +75,11 @@ final readonly class JudgeSubmission
         }
 
         $closed = $guard->isBanned()
-            || ($this->guards->isFirstStep($form, $event->request) && $guard->judge()->isClosed());
+            || (
+                $event->formRuntime->canProcessFormSubmission()
+                && $this->guards->isFirstStep($form, $event->request)
+                && $guard->judge()->isClosed()
+            );
         if ($closed) {
             $event->currentPage = $event->lastDisplayedPage ?? $form->getPageByIndex(0);
 

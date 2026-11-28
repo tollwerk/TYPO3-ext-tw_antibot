@@ -73,8 +73,9 @@ renderingOptions:
 | `stopwords` | lehnt ab, wenn die Felder `parameters` ein Stopword enthalten |
 | `methods`, `times`, `ban` | wie die Einstellungen der Site, für dieses Formular; `times: false` prüft keine Zeiten |
 | `session` | `false` lässt die Session aus den Namen der Felder, für ein Formular, das beurteilt wird, bevor TYPO3 die Session kennt, etwa eine Anmeldung in einer Middleware |
+| `secrets` | Felder, deren Werte eine Sperre nicht speichert, etwa Passwörter; der Adapter nennt die Elemente vom Typ `Password` und `AdvancedPassword` selbst |
 
-Der Adapter hört auf zwei Events von EXT:form. Beim Rendern der ersten Seite fügt er das Element `AntibotFields` mit den Schutzfeldern hinzu; bei einer Sperre oder einer Ablehnung rendert er statt des Formulars die Vorlage `AntibotBlocked`. Bevor EXT:form die erste Seite eines Formulars verarbeitet, beurteilt er die Einsendung und schickt eine abgelehnte auf ihre Seite zurück, ohne dass ein Finisher läuft. Die späteren Seiten eines Formulars mit mehreren Schritten tragen keine Schutzfelder. Wer den Hinweis anders formulieren will, legt eine eigene `AntibotBlocked.fluid.html` in einen Pfad mit höherem Index.
+Der Adapter hört auf zwei Events von EXT:form. Beim Rendern der ersten Seite fügt er das Element `AntibotFields` mit den Schutzfeldern hinzu; bei einer Sperre oder einer Ablehnung rendert er statt des Formulars die Vorlage `AntibotBlocked`. Bevor EXT:form die erste Seite eines Formulars verarbeitet, beurteilt er die Einsendung und schickt eine abgelehnte auf ihre Seite zurück, ohne dass ein Finisher läuft. Eine Einsendung, die EXT:form gar nicht verarbeitet, etwa an die gecachte Ansicht eines Plugins, beurteilt er nicht. Die späteren Seiten eines Formulars mit mehreren Schritten tragen keine Schutzfelder. Wer den Hinweis anders formulieren will, legt eine eigene `AntibotBlocked.fluid.html` in einen Pfad mit höherem Index.
 
 ## Aus eigenem Code
 
@@ -82,7 +83,7 @@ Ein Controller holt sich mit `GuardFactory::create()` den Wächter eines Formula
 
 ```php
 $guard = $this->guards->create($request, 'registration', ['ban' => false], ['tx_twaccounts_registration']);
-$closed = $guard->isBanned() || ('POST' === $request->getMethod() && $guard->judge()->isClosed());
+$closed = $guard->isBanned() || ($guard->isSubmitted() && $guard->judge()->isClosed());
 
 $this->view->assignMultiple(['closed' => $closed, 'antibot' => $guard->view()]);
 ```
@@ -100,11 +101,17 @@ $this->view->assignMultiple(['closed' => $closed, 'antibot' => $guard->view()]);
 ```
 
 - **`create()`** nimmt den Request, den Namen des Formulars, die Optionen wie bei EXT:form und den Scope, unter dem das Formular seine Felder sendet.
+- **`isSubmitted()`** sagt, ob der Request dieses Formular sendet: ob Body oder Query seinen Scope tragen. Nur dann darf `judge()` folgen. Ein POST eines anderen Formulars auf derselben Seite trägt keine Schutzfelder dieses Formulars und würde abgelehnt. Ein Formular ohne Scope zählt jeden POST.
 - **`judge()`** beurteilt die Einsendung einmal und liefert `Verdict::Accepted`, `Verdict::Refused` oder `Verdict::Banned`; `isClosed()` ist wahr für die beiden letzten. `isBanned()` sagt auch ohne Einsendung, ob der Client gesperrt ist.
 - **`remember()`** merkt sich den Inhalt einer Einsendung, die das Formular am Ende angenommen hat, für `duplicates`; `forget()` vergisst ihn wieder, etwa wenn die Einsendung danach an einer anderen Prüfung scheitert.
 - **`view()`** liefert die Argumente der Komponenten: die Schutzfelder und die Kontaktadresse.
+- **`keepPagePrivate()`** hält die Seite aus allen Caches. `fields()` ruft es selbst auf; eine Seite, die statt des Formulars nur den Hinweis zeigt, ruft es ausdrücklich auf, denn der Hinweis gilt nur für diesen Client.
 
-Inhalt, der schon einmal kam, wird abgelehnt, aber nicht gesperrt: Er kann von einem Menschen stammen, der zweimal auf Senden gedrückt hat.
+Manche Ablehnungen sperren nicht:
+
+- **Inhalt, der schon einmal kam:** Er kann von einem Menschen stammen, der zweimal auf Senden gedrückt hat.
+- **Eine Einsendung ohne Schutzfelder:** Eine fremde Seite kann den Browser jeder Besucherin ein Formular senden lassen, mit oder ohne Felder.
+- **Eine Einsendung von einer fremden Seite:** Browser nennen sie in `Sec-Fetch-Site` und `Origin`. Sie wird abgelehnt, auch wenn ihre Felder stimmen.
 
 ## Komponenten
 
@@ -123,13 +130,13 @@ Manche Kampagnen verraten sich durch ein Wort. Ein Stopword ist ein eigener Date
 
 ## Sperren
 
-Eine Sperre ist ein Datensatz im Ordner der Site und enthält die ganze Einsendung. Wer ihn öffnet, sieht in zwei Tabellen, was eingegeben wurde und was das Formular mitgeschickt hat, und kann beurteilen, ob es Spam war oder ein Mensch, den der Schutz nicht hätte treffen dürfen. Der Datensatz lässt sich nicht überschreiben.
+Eine Sperre ist ein Datensatz im Ordner der Site und enthält, was das Formular gesendet hat, ohne die Werte der Felder unter `secrets`. Wer ihn öffnet, sieht in zwei Tabellen, was eingegeben wurde und was das Formular mitgeschickt hat, und kann beurteilen, ob es Spam war oder ein Mensch, den der Schutz nicht hätte treffen dürfen. Der Datensatz lässt sich nicht überschreiben.
 
 Eine Sperre endet nach `twAntibot.banPeriod`. Ihr Datensatz wird dann **gelöscht**, nicht verborgen: Eine Notiz über die Einsendung eines Menschen hat keinen Grund, ihre Sperre zu überdauern. Wer den Datensatz im Backend löscht, hebt die Sperre sofort auf. Die Adresse des Clients ist die, die TYPO3 hinter den Proxys auflöst, denen es vertraut; sonst träfe eine Sperre alle hinter demselben Proxy.
 
 ## Caching
 
-Eine Seite mit Schutzfeldern kommt aus keinem Cache, weder aus dem von TYPO3 noch aus dem eines Browsers oder Proxys: Sie trägt `Cache-Control: private, no-store` und ein abgelaufenes `Expires`. Die Felder gehören einer Person und tragen ihre Zeit; aus einem Cache bekäme jeder die Felder des ersten Besuchs. Alle anderen Seiten behalten ihr Caching.
+Eine Seite mit einem geschützten Formular oder seinem Hinweis kommt aus keinem Cache, weder aus dem von TYPO3 noch aus dem eines Browsers oder Proxys: Sie trägt `Cache-Control: private, no-store` und ein abgelaufenes `Expires`. Die Felder gehören einer Person und tragen ihre Zeit; aus einem Cache bekäme jeder die Felder des ersten Besuchs, oder den Hinweis eines gesperrten Clients. Das gilt auch für einen Wächter, den eine Middleware erzeugt, bevor TYPO3 die Seite kennt. Alle anderen Seiten behalten ihr Caching.
 
 ## Tests
 

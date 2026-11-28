@@ -25,6 +25,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Tollwerk\TwAntibot\Store\BanStore;
+use TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\StreamFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -73,11 +74,28 @@ final class FormTest extends FunctionalTestCase
     protected array $coreExtensionsToLoad = ['filemetadata', 'form'];
 
     /**
+     * A page cache that stores pages, which the testing framework leaves out
+     *
+     * @var array<string, mixed>
+     */
+    #[Override]
+    protected array $configurationToUseInTestInstance = [
+        'SYS' => ['caching' => ['cacheConfigurations' => ['pages' => ['backend' => Typo3DatabaseBackend::class]]]],
+    ];
+
+    /**
      * Time of the next request
      *
      * @var integer
      */
     private int $now = 1795000000;
+
+    /**
+     * Address of the client of the next request
+     *
+     * @var string
+     */
+    private string $client = '127.0.0.1';
 
     /**
      * Put a form on each page of a site that keeps its bans in folder 4
@@ -211,6 +229,7 @@ final class FormTest extends FunctionalTestCase
         $answer = $this->page($this->submit($page, [
             'name' => 'Bot',
             'message' => 'Cheap pills',
+            'code' => 'secret-password',
             (string) $trap->getAttribute('name') => 'https://spam.example.org/',
         ]));
 
@@ -225,10 +244,11 @@ final class FormTest extends FunctionalTestCase
         self::assertSame('127.0.0.1', $bans[0]['value'] ?? null);
         self::assertSame(4, $bans[0]['pid'] ?? null);
         $data = json_decode(\is_string($bans[0]['data'] ?? null) ? $bans[0]['data'] : '', true);
-        self::assertIsArray($data);
-        $values = reset($data);
-        self::assertIsArray($values);
+        self::assertIsArray($data, 'The record holds the values of the form, without the namespace of the plugin');
+        $values = $data;
         self::assertSame('Cheap pills', $values['message'] ?? null);
+        self::assertArrayNotHasKey('code', $values, 'A ban leaves out the password');
+        self::assertStringNotContainsString('secret-password', (string) json_encode($data));
 
         $again = $this->page($this->visit('/'));
         self::assertNotNull($again->querySelector('.AntibotNotice'), 'A banned client gets the notice on a visit');
@@ -239,7 +259,31 @@ final class FormTest extends FunctionalTestCase
     }
 
     /**
-     * A submission without the protective fields gets the notice
+     * The notice for a banned client stays out of the page cache: the next visitor gets the form
+     *
+     * @return void
+     *
+     * @throws InvalidArgumentException If the request is invalid
+     */
+    #[Test]
+    public function theNoticeStaysOutOfThePageCache(): void
+    {
+        $page = $this->page($this->visit('/'));
+        $trap = $page->querySelector('.AntibotFields input[type="url"]');
+        self::assertInstanceOf(Element::class, $trap);
+        $this->submit($page, ['name' => 'Bot', (string) $trap->getAttribute('name') => 'https://spam.example.org/']);
+        self::assertNotNull($this->page($this->visit('/'))->querySelector('.AntibotNotice'));
+
+        $this->client = '198.51.100.9';
+        $next = $this->page($this->visit('/'));
+        self::assertNull($next->querySelector('.AntibotNotice'), 'Another client gets the form, not the notice');
+        self::assertNotNull($next->querySelector('form .AntibotFields'));
+    }
+
+    /**
+     * A submission without the protective fields gets the notice, but bans nobody
+     *
+     * Another site can make the browser of any visitor send a form without the fields.
      *
      * @return void
      *
@@ -257,7 +301,63 @@ final class FormTest extends FunctionalTestCase
         $answer = $this->page($this->submit($page, ['name' => 'Bot', 'message' => 'Cheap pills']));
 
         self::assertNotNull($answer->querySelector('.AntibotNotice'));
-        self::assertCount(1, $this->bans());
+        self::assertSame([], $this->bans());
+    }
+
+    /**
+     * A submission from a page of another site gets the notice, even with the fields, but bans nobody
+     *
+     * @return void
+     *
+     * @throws DBALException If the database fails
+     * @throws InvalidArgumentException If the request is invalid
+     */
+    #[Test]
+    public function aSubmissionFromAnotherSiteIsRefused(): void
+    {
+        $page = $this->page($this->visit('/'));
+        $answer = $this->page($this->submit($page, ['name' => 'Ada', 'message' => 'Hello'], [
+            'Origin' => 'https://evil.example',
+            'Sec-Fetch-Site' => 'cross-site',
+        ]));
+
+        self::assertNotNull($answer->querySelector('.AntibotNotice'));
+        self::assertStringNotContainsString('Thank you', $this->text($answer));
+        self::assertSame([], $this->bans());
+
+        $same = $this->page($this->visit('/'));
+        $sent = $this->page($this->submit($same, ['name' => 'Ada', 'message' => 'Hello again'], [
+            'Origin' => 'http://localhost',
+            'Sec-Fetch-Site' => 'same-origin',
+        ]));
+        self::assertStringContainsString('Thank you for your message', $this->text($sent));
+    }
+
+    /**
+     * A POST to the cached view of the form, which the form does not process, is not judged and bans nobody
+     *
+     * @return void
+     *
+     * @throws DBALException If the database fails
+     * @throws InvalidArgumentException If the request is invalid
+     */
+    #[Test]
+    public function aPostTheFormDoesNotProcessIsNotJudged(): void
+    {
+        $field = $this->page($this->visit('/'))->querySelector('form textarea');
+        self::assertInstanceOf(Element::class, $field);
+        $name = (string) $field->getAttribute('name');
+        self::assertSame(1, preg_match('/^tx_form_formframework\[([^\]]+)\]/', $name, $form));
+        $body = ['tx_form_formframework' => [$form[1] => ['x' => '1']]];
+        $answer = $this->page($this->execute(new InternalRequest('http://localhost/')
+            ->withMethod('POST')
+            ->withBody(new StreamFactory()->createStream(http_build_query($body)))
+            ->withParsedBody($body)));
+
+        self::assertNull($answer->querySelector('.AntibotNotice'));
+        self::assertSame([], $this->bans());
+        $this->client = '198.51.100.9';
+        self::assertNotNull($this->page($this->visit('/'))->querySelector('form .AntibotFields'));
     }
 
     /**
@@ -330,14 +430,15 @@ final class FormTest extends FunctionalTestCase
     /**
      * Send the form of a page after a while, with its fields and the given values
      *
-     * @param HTMLDocument          $page   Page
-     * @param array<string, string> $values Values by the identifier of the element or the full name of a field
+     * @param HTMLDocument          $page    Page
+     * @param array<string, string> $values  Values by the identifier of the element or the full name of a field
+     * @param array<string, string> $headers Headers of the request, as a browser would send them
      *
      * @return ResponseInterface
      *
      * @throws InvalidArgumentException If the request is invalid
      */
-    private function submit(HTMLDocument $page, array $values): ResponseInterface
+    private function submit(HTMLDocument $page, array $values, array $headers = []): ResponseInterface
     {
         $form = $page->querySelector('form');
         self::assertInstanceOf(Element::class, $form);
@@ -379,6 +480,9 @@ final class FormTest extends FunctionalTestCase
             ->withMethod('POST')
             ->withBody(new StreamFactory()->createStream($fields))
             ->withParsedBody($parsed);
+        foreach ($headers as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
 
         return $this->execute($request);
     }
@@ -401,7 +505,7 @@ final class FormTest extends FunctionalTestCase
             'HTTP_HOST' => 'localhost',
             'SERVER_NAME' => 'localhost',
             'HTTPS' => 'off',
-            'REMOTE_ADDR' => '127.0.0.1',
+            'REMOTE_ADDR' => $this->client,
             'REQUEST_METHOD' => $request->getMethod(),
         ]));
     }

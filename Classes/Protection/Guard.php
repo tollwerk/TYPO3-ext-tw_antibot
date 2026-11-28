@@ -19,6 +19,7 @@ use Closure;
 use Doctrine\DBAL\Exception as DBALException;
 use Jkphl\Antibot\Domain\Contract\ValidationResultInterface;
 use Jkphl\Antibot\Infrastructure\Model\InputElement;
+use Jkphl\Antibot\Infrastructure\Model\ParameterPath;
 use Jkphl\Antibot\Ports\Antibot;
 use Jkphl\Antibot\Ports\Exceptions\InvalidArgumentException;
 use Jkphl\Antibot\Ports\Validators\BanValidator;
@@ -27,13 +28,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Tollwerk\TwAntibot\Store\BanStore;
 use Tollwerk\TwAntibot\Store\CacheStore;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 
 /**
  * Protection of one form in one request: its protective fields and the judgement of a submission
  *
  * A form shows the fields of fields() and, when it is closed, the notice with the address of contact(). Before it
- * handles a submission it asks judge(); a submission it accepted in the end, it passes to remember(), so that the same
- * content is refused for a while if the form asks for that. view() has the arguments of the components.
+ * handles a submission it asks isSubmitted(), and then judge(); a submission it accepted in the end, it passes to
+ * remember(), so that the same content is refused for a while if the form asks for that. view() has the arguments of
+ * the components. A page that shows the form or its notice must stay out of caches: fields() and keepPagePrivate()
+ * see to it.
  *
  * @phpstan-type Field array{name: string, value: string, type: string}
  * @phpstan-type GuardView array{fields: list<Field>, contact: string}
@@ -88,7 +92,7 @@ final class Guard
      * @param DuplicateValidator|null $duplicates Check for repeated content; none if the form does not ask for it
      * @param CacheStore              $cacheStore Fingerprints of accepted submissions
      * @param LoggerInterface         $logger     Logger
-     * @param Closure(): void         $onArmor    Called when the protective fields are handed out
+     * @param Closure(): void         $onArmor    Called when the page shows the form or its notice
      */
     public function __construct(
         private readonly Antibot $antibot,
@@ -117,7 +121,7 @@ final class Guard
             return $this->fields;
         }
 
-        ($this->onArmor)();
+        $this->keepPagePrivate();
         $this->fields = [];
         foreach ($this->antibot->armorInputs($this->request) as $input) {
             if (!($input instanceof InputElement)) {
@@ -128,6 +132,41 @@ final class Guard
         }
 
         return $this->fields;
+    }
+
+    /**
+     * Keep the page of the request out of caches, because it shows the form or its notice
+     *
+     * The notice belongs to one client as much as the fields do: from a cache, every visitor after a banned client
+     * would get the notice instead of the form.
+     *
+     * @return void
+     */
+    public function keepPagePrivate(): void
+    {
+        ($this->onArmor)();
+    }
+
+    /**
+     * Whether the request sends this form
+     *
+     * A form sends its fields under its scope. A request without them sends another form, or none, and must not be
+     * judged: the judgement would refuse it, and ban its client, for the fields it lacks. A form without a scope cannot
+     * tell its submissions from others and counts every POST.
+     *
+     * @return boolean
+     */
+    public function isSubmitted(): bool
+    {
+        if ([] === $this->scope) {
+            return 'POST' === strtoupper($this->request->getMethod());
+        }
+
+        $body = $this->request->getParsedBody();
+        $body = \is_array($body) ? $body : [];
+
+        return null !== $this->find($body, $this->scope)
+            || null !== $this->find($this->request->getQueryParams(), $this->scope);
     }
 
     /**
@@ -168,7 +207,8 @@ final class Guard
      * Judge the submission of the request, once
      *
      * A submission without the protective fields is refused: nothing was there to check, and passing it would let
-     * every machine through that leaves the fields out.
+     * every machine through that leaves the fields out. So is a submission from a page of another site. Neither bans
+     * the client: another site can make the browser of any visitor send a form, with or without the fields.
      *
      * @return Verdict
      *
@@ -249,6 +289,15 @@ final class Guard
             return Verdict::Banned;
         }
 
+        if ($this->isForeign()) {
+            $this->logger->warning('A submission was refused', [
+                'form' => $this->antibot->getPrefix(),
+                'reason' => 'Sent from a page of another site',
+            ]);
+
+            return Verdict::Refused;
+        }
+
         $result = $this->result();
         if ($result->isValid()) {
             return Verdict::Accepted;
@@ -260,8 +309,9 @@ final class Guard
             'reason' => $reason,
         ]);
 
-        // Content sent before may come from a person who sent a form twice, and earns no ban
-        if ($this->options->ban && !$result->isBlacklisted()) {
+        // Content sent before may come from a person who sent a form twice, and earns no ban; a submission without the
+        // fields may come from a page of another site that sent it from the browser of a visitor
+        if ($this->options->ban && !$result->isBlacklisted() && !$result->isSkipped()) {
             $this->ban($reason);
         }
 
@@ -279,7 +329,38 @@ final class Guard
     }
 
     /**
+     * Whether a page of another site sent the request
+     *
+     * Browsers name the site that sent a request in "Sec-Fetch-Site", and its origin in "Origin"; "null" stands for an
+     * origin they keep to themselves, such as after a redirect from another site. A request without either, such as
+     * from an older browser, counts as one of this site.
+     *
+     * @return boolean
+     */
+    private function isForeign(): bool
+    {
+        if ('cross-site' === strtolower($this->request->getHeaderLine('Sec-Fetch-Site'))) {
+            return true;
+        }
+
+        $origin = strtolower(trim($this->request->getHeaderLine('Origin')));
+        if ('' === $origin) {
+            return false;
+        }
+
+        $params = $this->request->getAttribute('normalizedParams');
+        $host = $params instanceof NormalizedParams
+            ? $params->getRequestHost()
+            : $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getAuthority();
+
+        return strtolower(rtrim($host, '/')) !== $origin;
+    }
+
+    /**
      * Ban the client, with the submission for the editor who reads the record
+     *
+     * The record holds what the form sent under its scope, without the values of the fields the options name as secret,
+     * such as passwords: an editor needs neither to judge whether a person or a machine sent it.
      *
      * @param string $reason Reason
      *
@@ -296,9 +377,13 @@ final class Guard
         }
 
         $body = $this->request->getParsedBody();
-        $body = \is_array($body) ? $body : [];
+        $values = $this->find(\is_array($body) ? $body : [], $this->scope) ?? [];
+        foreach ($this->options->secrets as $secret) {
+            $values = self::without($values, array_values(new ParameterPath($secret)->getSegments()));
+        }
+
         $submission = json_encode(
-            $body[$this->scope[0] ?? ''] ?? $body,
+            $values,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
                 | JSON_PARTIAL_OUTPUT_ON_ERROR,
         );
@@ -306,7 +391,56 @@ final class Guard
             return;
         }
 
-        $this->logger->warning('A client was banned', ['subject' => $subject, 'reason' => $reason]);
+        // The address of the client stays out of the log; the record of the ban has it
+        $this->logger->warning('A client was banned', ['form' => $this->antibot->getPrefix(), 'reason' => $reason]);
+    }
+
+    /**
+     * Values under a path of names
+     *
+     * @param array<array-key, mixed> $parameters Parameters
+     * @param list<string|integer>    $path       Names, outermost first; the parameters themselves if empty
+     *
+     * @return array<array-key, mixed>|null Null if the path leads to no array
+     */
+    private function find(array $parameters, array $path): ?array
+    {
+        foreach ($path as $name) {
+            $parameters = $parameters[$name] ?? null;
+            if (!\is_array($parameters)) {
+                return null;
+            }
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * Values without the one under a path of names
+     *
+     * @param array<array-key, mixed> $values Values
+     * @param list<string|integer>    $path   Names, outermost first
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function without(array $values, array $path): array
+    {
+        $name = array_shift($path);
+        if (null === $name || !\array_key_exists($name, $values)) {
+            return $values;
+        }
+
+        if ([] === $path) {
+            unset($values[$name]);
+
+            return $values;
+        }
+
+        if (\is_array($values[$name])) {
+            $values[$name] = self::without($values[$name], $path);
+        }
+
+        return $values;
     }
 
     /**

@@ -52,6 +52,13 @@ final readonly class FormGuards
     public const string OPTION = 'antibot';
 
     /**
+     * Types of elements whose values the record of a ban leaves out
+     *
+     * @var list<string>
+     */
+    private const array SECRETS = ['Password', 'AdvancedPassword'];
+
+    /**
      * Constructor
      *
      * @param GuardFactory     $guards           Guards of the request
@@ -77,10 +84,13 @@ final readonly class FormGuards
             return null;
         }
 
+        $options = \is_array($option) ? $option : [];
+        $options['secrets'] = [...array_values((array) ($options['secrets'] ?? [])), ...$this->secrets($form)];
+
         return $this->guards->create(
             $request,
             $form->getIdentifier(),
-            \is_array($option) ? $option : [],
+            $options,
             [$this->namespace($request), $form->getIdentifier()],
         );
     }
@@ -112,6 +122,27 @@ final readonly class FormGuards
         $page = $values['__currentPage'] ?? 1;
 
         return is_numeric($page) && 1 === (int) $page;
+    }
+
+    /**
+     * Identifiers of the elements of a form whose values the record of a ban leaves out, such as passwords
+     *
+     * @param FormDefinition $form Form
+     *
+     * @return list<string>
+     */
+    private function secrets(FormDefinition $form): array
+    {
+        $secrets = [];
+        foreach ($form->getElements() as $identifier => $element) {
+            if (!\in_array($element->getType(), self::SECRETS, true)) {
+                continue;
+            }
+
+            $secrets[] = (string) $identifier;
+        }
+
+        return $secrets;
     }
 
     /**

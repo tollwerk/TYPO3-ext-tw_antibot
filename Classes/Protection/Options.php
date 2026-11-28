@@ -32,6 +32,7 @@ namespace Tollwerk\TwAntibot\Protection;
  * - methods: order of request methods, such as "GET-POST"
  * - times: {minimum, maximum, followup} in seconds
  * - ban: whether a refused submission bans the client
+ * - secrets: fields whose values the record of a ban leaves out, such as passwords
  *
  * @phpstan-type Plausibility array<string, array<string, int>>
  *
@@ -80,6 +81,7 @@ final readonly class Options
      * @param boolean               $ban                Whether a refused submission bans the client
      * @param boolean               $timing             Whether the times are checked
      * @param boolean               $session            Whether the names of the fields depend on the session
+     * @param list<string>          $secrets            Fields whose values the record of a ban leaves out
      */
     public function __construct(
         public array $honeypots = self::HONEYPOTS,
@@ -101,6 +103,7 @@ final readonly class Options
         public bool $ban = true,
         public bool $timing = true,
         public bool $session = true,
+        public array $secrets = [],
     ) {}
 
     /**
@@ -141,6 +144,7 @@ final readonly class Options
             ban: (bool) ($options['ban'] ?? $settings->ban),
             timing: false !== ($options['times'] ?? null),
             session: false !== ($options['session'] ?? null),
+            secrets: self::names($options['secrets'] ?? null),
         );
     }
 

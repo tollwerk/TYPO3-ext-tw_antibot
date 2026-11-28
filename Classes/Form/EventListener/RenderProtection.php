@@ -89,6 +89,8 @@ final readonly class RenderProtection
             return;
         }
 
+        // The form and its notice belong to one client alike
+        $guard->keepPagePrivate();
         if ($guard->isBanned() || true === $guard->verdict()?->isClosed()) {
             $this->close($form, $guard);
 
